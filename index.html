@@ -323,7 +323,7 @@
         </div>
     </div>
 
-    <!-- نافذة المنتج (إضافة وتعديل متكاملة مع رفع الصور) -->
+    <!-- نافذة المنتج -->
     <div id="product-modal" class="modal-overlay hidden">
         <div class="modal-box">
             <h3 id="prod-modal-title" style="margin-top:0; color:var(--primary-blue);">إضافة منتج جديد</h3>
@@ -370,23 +370,25 @@
         </div>
     </div>
 
-    <!-- نافذة الكتالوج -->
+    <!-- نافذة الكتالوج (مع دعم حفظ الصور ومشاركتها بضغطة واحدة) -->
     <div id="catalog-modal" class="modal-overlay hidden">
         <div class="modal-box" style="max-width:550px;">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:8px; margin-bottom:10px;">
-                <h3 style="margin:0; color:var(--primary-blue);">🦅 بوسترات الكتالوج</h3>
+                <h3 style="margin:0; color:var(--primary-blue);">🦅 بوسترات الكتالوج المصورة</h3>
                 <button type="button" onclick="closeCatalogModal()" style="background:none; border:none; font-size:18px; cursor:pointer;">✖</button>
             </div>
-            <div id="catalog-preview-content" style="max-height: 55vh; overflow-y: auto; padding:5px;"></div>
+            
+            <div id="catalog-preview-content" style="max-height: 55vh; overflow-y: auto; padding:5px; text-align:center;">
+                <p style="color:#64748b;">جاري تجهيز البوسترات...</p>
+            </div>
+
             <div style="display:flex; flex-direction:column; gap:8px; margin-top:12px;">
-                <button type="button" class="btn btn-success" onclick="shareCatalogWithImages()" style="margin:0;">📲 مشاركة الصور واتساب</button>
-                <button type="button" class="btn" onclick="shareCatalogTextOnly()" style="margin:0;">📝 مشاركة نصية</button>
+                <button type="button" class="btn btn-success" onclick="shareCatalogWhatsAppDirect()" style="margin:0;">📲 إرسال تفاصيل الكتالوج واتساب</button>
                 <button type="button" class="btn btn-secondary" onclick="closeCatalogModal()" style="margin:0;">إغلاق</button>
             </div>
         </div>
     </div>
 
-    <!-- الكود البرمجي الكامل والمدعم برفع الصور وتعديل المنتجات -->
     <script>
         let platformConfig = { logoBase64: '', subtitle: 'منظومة الإدارة الذكية للوسطاء الميدانيين' };
         let localProducts = [];
@@ -394,7 +396,6 @@
         let currentWaseetPhone = "01000000000";
         let currentWaseetName = "الوسيط";
         let currentTempProductImages = [];
-        let generatedCatalogImageFiles = [];
 
         function showScreen(screenId) {
             ['landing-screen', 'login-screen', 'register-screen', 'admin-dashboard', 'waseet-dashboard'].forEach(id => {
@@ -407,10 +408,8 @@
             const phone = document.getElementById('login-phone').value.trim();
             const pin = document.getElementById('login-pin').value.trim();
             if(!phone || !pin) { alert("أدخل رقم الهاتف والـ PIN"); return; }
-            
             let savedPin = localStorage.getItem('crow_waseet_pin_' + phone) || '1234';
             if(pin !== savedPin) { alert("الرقم السري غير صحيح!"); return; }
-
             let savedName = localStorage.getItem('crow_waseet_name_' + phone) || `وسيط (${phone})`;
             loginAsWaseetDirectly(phone, savedName);
         }
@@ -424,7 +423,6 @@
             const refCodeInput = document.getElementById('reg-ref-code').value.trim();
 
             if(!name || !phone || !pin || !gov || !prof) { alert("أكمل الحقول الإجبارية"); return; }
-            
             localStorage.setItem('crow_waseet_name_' + phone, name);
             localStorage.setItem('crow_waseet_pin_' + phone, pin);
             
@@ -463,36 +461,25 @@
             localStorage.setItem('crow_refs_' + ownerPhone, refs);
         }
 
-        function loginAsDemoUser() {
-            loginAsWaseetDirectly("01099998888", "أحمد محمود - وسيط معتمد");
-        }
+        function loginAsDemoUser() { loginAsWaseetDirectly("01099998888", "أحمد محمود - وسيط معتمد"); }
 
         function loginAsWaseetDirectly(phone, waseetName) {
             currentWaseetPhone = phone;
             currentWaseetName = waseetName;
-            
-            if(!localStorage.getItem('crow_waseet_name_' + phone)) {
-                localStorage.setItem('crow_waseet_name_' + phone, waseetName);
-            }
+            if(!localStorage.getItem('crow_waseet_name_' + phone)) localStorage.setItem('crow_waseet_name_' + phone, waseetName);
             if(!localStorage.getItem('crow_sub_start_' + phone)) {
                 let today = new Date().toISOString().split('T')[0];
                 let weekLater = new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0];
                 localStorage.setItem('crow_sub_start_' + phone, today);
                 localStorage.setItem('crow_sub_end_' + phone, weekLater);
             }
-
             showScreen('waseet-dashboard');
             document.getElementById('waseet-welcome-text').innerText = `أهلاً بك يا ${waseetName}`;
-            
             let savedLogo = localStorage.getItem('crow_platform_logo');
             let logoContainer = document.getElementById('waseet-top-logo-container');
-            if (savedLogo && logoContainer) {
-                logoContainer.innerHTML = `<img src="${savedLogo}" class="logo-img" alt="Logo">`;
-            }
-
+            if (savedLogo && logoContainer) logoContainer.innerHTML = `<img src="${savedLogo}" class="logo-img" alt="Logo">`;
             let rewardMsg = localStorage.getItem('crow_reward_msg_' + phone);
             if(rewardMsg) { alert(rewardMsg); localStorage.removeItem('crow_reward_msg_' + phone); }
-
             updateWaseetReferralDisplay(phone);
             updateWaseetSubscriptionUI(phone);
             loadLocalData(phone);
@@ -502,11 +489,9 @@
             let start = localStorage.getItem('crow_sub_start_' + phone) || '2026-11-01';
             let end = localStorage.getItem('crow_sub_end_' + phone) || '2026-12-01';
             let refs = localStorage.getItem('crow_refs_' + phone) || '0';
-
             document.getElementById('sub-start-date').innerText = start;
             document.getElementById('sub-end-date').innerText = end;
             document.getElementById('referral-progress-count').innerText = refs;
-
             let diffDays = Math.ceil((new Date(end) - new Date()) / (1000 * 60 * 60 * 24));
             let badge = document.getElementById('sub-status-badge');
             badge.className = diffDays > 0 ? "badge-green" : "badge-red";
@@ -534,9 +519,7 @@
                 showScreen('admin-dashboard');
                 loadAdminSettingsToUI();
                 renderAdminWaseetsTable();
-            } else if (pass !== null) {
-                alert("كلمة المرور غير صحيحة!");
-            }
+            } else if (pass !== null) alert("كلمة المرور غير صحيحة!");
         }
 
         function changeAdminPassword() {
@@ -567,282 +550,4 @@
         }
 
         function savePlatformSettings() {
-            localStorage.setItem('crow_platform_sub', document.getElementById('admin-subtitle-input').value);
-            if(platformConfig.logoBase64) localStorage.setItem('crow_platform_logo', platformConfig.logoBase64);
-            alert("تم الحفظ بنجاح!");
-            showScreen('landing-screen');
-        }
-
-        function renderAdminWaseetsTable() {
-            let tbody = document.getElementById('admin-waseets-tbody');
-            if(!tbody) return;
-            let waseetPhones = [];
-            for(let i=0; i<localStorage.length; i++) {
-                let key = localStorage.key(i);
-                if(key.startsWith('crow_waseet_name_')) waseetPhones.push(key.replace('crow_waseet_name_', ''));
-            }
-            if(waseetPhones.length === 0) {
-                waseetPhones.push("0101111");
-                localStorage.setItem('crow_waseet_name_0101111', "محمود السيد");
-                localStorage.setItem('crow_waseet_pin_0101111', "1234");
-                localStorage.setItem('crow_sub_start_0101111', new Date().toISOString().split('T')[0]);
-                localStorage.setItem('crow_sub_end_0101111', new Date(Date.now() + 7*86400000).toISOString().split('T')[0]);
-            }
-            tbody.innerHTML = '';
-            waseetPhones.forEach(phone => {
-                let name = localStorage.getItem('crow_waseet_name_' + phone);
-                let start = localStorage.getItem('crow_sub_start_' + phone) || '--';
-                let end = localStorage.getItem('crow_sub_end_' + phone) || '--';
-                let refs = localStorage.getItem('crow_refs_' + phone) || '0';
-                
-                tbody.innerHTML += `<tr>
-                    <td><b>${name}</b><br><small>${phone}</small></td>
-                    <td>CROW-${phone.slice(-4)}<br><small style="color:green;">إحالات: ${refs}/5</small></td>
-                    <td><span class="badge-green">${start} إلى ${end}</span></td>
-                    <td><button class="btn-warning" onclick="adminExtendSub('${phone}', 30)">+شهر</button></td>
-                    <td><button class="btn-warning" onclick="adminExtendSub('${phone}', 7)">+أسبوع</button></td>
-                    <td><button class="btn-info" onclick="adminChangeWaseetPin('${phone}')">PIN</button></td>
-                    <td><button class="btn-danger" onclick="adminDeleteWaseet('${phone}')">حذف</button></td>
-                    <td><button class="btn-success" onclick="loginAsWaseetDirectly('${phone}', '${name}')">دخول</button></td>
-                </tr>`;
-            });
-        }
-
-        function adminExtendSub(phone, days) {
-            let endDate = new Date(localStorage.getItem('crow_sub_end_' + phone) || new Date());
-            if(endDate < new Date()) endDate = new Date();
-            endDate.setDate(endDate.getDate() + days);
-            localStorage.setItem('crow_sub_end_' + phone, endDate.toISOString().split('T')[0]);
-            alert("تم التجديد بنجاح!");
-            renderAdminWaseetsTable();
-        }
-
-        function adminChangeWaseetPin(phone) {
-            let pin = prompt("أدخل PIN الجديد (4 أرقام):");
-            if(pin && pin.length >= 4) { localStorage.setItem('crow_waseet_pin_' + phone, pin); alert("تم التغيير!"); }
-        }
-
-        function adminDeleteWaseet(phone) {
-            if(confirm("هل أنت متأكد من الحذف؟")) {
-                ['crow_waseet_name_', 'crow_waseet_pin_', 'crow_sub_start_', 'crow_sub_end_', 'crow_refs_', 'crow_prods_', 'crow_orders_'].forEach(k => localStorage.removeItem(k + phone));
-                renderAdminWaseetsTable();
-            }
-        }
-
-        function switchWaseetTab(tab) {
-            let isProd = tab === 'products';
-            document.getElementById('waseet-tab-products').classList.toggle('hidden', !isProd);
-            document.getElementById('waseet-tab-orders').classList.toggle('hidden', isProd);
-            document.getElementById('tab-btn-products').style.background = isProd ? 'var(--secondary-blue)' : '#e2e8f0';
-            document.getElementById('tab-btn-products').style.color = isProd ? 'white' : 'var(--text-color)';
-            document.getElementById('tab-btn-orders').style.background = !isProd ? 'var(--secondary-blue)' : '#e2e8f0';
-            document.getElementById('tab-btn-orders').style.color = !isProd ? 'white' : 'var(--text-color)';
-        }
-
-        // PWA Install
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            document.getElementById('install-pwa-btn').style.display = 'block';
-        });
-        async function installPWA() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                await deferredPrompt.userChoice;
-                deferredPrompt = null;
-            }
-        }
-
-        // إدارة المنتجات والصور المتعددة وتعديل البيانات
-        function loadLocalData(phone) {
-            localProducts = JSON.parse(localStorage.getItem('crow_prods_' + phone) || '[]');
-            localOrders = JSON.parse(localStorage.getItem('crow_orders_' + phone) || '[]');
-            renderProducts(); renderOrders();
-        }
-
-        function saveToLocalStorage() {
-            localStorage.setItem('crow_prods_' + currentWaseetPhone, JSON.stringify(localProducts));
-            localStorage.setItem('crow_orders_' + currentWaseetPhone, JSON.stringify(localOrders));
-        }
-
-        function handleProductImagesUpload(event) {
-            const files = Array.from(event.target.files);
-            if (!files.length) return;
-            files.forEach(file => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = new Image();
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        let w = img.width, h = img.height;
-                        let maxDim = 1000;
-                        if (w > maxDim || h > maxDim) {
-                            if (w > h) { h = Math.round(h * (maxDim / w)); w = maxDim; }
-                            else { w = Math.round(w * (maxDim / h)); h = maxDim; }
-                        }
-                        canvas.width = w; canvas.height = h;
-                        let ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, w, h);
-                        currentTempProductImages.push({ data: canvas.toDataURL('image/jpeg', 0.85), inCatalog: true });
-                        renderTempImagesGallery();
-                    };
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            });
-            event.target.value = '';
-        }
-
-        function renderTempImagesGallery() {
-            let gallery = document.getElementById('prod-images-gallery');
-            document.getElementById('prod-img-count-badge').innerText = currentTempProductImages.length;
-            gallery.innerHTML = '';
-            currentTempProductImages.forEach((imgObj, idx) => {
-                gallery.innerHTML += `<div style="position:relative; width:70px; height:70px; border:2px solid ${imgObj.inCatalog ? '#10b981':'#cbd5e1'}; border-radius:6px; overflow:hidden;">
-                    <img src="${imgObj.data}" style="width:100%; height:100%; object-fit:cover;">
-                    <button type="button" onclick="currentTempProductImages.splice(${idx},1); renderTempImagesGallery();" style="position:absolute; top:0; left:0; background:red; color:white; border:none; width:20px; height:20px; font-size:10px; cursor:pointer;">×</button>
-                </div>`;
-            });
-        }
-
-        function openNewProductModal() {
-            document.getElementById('edit-prod-index').value = "-1";
-            document.getElementById('prod-modal-title').innerText = "➕ إضافة منتج جديد";
-            document.getElementById('prod-name').value = '';
-            document.getElementById('prod-price').value = '';
-            document.getElementById('prod-desc').value = '';
-            document.getElementById('prod-owner-name').value = '';
-            document.getElementById('prod-owner-phone').value = '';
-            document.getElementById('prod-owner-address').value = '';
-            currentTempProductImages = [];
-            renderTempImagesGallery();
-            document.getElementById('product-modal').classList.remove('hidden');
-        }
-
-        function openEditProductModal(index) {
-            let p = localProducts[index];
-            if(!p) return;
-            document.getElementById('edit-prod-index').value = index;
-            document.getElementById('prod-modal-title').innerText = `✏️ تعديل منتج (#${p.serial})`;
-            document.getElementById('prod-name').value = p.name || '';
-            document.getElementById('prod-price').value = p.price || '';
-            document.getElementById('prod-desc').value = p.desc || '';
-            document.getElementById('prod-owner-name').value = p.ownerName || '';
-            document.getElementById('prod-owner-phone').value = p.ownerPhone || '';
-            document.getElementById('prod-owner-address').value = p.ownerAddress || '';
-            currentTempProductImages = Array.isArray(p.images) ? JSON.parse(JSON.stringify(p.images)) : [];
-            renderTempImagesGallery();
-            document.getElementById('product-modal').classList.remove('hidden');
-        }
-
-        function closeProductModal() {
-            document.getElementById('product-modal').classList.add('hidden');
-        }
-
-        function saveProductFromModal() {
-            let index = parseInt(document.getElementById('edit-prod-index').value, 10);
-            let name = document.getElementById('prod-name').value.trim();
-            let price = document.getElementById('prod-price').value.trim();
-            let desc = document.getElementById('prod-desc').value.trim();
-            let ownerName = document.getElementById('prod-owner-name').value.trim();
-            let ownerPhone = document.getElementById('prod-owner-phone').value.trim();
-            let ownerAddress = document.getElementById('prod-owner-address').value.trim();
-
-            if(!name || !price) { alert("أدخل اسم المنتج والسعر!"); return; }
-
-            if(isNaN(index) || index < 0) {
-                let nextSerial = localProducts.length > 0 ? Math.max(...localProducts.map(i => i.serial)) + 1 : 1;
-                localProducts.push({
-                    serial: nextSerial,
-                    name, price, desc,
-                    images: JSON.parse(JSON.stringify(currentTempProductImages)),
-                    ownerName, ownerPhone, ownerAddress,
-                    selectedForCatalog: true
-                });
-            } else {
-                localProducts[index].name = name;
-                localProducts[index].price = price;
-                localProducts[index].desc = desc;
-                localProducts[index].images = JSON.parse(JSON.stringify(currentTempProductImages));
-                localProducts[index].ownerName = ownerName;
-                localProducts[index].ownerPhone = ownerPhone;
-                localProducts[index].ownerAddress = ownerAddress;
-            }
-
-            saveToLocalStorage();
-            renderProducts();
-            closeProductModal();
-        }
-
-        function renderProducts() {
-            let container = document.getElementById('products-list-container');
-            container.innerHTML = localProducts.length === 0 ? '<p style="text-align:center; color:#94a3b8;">لا توجد منتجات مسجلة.</p>' : '';
-            localProducts.forEach((p, i) => {
-                let cover = (p.images && p.images.length > 0) ? p.images[0].data : '';
-                let imgTag = cover ? `<img src="${cover}" style="width:45px; height:45px; object-fit:cover; border-radius:6px;">` : '📦';
-                container.innerHTML += `<div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:8px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        ${imgTag}
-                        <div><b>#${p.serial} - ${p.name}</b> (${p.price} ج.م)<br><small style="color:#059669;">المالك: ${p.ownerName || 'غير مسجل'}</small></div>
-                    </div>
-                    <div style="display:flex; gap:4px;">
-                        <button class="btn-info" onclick="openEditProductModal(${i})" style="padding:5px 8px; margin:0; font-size:11px;">تعديل</button>
-                        <button class="btn-danger" onclick="deleteProduct(${i})" style="padding:5px 8px; margin:0; font-size:11px;">حذف</button>
-                    </div>
-                </div>`;
-            });
-        }
-
-        function deleteProduct(i) {
-            if(confirm("هل أنت متأكد من حذف هذا المنتج؟")) {
-                localProducts.splice(i, 1);
-                saveToLocalStorage();
-                renderProducts();
-            }
-        }
-
-        // الأوامر الباقية للطلبات والكتالوج
-        function openNewOrderModal() { document.getElementById('order-modal').classList.remove('hidden'); }
-        function closeOrderModal() { document.getElementById('order-modal').classList.add('hidden'); }
-        function saveOrderFromModal() {
-            let itemNeeded = document.getElementById('order-item').value.trim();
-            let clientName = document.getElementById('order-client-name').value.trim();
-            let clientPhone = document.getElementById('order-client-phone').value.trim();
-            let clientAddress = document.getElementById('order-client-address').value.trim();
-            if(!itemNeeded || !clientName || !clientPhone) { alert("أكمل بيانات الطلب الأساسية"); return; }
-            localOrders.push({ id: Date.now(), itemNeeded, clientName, clientPhone, clientAddress, date: new Date().toLocaleDateString('ar-EG') });
-            saveToLocalStorage(); renderOrders(); closeOrderModal();
-        }
-        function renderOrders() {
-            let container = document.getElementById('orders-list-container');
-            container.innerHTML = localOrders.length === 0 ? '<p style="text-align:center; color:#94a3b8;">لا توجد طلبات مسجلة.</p>' : '';
-            localOrders.forEach((o, i) => {
-                container.innerHTML += `<div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:8px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
-                    <div><b>🛒 ${o.itemNeeded}</b><br><small style="color:#1b4982;">👤 ${o.clientName} (${o.clientPhone})</small></div>
-                    <button class="btn-danger" onclick="localOrders.splice(${i},1); saveToLocalStorage(); renderOrders();" style="padding:4px 8px; margin:0; font-size:11px;">حذف</button>
-                </div>`;
-            });
-        }
-
-        function openCatalogPreview() {
-            let content = document.getElementById('catalog-preview-content');
-            content.innerHTML = '';
-            if(localProducts.length === 0) { alert("أضف منتجات أولاً!"); return; }
-            localProducts.forEach(p => {
-                content.innerHTML += `<div style="border:1px solid #cbd5e1; border-radius:8px; padding:8px; margin-bottom:8px; background:#f8fafc;">
-                    <b>كود #${p.serial}: ${p.name}</b><br>السعر: ${p.price} ج.م<br><small>${p.desc || ''}</small>
-                </div>`;
-            });
-            document.getElementById('catalog-modal').classList.remove('hidden');
-        }
-        function closeCatalogModal() { document.getElementById('catalog-modal').classList.add('hidden'); }
-        function shareCatalogWithImages() { alert("تم تجهيز الكتالوج للمشاركة!"); }
-        function shareCatalogTextOnly() {
-            let text = "📋 عروض الوسيط الحالية:\n";
-            localProducts.forEach(p => { text += `• #${p.serial} ${p.name} - ${p.price} ج.م\n`; });
-            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-        }
-    </script>
-</body>
-</html>
+            localStorage.setItem('crow_platform_sub', document.
