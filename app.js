@@ -22,9 +22,26 @@ function handleLogin() {
     currentWaseetPhone = phone;
     currentWaseetName = savedName;
 
+    // تهيئة تواريخ الاشتراك الافتراضية لو غير موجودة
+    if(!localStorage.getItem('crow_sub_start_' + phone)) {
+        let today = new Date().toISOString().split('T')[0];
+        let weekLater = new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0];
+        localStorage.setItem('crow_sub_start_' + phone, today);
+        localStorage.setItem('crow_sub_end_' + phone, weekLater);
+    }
+
     showScreen('waseet-dashboard');
     document.getElementById('waseet-welcome-text').innerText = `أهلاً بك يا ${savedName}`;
+    
+    // عرض اللوجو المعتمد للسوبر أدمن في هيدر الوسيط
+    let savedLogo = localStorage.getItem('crow_platform_logo');
+    let logoContainer = document.getElementById('waseet-top-logo-container');
+    if (savedLogo && logoContainer) {
+        logoContainer.innerHTML = `<img src="${savedLogo}" class="logo-img" alt="Logo">`;
+    }
+
     updateWaseetReferralDisplay(phone);
+    updateWaseetSubscriptionUI(phone);
     loadLocalData(phone);
 }
 
@@ -37,13 +54,28 @@ function handleRegister() {
     if(!name || !phone || !pin || !gov || !prof) { alert("أكمل الحقول الإجبارية"); return; }
     
     localStorage.setItem('crow_waseet_name_' + phone, name);
+    
+    // منح أسبوع تجريبي مجاني عند التسجيل لأول مرة
+    let today = new Date().toISOString().split('T')[0];
+    let weekLater = new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0];
+    localStorage.setItem('crow_sub_start_' + phone, today);
+    localStorage.setItem('crow_sub_end_' + phone, weekLater);
+
     currentWaseetPhone = phone;
     currentWaseetName = name;
 
     alert("تم إنشاء حسابك ومنحك أسبوعاً تجريبياً مجانياً!");
     showScreen('waseet-dashboard');
     document.getElementById('waseet-welcome-text').innerText = `أهلاً بك يا ${name} (${prof} - ${gov})`;
+    
+    let savedLogo = localStorage.getItem('crow_platform_logo');
+    let logoContainer = document.getElementById('waseet-top-logo-container');
+    if (savedLogo && logoContainer) {
+        logoContainer.innerHTML = `<img src="${savedLogo}" class="logo-img" alt="Logo">`;
+    }
+
     updateWaseetReferralDisplay(phone);
+    updateWaseetSubscriptionUI(phone);
     loadLocalData(phone);
 }
 
@@ -53,8 +85,23 @@ function loginAsDemoUser() {
     currentWaseetPhone = demoPhone;
     currentWaseetName = demoName;
 
+    if(!localStorage.getItem('crow_sub_start_' + demoPhone)) {
+        let today = new Date().toISOString().split('T')[0];
+        let weekLater = new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0];
+        localStorage.setItem('crow_sub_start_' + demoPhone, today);
+        localStorage.setItem('crow_sub_end_' + demoPhone, weekLater);
+    }
+
     showScreen('waseet-dashboard');
     document.getElementById('waseet-welcome-text').innerText = `مرحباً بك يا ${demoName}`;
+    
+    let savedLogo = localStorage.getItem('crow_platform_logo');
+    let logoContainer = document.getElementById('waseet-top-logo-container');
+    if (savedLogo && logoContainer) {
+        logoContainer.innerHTML = `<img src="${savedLogo}" class="logo-img" alt="Logo">`;
+    }
+
     updateWaseetReferralDisplay(demoPhone);
+    updateWaseetSubscriptionUI(demoPhone);
     loadLocalData(demoPhone);
 }
