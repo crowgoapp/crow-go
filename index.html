@@ -231,4 +231,183 @@
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('register-screen').classList.add('hidden');
             document.getElementById('admin-dashboard').classList.add('hidden');
-            document.getElementById('waseet-dashboard').class
+            document.getElementById('waseet-dashboard').classList.add('hidden');
+            document.getElementById('impersonate-banner').classList.add('hidden');
+
+            document.getElementById(screenId).classList.remove('hidden');
+        }
+
+        let logoClicks = 0;
+        let clickTimer = null;
+        function handleLogoClick() {
+            logoClicks++;
+            clearTimeout(clickTimer);
+            if (logoClicks === 3) {
+                logoClicks = 0;
+                let password = prompt("أدخل كلمة مرور السوبر أدمن:");
+                if (password === "admin123") {
+                    loadAdminData();
+                    showScreen('admin-dashboard');
+                } else if(password !== null) {
+                    alert("كلمة المرور غير صحيحة!");
+                }
+            } else {
+                clickTimer = setTimeout(() => { logoClicks = 0; }, 600);
+            }
+        }
+
+        function loadAdminData() {
+            document.getElementById('admin-subtitle-input').value = appSettings.subtitle;
+            document.getElementById('admin-whatsapp').value = appSettings.whatsapp;
+            renderAdminTable();
+        }
+
+        function renderAdminTable() {
+            const tbody = document.getElementById('admin-waseets-tbody');
+            const govFilter = document.getElementById('filter-gov').value;
+            const profFilter = document.getElementById('filter-prof').value;
+            tbody.innerHTML = '';
+
+            const filtered = mockWaseets.filter(w => {
+                return (govFilter === "" || w.governorate === govFilter) && 
+                       (profFilter === "" || w.profession === profFilter);
+            });
+
+            if(filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7">لا يوجد وسطاء مطابقين للفلتر</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(w => {
+                let badgeClass = 'badge-green';
+                let statusText = w.end_date;
+                if(w.status === 'expiring') {
+                    badgeClass = 'badge-yellow';
+                    statusText += ' (قرب الانتهاء)';
+                } else if(w.status === 'expired') {
+                    badgeClass = 'badge-red';
+                    statusText += ' (منتهي)';
+                } else if(w.status === 'blocked') {
+                    badgeClass = 'badge-red';
+                    statusText = 'محظور';
+                }
+
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><b>${w.name}</b><br><small>${w.phone}</small><br><small style="color:#1b4982; font-weight:bold;">PIN: ${w.pin}</small></td>
+                    <td>${w.governorate}</td>
+                    <td>${w.profession}</td>
+                    <td><b>📦 ${w.products_count}</b></td>
+                    <td><b>🛒 ${w.orders_count}</b></td>
+                    <td><span class="${badgeClass}">${statusText}</span></td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn btn-warning" onclick="extendSub(${w.id}, 30)">+شهر</button>
+                            <button class="btn btn-warning" onclick="extendSub(${w.id}, 7)">+أسبوع</button>
+                            <button class="btn btn-info" onclick="changePin(${w.id})">PIN</button>
+                            <button class="btn btn-danger" onclick="toggleBlock(${w.id})">${w.status === 'blocked' ? 'فك الحظر' : 'حظر'}</button>
+                            <button class="btn btn-success" onclick="impersonate(${w.id})">دخول</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function extendSub(id, days) {
+            let w = mockWaseets.find(x => x.id === id);
+            alert(`تم تجديد اشتراك الوسيط ${w.name} لمدة ${days} يوم بنجاح!`);
+            w.status = 'active';
+            renderAdminTable();
+        }
+
+        function changePin(id) {
+            let w = mockWaseets.find(x => x.id === id);
+            let newPin = prompt(`الرقم السري الحالي للوسيط ${w.name} هو (${w.pin}).\nأدخل الرقم السري الجديد (4 أرقام):`);
+            if (newPin && newPin.length === 4 && !isNaN(newPin)) {
+                w.pin = newPin;
+                alert(`تم تغيير الـ PIN للوسيط ${w.name} إلى ${newPin}`);
+                renderAdminTable();
+            } else if (newPin !== null) {
+                alert("يجب أن يتكون الـ PIN من 4 أرقام صحيحة.");
+            }
+        }
+
+        function toggleBlock(id) {
+            let w = mockWaseets.find(x => x.id === id);
+            w.status = (w.status === 'blocked') ? 'active' : 'blocked';
+            alert(`تم ${w.status === 'blocked' ? 'حظر' : 'تفعيل'} حساب الوسيط ${w.name}`);
+            renderAdminTable();
+        }
+
+        function impersonate(id) {
+            let w = mockWaseets.find(x => x.id === id);
+            showScreen('waseet-dashboard');
+            document.getElementById('welcome-user').innerText = `أهلاً بك - حساب الوسيط: ${w.name} (${w.governorate})`;
+            document.getElementById('impersonate-banner').classList.remove('hidden');
+        }
+
+        let newLogoBase64 = "";
+        function previewLogo(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    newLogoBase64 = e.target.result;
+                    const preview = document.getElementById('logo-preview');
+                    preview.src = newLogoBase64;
+                    preview.classList.remove('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function saveAdminSettings() {
+            appSettings.subtitle = document.getElementById('admin-subtitle-input').value;
+            appSettings.whatsapp = document.getElementById('admin-whatsapp').value;
+            if (newLogoBase64) {
+                appSettings.logoType = 'image';
+                appSettings.logoValue = newLogoBase64;
+            }
+            applySettingsToUI();
+            alert("تم حفظ إعدادات المنصة وتحديث الواجهة بنجاح!");
+            showScreen('landing-screen');
+        }
+
+        function applySettingsToUI() {
+            const container = document.getElementById('logo-container');
+            if (appSettings.logoType === 'image') {
+                container.innerHTML = `<img src="${appSettings.logoValue}" class="logo-img" alt="Logo"/>`;
+            } else {
+                container.innerHTML = `<div class="logo-text">${appSettings.logoValue}</div>`;
+            }
+            document.getElementById('display-subtitle').innerText = appSettings.subtitle;
+        }
+
+        function handleLogin() {
+            const phone = document.getElementById('login-phone').value;
+            const pin = document.getElementById('login-pin').value;
+            if(!phone || !pin) { alert("يرجى إدخال رقم الهاتف والرقم السري"); return; }
+            showScreen('waseet-dashboard');
+            document.getElementById('welcome-user').innerText = `أهلاً بك - هاتف: ${phone}`;
+        }
+
+        function handleRegister() {
+            const name = document.getElementById('reg-name').value;
+            const phone = document.getElementById('reg-phone').value;
+            const pin = document.getElementById('reg-pin').value;
+            const gov = document.getElementById('reg-gov').value;
+            const prof = document.getElementById('reg-prof').value;
+            if(!name || !phone || !pin || !gov || !prof) { alert("يرجى إكمال جميع الحقول الإجبارية"); return; }
+            if(pin.length !== 4) { alert("الرقم السري يجب أن يكون 4 أرقام بالضبط"); return; }
+            alert("تم إنشاء الحساب بنجاح وتم منحك أسبوعاً تجريبياً مجانياً!");
+            showScreen('waseet-dashboard');
+            document.getElementById('welcome-user').innerText = `أهلاً بك يا ${name} (${prof} - ${gov})`;
+        }
+
+        function exitWaseetPanel() {
+            showScreen('landing-screen');
+        }
+    </script>
+</body>
+</html>
