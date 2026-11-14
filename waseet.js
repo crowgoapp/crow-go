@@ -28,7 +28,7 @@ function switchWaseetTab(tabName) {
     }
 }
 
-// دالة الدخول المباشر للوسيط من لوحة الأدمن
+// دخول مباشر للوسيط (من لوحة الأدمن) مع تفعيل اللوجو وتحديث بيانات الاشتراك والإحالات
 function loginAsWaseetDirectly(phone, waseetName) {
     currentWaseetPhone = phone;
     currentWaseetName = waseetName || `وسيط (${phone})`;
@@ -37,12 +37,51 @@ function loginAsWaseetDirectly(phone, waseetName) {
         localStorage.setItem('crow_waseet_name_' + phone, currentWaseetName);
     }
 
+    if(!localStorage.getItem('crow_sub_start_' + phone)) {
+        let today = new Date().toISOString().split('T')[0];
+        let weekLater = new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0];
+        localStorage.setItem('crow_sub_start_' + phone, today);
+        localStorage.setItem('crow_sub_end_' + phone, weekLater);
+    }
+
     document.getElementById('admin-dashboard').classList.add('hidden');
     document.getElementById('waseet-dashboard').classList.remove('hidden');
     
-    document.getElementById('waseet-welcome-text').innerText = `أهلاً بك يا ${currentWaseetName} (دخول إداري)`;
+    document.getElementById('waseet-welcome-text').innerText = `أهلاً بك يا ${currentWaseetName}`;
+    
+    // عرض لوجو السوبر أدمن حصرياً في هيدر الوسيط
+    let savedLogo = localStorage.getItem('crow_platform_logo');
+    let logoContainer = document.getElementById('waseet-top-logo-container');
+    if (savedLogo && logoContainer) {
+        logoContainer.innerHTML = `<img src="${savedLogo}" class="logo-img" alt="Logo">`;
+    }
+
     updateWaseetReferralDisplay(phone);
+    updateWaseetSubscriptionUI(phone);
     loadLocalData(phone);
+}
+
+function updateWaseetSubscriptionUI(phone) {
+    let start = localStorage.getItem('crow_sub_start_' + phone) || '2026-11-01';
+    let end = localStorage.getItem('crow_sub_end_' + phone) || '2026-12-01';
+    let refs = localStorage.getItem('crow_refs_' + phone) || '0';
+
+    document.getElementById('sub-start-date').innerText = start;
+    document.getElementById('sub-end-date').innerText = end;
+    document.getElementById('referral-progress-count').innerText = refs;
+
+    let endDate = new Date(end);
+    let today = new Date();
+    let diffDays = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+    
+    let badge = document.getElementById('sub-status-badge');
+    if (diffDays > 0) {
+        badge.className = "badge-green";
+        badge.innerText = `نشط (${diffDays} يوم متبقي)`;
+    } else {
+        badge.className = "badge-red";
+        badge.innerText = "منتهي الاشتراك";
+    }
 }
 
 function getWaseetReferralCode(phone) {
@@ -240,7 +279,7 @@ function saveProductFromModal() {
         renderProducts();
         closeProductModal();
     } catch (e) {
-        alert("مساحة التخزين ممتلئة! يرجى حذف بعض المنتجات القديمة لتوفير مساحة.");
+        alert("مساحة التخزين ممتلئة! يرجى حذف بعض المنتجات القديمة.");
     }
 }
 
