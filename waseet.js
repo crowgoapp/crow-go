@@ -1,11 +1,7 @@
-// --- ملف إدارة الوسيط، المنتجات، والتخزين المحلي ---
-
 let localProducts = [];
-let currentWaseetPhone = "01000000000"; // رقم مؤقت لحين ربط تسجيل الدخول
+let currentWaseetPhone = "01000000000";
 
-// فتح مودال إضافة منتج
 function openAddProductModal() {
-    // لو مش عاملين شاشة المودال في الهيكل، هنخليها تظهر أو نتحكم فيها
     let name = prompt("أدخل اسم المنتج (مثال: شقة للبيع / ثلاجة):");
     if(!name) return;
     let price = prompt("أدخل السعر (بالجنيه):");
@@ -18,7 +14,6 @@ function openAddProductModal() {
         return;
     }
 
-    // توليد سيريال تسلسلي ثابت لا يتكرر أبداً للوسيط
     let nextSerial = localProducts.length > 0 ? localProducts[localProducts.length - 1].serial + 1 : 1;
 
     let newProd = {
@@ -37,12 +32,10 @@ function openAddProductModal() {
     alert(`تم حفظ المنتج برقم سيريال #${nextSerial} بنجاح!`);
 }
 
-// حفظ البيانات محلياً على الجهاز
 function saveToLocalStorage() {
     localStorage.setItem('crow_prods_' + currentWaseetPhone, JSON.stringify(localProducts));
 }
 
-// تحميل المنتجات عند فتح حساب الوسيط
 function loadLocalProducts(phone) {
     if(phone) currentWaseetPhone = phone;
     let saved = localStorage.getItem('crow_prods_' + currentWaseetPhone);
@@ -54,10 +47,9 @@ function loadLocalProducts(phone) {
     renderProducts();
 }
 
-// عرض المنتجات في الواجهة
 function renderProducts() {
     let container = document.getElementById('products-list-container');
-    if(!container) return; // لو مش موجودة حالياً في الصفحة نتخطى
+    if(!container) return;
     
     container.innerHTML = '';
     if(localProducts.length === 0) {
