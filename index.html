@@ -39,7 +39,14 @@
             text-align: center;
             margin-bottom: 24px;
         }
-        .logo {
+        .logo-img {
+            max-height: 60px;
+            max-width: 100%;
+            object-fit: contain;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+        .logo-text {
             font-size: 32px;
             font-weight: bold;
             color: var(--secondary-blue);
@@ -67,6 +74,10 @@
             background: #e2e8f0;
             color: var(--primary-blue);
         }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
         .btn:active {
             transform: scale(0.98);
         }
@@ -80,7 +91,7 @@
             color: var(--primary-blue);
             font-weight: bold;
         }
-        .input-group input, .input-group select {
+        .input-group input, .input-group select, .input-group textarea {
             width: 100%;
             padding: 12px;
             border: 1px solid var(--silver-dark);
@@ -116,12 +127,14 @@
 <body>
 
     <div class="container">
-        <!-- 1. الصفحة الرئيسية (التعريف بالمنصة ومميزاتها) -->
+        <!-- 1. الصفحة الرئيسية -->
         <div id="landing-screen">
             <div class="header">
-                <!-- الضغط 3 مرات هنا سيفتح شاشة السوبر أدمن -->
-                <div class="logo" id="logo-click-area">🦅 Crow Go</div>
-                <div class="subtitle">منظومة الإدارة الذكية للوسطاء الميدانيين (عقارات، سيارات، دليفري، وخدمات)</div>
+                <!-- الضغط 3 مرات هنا يفتح نافذة باسورد السوبر أدمن -->
+                <div id="logo-container" onclick="handleLogoClick()">
+                    <div class="logo-text" id="display-logo-text">🦅 Crow Go</div>
+                </div>
+                <div class="subtitle" id="display-subtitle">منظومة الإدارة الذكية للوسطاء الميدانيين (عقارات، سيارات، دليفري، وخدمات)</div>
             </div>
 
             <div class="features-box">
@@ -137,7 +150,7 @@
             <button class="btn btn-secondary" onclick="showScreen('register-screen')">حساب جديد (أسبوع تجريبي مجاني)</button>
         </div>
 
-        <!-- 2. شاشة تسجيل الدخول (للمستخدم الحالي) -->
+        <!-- 2. شاشة تسجيل الدخول -->
         <div id="login-screen" class="hidden">
             <div class="header">
                 <h2>تسجيل الدخول</h2>
@@ -160,7 +173,7 @@
             </div>
         </div>
 
-        <!-- 3. شاشة حساب جديد (للمستخدم الجديد) -->
+        <!-- 3. شاشة حساب جديد -->
         <div id="register-screen" class="hidden">
             <div class="header">
                 <h2>إنشاء حساب جديد</h2>
@@ -200,7 +213,7 @@
 
             <div class="input-group">
                 <label>كود الدعوة (اختياري)</label>
-                <input type="text" id="reg-ref" placeholder="لو دعك صديق اكتب الكود هنا" />
+                <input type="text" id="reg-ref" placeholder="لو دعاك صديق اكتب الكود هنا" />
             </div>
 
             <button class="btn" onclick="handleRegister()">إنشاء الحساب وبدء الأسبوع المجاني</button>
@@ -209,39 +222,137 @@
             </div>
         </div>
 
-        <!-- 4. لوحة تحكم الوسيط (المؤقتة للاختبار) -->
+        <!-- 4. لوحة تحكم السوبر أدمن (التحكم باللوجو والنصوص) -->
+        <div id="admin-dashboard" class="hidden">
+            <div class="header">
+                <h2>لوحة السوبر أدمن 👑</h2>
+                <div class="subtitle">التحكم في الهوية البصرية، النصوص، وإدارة الوسطاء</div>
+            </div>
+
+            <div class="features-box">
+                <div class="input-group">
+                    <label>تغيير اللوجو (اختر صورة من جهازك)</label>
+                    <input type="file" id="admin-logo-file" accept="image/*" onchange="previewLogo(event)" />
+                </div>
+                <div class="text-center" style="margin-bottom: 15px;">
+                    <img id="logo-preview" src="" class="hidden" style="max-height: 50px;" alt="معاينة اللوجو"/>
+                </div>
+
+                <div class="input-group">
+                    <label>عنوان الواجهة الرئيسية (Subtitle)</label>
+                    <textarea id="admin-subtitle-input" rows="2">منظومة الإدارة الذكية للوسطاء الميدانيين (عقارات، سيارات، دليفري، وخدمات)</textarea>
+                </div>
+
+                <div class="input-group">
+                    <label>رقم واتساب الإدارة (للتجديد والحظر)</label>
+                    <input type="text" id="admin-whatsapp" placeholder="2010XXXXXXXX" value="201000000000" />
+                </div>
+
+                <button class="btn" onclick="saveAdminSettings()">حفظ التعديلات وتحديث الواجهة فوراً</button>
+            </div>
+
+            <button class="btn btn-secondary" onclick="showScreen('landing-screen')">خروج من لوحة الأدمن</button>
+        </div>
+
+        <!-- 5. لوحة تحكم الوسيط -->
         <div id="waseet-dashboard" class="hidden">
             <div class="header">
                 <h2>لوحة الوسيط الذكي</h2>
                 <p id="welcome-user" style="font-weight: bold; color: var(--secondary-blue);"></p>
             </div>
             <div class="features-box text-center">
-                مرحباً بك في مساحة عملك الخاصة. سيتم تحميل أدوات إضافة المنتجات والمجلات هنا في الخطوة القادمة.
+                مرحباً بك في مساحة عملك الخاصة. سيتم تحميل أدوات إضافة المنتجات والمجلات هنا.
             </div>
-            <button class="btn btn-secondary" onclick="logout()">تسجيل الخروج</button>
+            <button class="btn btn-secondary" onclick="showScreen('landing-screen')">تسجيل الخروج</button>
         </div>
     </div>
 
     <script>
-        // التنقل بين الشاشات بسلاسة
+        // الذاكرة المؤقتة للإعدادات (سيتم ربطها بقاعدة البيانات لاحقاً)
+        let appSettings = {
+            logoType: 'text', // 'text' or 'image'
+            logoValue: '🦅 Crow Go',
+            subtitle: 'منظومة الإدارة الذكية للوسطاء الميدانيين (عقارات، سيارات، دليفري، وخدمات)',
+            whatsapp: '201000000000'
+        };
+
         function showScreen(screenId) {
             document.getElementById('landing-screen').classList.add('hidden');
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('register-screen').classList.add('hidden');
+            document.getElementById('admin-dashboard').classList.add('hidden');
             document.getElementById('waseet-dashboard').classList.add('hidden');
 
             document.getElementById(screenId).classList.remove('hidden');
         }
 
-        // محاكاة الضغط 3 مرات على اللوجو لفتح شاشة السوبر أدمن مستقبلاً
+        // خاصية الضغط 3 مرات على اللوجو لفتح لوحة الأدمن
         let logoClicks = 0;
-        document.getElementById('logo-click-area').addEventListener('click', () => {
+        let clickTimer = null;
+        function handleLogoClick() {
             logoClicks++;
+            clearTimeout(clickTimer);
             if (logoClicks === 3) {
-                alert("تم تفعيل وضع السوبر أدمن (سيتم ربطه قريباً)");
                 logoClicks = 0;
+                let password = prompt("أدخل كلمة مرور السوبر أدمن (Master Password):");
+                if (password === "admin123") { // كلمة المرور الافتراضية المؤقتة
+                    loadAdminSettings();
+                    showScreen('admin-dashboard');
+                } else if(password !== null) {
+                    alert("كلمة المرور غير صحيحة!");
+                }
+            } else {
+                clickTimer = setTimeout(() => { logoClicks = 0; }, 600);
             }
-        });
+        }
+
+        // معاينة اللوجو المرفوع
+        let newLogoBase64 = "";
+        function previewLogo(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    newLogoBase64 = e.target.result;
+                    const preview = document.getElementById('logo-preview');
+                    preview.src = newLogoBase64;
+                    preview.classList.remove('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // تحميل الإعدادات في لوحة الأدمن
+        function loadAdminSettings() {
+            document.getElementById('admin-subtitle-input').value = appSettings.subtitle;
+            document.getElementById('admin-whatsapp').value = appSettings.whatsapp;
+        }
+
+        // حفظ إعدادات الأدمن وتحديث الواجهة
+        function saveAdminSettings() {
+            appSettings.subtitle = document.getElementById('admin-subtitle-input').value;
+            appSettings.whatsapp = document.getElementById('admin-whatsapp').value;
+            
+            if (newLogoBase64) {
+                appSettings.logoType = 'image';
+                appSettings.logoValue = newLogoBase64;
+            }
+
+            applySettingsToUI();
+            alert("تم حفظ وتحديث إعدادات الواجهة واللوجو بنجاح!");
+            showScreen('landing-screen');
+        }
+
+        // تطبيق الإعدادات على الواجهة الرئيسية للجميع
+        function applySettingsToUI() {
+            const container = document.getElementById('logo-container');
+            if (appSettings.logoType === 'image') {
+                container.innerHTML = `<img src="${appSettings.logoValue}" class="logo-img" alt="Logo"/>`;
+            } else {
+                container.innerHTML = `<div class="logo-text">${appSettings.logoValue}</div>`;
+            }
+            document.getElementById('display-subtitle').innerText = appSettings.subtitle;
+        }
 
         function handleLogin() {
             const phone = document.getElementById('login-phone').value;
@@ -262,7 +373,7 @@
             const prof = document.getElementById('reg-prof').value;
 
             if(!name || !phone || !pin || !gov || !prof) {
-                alert("يرجى إكمال جميع الحقول الإجبارية (المحافظة والمهنة أساسيتان)");
+                alert("يرجى إكمال جميع الحقول الإجبارية");
                 return;
             }
             if(pin.length !== 4) {
@@ -273,10 +384,6 @@
             alert("تم إنشاء الحساب بنجاح وتم منحك أسبوعاً تجريبياً مجانياً!");
             showScreen('waseet-dashboard');
             document.getElementById('welcome-user').innerText = `أهلاً بك يا ${name} (${prof} - ${gov})`;
-        }
-
-        function logout() {
-            showScreen('landing-screen');
         }
     </script>
 </body>
