@@ -1,7 +1,8 @@
 let localProducts = [];
 let localOrders = [];
 let currentWaseetPhone = "01000000000";
-let currentTempProductImage = "";
+let currentTempProductImages = [];
+let generatedCatalogImageFiles = []; // لتخزين بوسترات الكتالوج المولدة كصور
 
 function switchWaseetTab(tabName) {
     let prodDiv = document.getElementById('waseet-tab-products');
@@ -26,53 +27,87 @@ function switchWaseetTab(tabName) {
     }
 }
 
-// --- رفع وضغط صورة المنتج من الموبايل ---
-function handleProductImageUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+// --- رفع وضغط عدة صور للمنتج من الموبايل ---
+function handleProductImagesUpload(event) {
+    const files = Array.from(event.target.files);
+    if (!files.length) return;
 
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const img = new Image();
-        img.onload = function() {
-            const canvas = document.createElement('canvas');
-            const maxDim = 500; // ضغط ذكي للحفاظ على مساحة التخزين
-            let width = img.width;
-            let height = img.height;
+    files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const maxDim = 600; 
+                let width = img.width;
+                let height = img.height;
 
-            if (width > height) {
-                if (width > maxDim) {
-                    height *= maxDim / width;
-                    width = maxDim;
+                if (width > height) {
+                    if (width > maxDim) {
+                        height *= maxDim / width;
+                        width = maxDim;
+                    }
+                } else {
+                    if (height > maxDim) {
+                        width *= maxDim / height;
+                        height = maxDim;
+                    }
                 }
-            } else {
-                if (height > maxDim) {
-                    width *= maxDim / height;
-                    height = maxDim;
-                }
-            }
 
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
 
-            currentTempProductImage = canvas.toDataURL('image/jpeg', 0.7);
-            document.getElementById('prod-img-preview-box').innerHTML = 
-                `<img src="${currentTempProductImage}" style="max-height:110px; border-radius:8px; border:1px solid #cbd5e1;">`;
+                const compressedBase64 = canvas.toDataURL('image/jpeg', 0.75);
+                currentTempProductImages.push({
+                    data: compressedBase64,
+                    inCatalog: true
+                });
+                renderTempImagesGallery();
+            };
+            img.src = e.target.result;
         };
-        img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
+        reader.readAsDataURL(file);
+    });
+    event.target.value = '';
 }
 
-// --- فتح نافذة إضافة أو معاينة/تعديل المنتج ---
+function renderTempImagesGallery() {
+    const gallery = document.getElementById('prod-images-gallery');
+    gallery.innerHTML = '';
+
+    currentTempProductImages.forEach((imgObj, idx) => {
+        const card = document.createElement('div');
+        card.style.cssText = `border: 2px solid ${imgObj.inCatalog ? '#10b981' : '#cbd5e1'}; border-radius: 8px; padding: 4px; background: #fff; text-align: center; width: 85px; position: relative;`;
+        
+        card.innerHTML = `
+            <button type="button" onclick="removeTempImage(${idx})" style="position:absolute; top:-6px; left:-6px; background:#ef4444; color:white; border:none; border-radius:50%; width:20px; height:20px; font-size:11px; cursor:pointer; font-weight:bold;">×</button>
+            <img src="${imgObj.data}" style="width:100%; height:65px; object-fit:cover; border-radius:5px; display:block; margin-bottom:4px;">
+            <label style="font-size:10px; display:flex; align-items:center; justify-content:center; gap:3px; cursor:pointer; color:${imgObj.inCatalog ? '#059669' : '#64748b'}; font-weight:bold; margin:0;">
+                <input type="checkbox" ${imgObj.inCatalog ? 'checked' : ''} onchange="toggleTempImageCatalog(${idx})" style="width:auto; margin:0;">
+                في الكتالوج
+            </label>
+        `;
+        gallery.appendChild(card);
+    });
+}
+
+function toggleTempImageCatalog(idx) {
+    currentTempProductImages[idx].inCatalog = !currentTempProductImages[idx].inCatalog;
+    renderTempImagesGallery();
+}
+
+function removeTempImage(idx) {
+    currentTempProductImages.splice(idx, 1);
+    renderTempImagesGallery();
+}
+
 function openProductModal(index = -1) {
     document.getElementById('edit-prod-index').value = index;
     document.getElementById('prod-img-file').value = '';
 
     if (index === -1) {
-        // وضع الإضافة الجديدة
         document.getElementById('prod-modal-title').innerText = "➕ إضافة منتج جديد";
         document.getElementById('prod-name').value = '';
         document.getElementById('prod-price').value = '';
@@ -80,10 +115,8 @@ function openProductModal(index = -1) {
         document.getElementById('prod-owner-name').value = '';
         document.getElementById('prod-owner-phone').value = '';
         document.getElementById('prod-owner-address').value = '';
-        document.getElementById('prod-img-preview-box').innerHTML = '';
-        currentTempProductImage = '';
+        currentTempProductImages = [];
     } else {
-        // وضع المعاينة والتعديل
         let p = localProducts[index];
         document.getElementById('prod-modal-title').innerText = `✏️ معاينة وتعديل منتج (#${p.serial})`;
         document.getElementById('prod-name').value = p.name;
@@ -92,11 +125,17 @@ function openProductModal(index = -1) {
         document.getElementById('prod-owner-name').value = p.ownerName;
         document.getElementById('prod-owner-phone').value = p.ownerPhone;
         document.getElementById('prod-owner-address').value = p.ownerAddress;
-        currentTempProductImage = p.image || '';
-        document.getElementById('prod-img-preview-box').innerHTML = currentTempProductImage ? 
-            `<img src="${currentTempProductImage}" style="max-height:110px; border-radius:8px; border:1px solid #cbd5e1;">` : '';
+        
+        if (Array.isArray(p.images)) {
+            currentTempProductImages = JSON.parse(JSON.stringify(p.images));
+        } else if (p.image) {
+            currentTempProductImages = [{ data: p.image, inCatalog: true }];
+        } else {
+            currentTempProductImages = [];
+        }
     }
 
+    renderTempImagesGallery();
     document.getElementById('product-modal').classList.remove('hidden');
 }
 
@@ -125,29 +164,37 @@ function saveProductFromModal() {
             name: name,
             price: price,
             desc: desc,
-            image: currentTempProductImage,
+            images: currentTempProductImages,
             ownerName: ownerName,
             ownerPhone: ownerPhone,
             ownerAddress: ownerAddress,
             selectedForCatalog: true
         });
     } else {
-        // تحديث المنتج مع الحفاظ على السيريال الثابت
         localProducts[index].name = name;
         localProducts[index].price = price;
         localProducts[index].desc = desc;
-        localProducts[index].image = currentTempProductImage;
+        localProducts[index].images = currentTempProductImages;
         localProducts[index].ownerName = ownerName;
         localProducts[index].ownerPhone = ownerPhone;
         localProducts[index].ownerAddress = ownerAddress;
     }
 
-    saveToLocalStorage();
-    renderProducts();
-    closeProductModal();
+    try {
+        saveToLocalStorage();
+        renderProducts();
+        closeProductModal();
+    } catch (e) {
+        alert("مساحة التخزين ممتلئة! يرجى تقليل عدد الصور أو حذف منتجات قديمة.");
+    }
 }
 
-// --- فتح نافذة إضافة أو معاينة/تعديل الطلب ---
+function toggleProductCatalogSelection(index) {
+    localProducts[index].selectedForCatalog = !localProducts[index].selectedForCatalog;
+    saveToLocalStorage();
+}
+
+// --- نافذة الطلبات ---
 function openOrderModal(index = -1) {
     document.getElementById('edit-order-index').value = index;
 
@@ -224,7 +271,6 @@ function loadLocalData(phone) {
     renderOrders();
 }
 
-// --- عرض المنتجات مع أزرار المعاينة/التعديل والحذف ---
 function renderProducts() {
     let container = document.getElementById('products-list-container');
     if(!container) return;
@@ -236,20 +282,28 @@ function renderProducts() {
     }
 
     localProducts.forEach((p, index) => {
+        let imagesArr = Array.isArray(p.images) ? p.images : (p.image ? [{data: p.image, inCatalog: true}] : []);
+        let coverImg = imagesArr.length > 0 ? imagesArr[0].data : '';
+        let catalogImgsCount = imagesArr.filter(i => i.inCatalog).length;
+
         let div = document.createElement('div');
         div.style.cssText = "background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; font-size:13px; gap:8px;";
         
-        let imgTag = p.image 
-            ? `<img src="${p.image}" onclick="openProductModal(${index})" style="width:52px; height:52px; object-fit:cover; border-radius:8px; flex-shrink:0; cursor:pointer;" />` 
-            : `<div onclick="openProductModal(${index})" style="width:52px; height:52px; background:#f1f5f9; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; cursor:pointer;">📦</div>`;
+        let imgTag = coverImg 
+            ? `<div style="position:relative; flex-shrink:0;" onclick="openProductModal(${index})">
+                 <img src="${coverImg}" style="width:54px; height:54px; object-fit:cover; border-radius:8px; cursor:pointer;" />
+                 <span style="position:absolute; bottom:2px; right:2px; background:rgba(0,0,0,0.7); color:white; font-size:9px; padding:1px 4px; border-radius:4px;">📷 ${catalogImgsCount}/${imagesArr.length}</span>
+               </div>` 
+            : `<div onclick="openProductModal(${index})" style="width:54px; height:54px; background:#f1f5f9; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; cursor:pointer;">📦</div>`;
 
         div.innerHTML = `
-            <div style="display:flex; align-items:center; gap:10px; flex:1; cursor:pointer;" onclick="openProductModal(${index})">
+            <input type="checkbox" ${p.selectedForCatalog !== false ? 'checked' : ''} onchange="toggleProductCatalogSelection(${index})" title="تضمين في الكتالوج" style="width:18px; height:18px; cursor:pointer; flex-shrink:0;">
+            <div style="display:flex; align-items:center; gap:8px; flex:1; cursor:pointer;" onclick="openProductModal(${index})">
                 ${imgTag}
                 <div>
                     <span style="background:#1b4982; color:white; padding:2px 6px; border-radius:4px; font-size:11px; font-weight:bold;">#${p.serial}</span>
                     <b>${p.name}</b> - 💰 ${p.price} ج.م<br>
-                    <small style="color:#64748b;">${p.desc || 'بدون وصف إضافي'}</small><br>
+                    <small style="color:#64748b;">${p.desc || 'بدون وصف'}</small><br>
                     <small style="color:#059669; font-weight:bold;">🔒 المالك: ${p.ownerName || '-'} | ${p.ownerPhone || '-'}</small>
                 </div>
             </div>
@@ -262,7 +316,6 @@ function renderProducts() {
     });
 }
 
-// --- عرض الطلبات مع أزرار المعاينة/التعديل والحذف ---
 function renderOrders() {
     let container = document.getElementById('orders-list-container');
     if(!container) return;
@@ -307,21 +360,186 @@ function deleteOrder(index) {
     }
 }
 
-function generateCatalog() {
-    if(localProducts.length === 0) {
-        alert("لا توجد منتجات لتصديرها في المجلة!");
+// =========================================================================
+// محرك توليد بوسترات الكتالوج كصور حقيقية (Flyers) بدون أي روابط نهائياً
+// =========================================================================
+
+function loadImageElement(src) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = src;
+    });
+}
+
+// رسم بوستر احترافي لكل منتج يجمع صوره المختارة + بياناته + الكود
+async function createProductFlyerBlob(product) {
+    let imagesArr = Array.isArray(product.images) ? product.images : (product.image ? [{data: product.image, inCatalog: true}] : []);
+    let catalogImgs = imagesArr.filter(i => i.inCatalog);
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const W = 800;
+    
+    // حساب الارتفاع حسب وجود صور أو تفاصيل
+    const hasImages = catalogImgs.length > 0;
+    const imgGridHeight = hasImages ? (catalogImgs.length === 1 ? 420 : (catalogImgs.length <= 2 ? 320 : 520)) : 0;
+    const H = 260 + imgGridHeight + (product.desc ? 80 : 0);
+
+    canvas.width = W;
+    canvas.height = H;
+
+    // الخلفية البيضاء النظيفة
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, H);
+
+    // الهيدر العلوي (أزرق ملكي)
+    ctx.fillStyle = '#0d233a';
+    ctx.fillRect(0, 0, W, 95);
+
+    // شارة كود المنتج (#1)
+    ctx.fillStyle = '#10b981';
+    ctx.beginPath();
+    ctx.roundRect(W - 180, 22, 150, 50, 12);
+    ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`كود #${product.serial}`, W - 105, 57);
+
+    // اسم المنصة في الهيدر
+    ctx.fillStyle = '#e2e8f0';
+    ctx.font = 'bold 24px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('🦅 Crow Go - عرض متاح', 30, 56);
+
+    // اسم المنتج
+    ctx.fillStyle = '#0d233a';
+    ctx.font = 'bold 34px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(product.name, W - 30, 150);
+
+    // السعر
+    ctx.fillStyle = '#059669';
+    ctx.font = 'bold 32px sans-serif';
+    ctx.fillText(`💰 السعر: ${product.price} ج.م`, W - 30, 200);
+
+    let currentY = 230;
+
+    // الوصف إن وجد
+    if (product.desc) {
+        ctx.fillStyle = '#475569';
+        ctx.font = '24px sans-serif';
+        ctx.fillText(`📝 ${product.desc.substring(0, 65)}`, W - 30, currentY + 15);
+        currentY += 65;
+    }
+
+    // رسم الصور المختارة للكتالوج
+    if (hasImages) {
+        const loadedImgs = await Promise.all(catalogImgs.slice(0, 4).map(i => loadImageElement(i.data)));
+        const validImgs = loadedImgs.filter(img => img !== null);
+
+        if (validImgs.length === 1) {
+            ctx.drawImage(validImgs[0], 30, currentY, W - 60, 400);
+        } else if (validImgs.length === 2) {
+            const boxW = (W - 75) / 2;
+            ctx.drawImage(validImgs[0], 30, currentY, boxW, 300);
+            ctx.drawImage(validImgs[1], 45 + boxW, currentY, boxW, 300);
+        } else if (validImgs.length >= 3) {
+            const boxW = (W - 75) / 2;
+            const boxH = 245;
+            ctx.drawImage(validImgs[0], 30, currentY, boxW, boxH);
+            ctx.drawImage(validImgs[1], 45 + boxW, currentY, boxW, boxH);
+            ctx.drawImage(validImgs[2], 30, currentY + boxH + 15, validImgs[3] ? boxW : (W - 60), boxH);
+            if (validImgs[3]) {
+                ctx.drawImage(validImgs[3], 45 + boxW, currentY + boxH + 15, boxW, boxH);
+            }
+        }
+    }
+
+    // الفوتر السفلي (بدون أي روابط - للطلب اذكر رقم الكود فقط)
+    ctx.fillStyle = '#f1f5f9';
+    ctx.fillRect(0, H - 55, W, 55);
+    ctx.fillStyle = '#1b4982';
+    ctx.font = 'bold 22px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`للاستعلام أو المعاينة يرجى مراسلتي وذكر رقم الكود (#${product.serial})`, W / 2, H - 20);
+
+    return new Promise(resolve => {
+        canvas.toBlob(blob => {
+            const file = new File([blob], `offer_code_${product.serial}.jpg`, { type: 'image/jpeg' });
+            resolve({ file, dataUrl: canvas.toDataURL('image/jpeg', 0.85) });
+        }, 'image/jpeg', 0.85);
+    });
+}
+
+// فتح معاينة البوسترات المصورة الجاهزة
+async function openCatalogPreview() {
+    const selectedProds = localProducts.filter(p => p.selectedForCatalog !== false);
+    if (selectedProds.length === 0) {
+        alert("يرجى تحديد منتج واحد على الأقل لتصديره في الكتالوج!");
         return;
     }
 
-    let text = "🦅 *مجلة عروض الوسيط الحالية* 🦅\n\n";
-    localProducts.forEach(p => {
-        text += `🔹 *كود (#${p.serial})*\n`;
-        text += `📦 *${p.name}*\n`;
+    const previewBox = document.getElementById('catalog-preview-content');
+    previewBox.innerHTML = `<p style="text-align:center; color:#1b4982; font-weight:bold;">⏳ جاري تجهيز بوسترات الكتالوج المصورة بدون روابط...</p>`;
+    document.getElementById('catalog-modal').classList.remove('hidden');
+
+    generatedCatalogImageFiles = [];
+    let htmlContent = `<div style="font-size:12px; color:#059669; background:#f0fdf4; padding:8px; border-radius:8px; margin-bottom:10px; text-align:center; font-weight:bold;">✅ تم تجهيز ${selectedProds.length} بوستر مصور (جاهز للإرسال المباشر كصور بدون أي روابط)</div>`;
+
+    for (const p of selectedProds) {
+        const result = await createProductFlyerBlob(p);
+        generatedCatalogImageFiles.push(result.file);
+        htmlContent += `
+            <div style="margin-bottom:14px; border:1px solid #cbd5e1; border-radius:10px; overflow:hidden; background:#fff;">
+                <img src="${result.dataUrl}" style="width:100%; display:block;">
+                <a href="${result.dataUrl}" download="offer_code_${p.serial}.jpg" style="display:block; text-align:center; background:#e2e8f0; color:#0d233a; padding:6px; font-size:12px; font-weight:bold; text-decoration:none;">⬇️ حفظ هذه الصورة في الاستوديو</a>
+            </div>
+        `;
+    }
+
+    previewBox.innerHTML = htmlContent;
+}
+
+function closeCatalogModal() {
+    document.getElementById('catalog-modal').classList.add('hidden');
+}
+
+// مشاركة بوسترات الكتالوج كصور مباشرة على الواتساب بدون أي روابط
+async function shareCatalogWithImages() {
+    if (generatedCatalogImageFiles.length === 0) {
+        alert("لا توجد صور جاهزة للمشاركة!");
+        return;
+    }
+
+    if (navigator.canShare && navigator.canShare({ files: generatedCatalogImageFiles })) {
+        try {
+            await navigator.share({
+                files: generatedCatalogImageFiles,
+                title: 'مجلة عروض متاحة'
+            });
+        } catch (err) {
+            console.log("تم إلغاء المشاركة:", err);
+        }
+    } else {
+        alert("متصفحك لا يدعم المشاركة المباشرة للملفات، يمكنك الضغط على (⬇️ حفظ هذه الصورة في الاستوديو) تحت كل بوستر وإرسالها من الاستوديو على واتساب.");
+    }
+}
+
+// مشاركة نصية خالصة بدون أي روابط
+function shareCatalogTextOnly() {
+    const selectedProds = localProducts.filter(p => p.selectedForCatalog !== false);
+    let text = "🦅 *قائمة العروض المتاحة حالياً* 🦅\n\n";
+    selectedProds.forEach(p => {
+        text += `🔹 *كود (#${p.serial})* : ${p.name}\n`;
         text += `💰 السعر: ${p.price} ج.م\n`;
-        if(p.desc) text += `📝 التفاصيل: ${p.desc}\n`;
+        if(p.desc) text += `📝 ${p.desc}\n`;
         text += `-------------------\n`;
     });
-    text += "\nللتواصل والاستعلام يرجى مراسلة الوسيط.";
+    text += "\nللاستعلام اذكر رقم الكود في رسالة.";
 
     let encoded = encodeURIComponent(text);
     window.open(`https://wa.me/?text=${encoded}`, '_blank');
