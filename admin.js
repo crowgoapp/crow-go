@@ -68,7 +68,7 @@ function savePlatformSettings() {
     showScreen('landing-screen');
 }
 
-// عرض وتشغيل جدول الوسطاء في لوحة الأدمن مع متابعة الاشتراكات والإحالات بدقة
+// عرض جدول الوسطاء للأدمن مع أعمدة الحذف وتغيير الباسورد ومتابعة الإحالات الأوتوماتيكية
 function renderAdminWaseetsTable() {
     let tbody = document.getElementById('admin-waseets-tbody');
     if(!tbody) return;
@@ -84,6 +84,7 @@ function renderAdminWaseetsTable() {
     if(waseetPhones.length === 0) {
         waseetPhones.push("0101111");
         localStorage.setItem('crow_waseet_name_0101111', "محمود السيد");
+        localStorage.setItem('crow_waseet_pin_0101111', "1234");
         let today = new Date().toISOString().split('T')[0];
         let weekLater = new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0];
         localStorage.setItem('crow_sub_start_0101111', today);
@@ -102,11 +103,12 @@ function renderAdminWaseetsTable() {
         tr.innerHTML = `
             <td><b>${name}</b><br><small>${phone}</small></td>
             <td>ميداني عام</td>
-            <td><b>${refCode}</b><br><small style="color:#059669;">إحالات: ${refs}/5</small></td>
+            <td><b>${refCode}</b><br><small style="color:#059669; font-weight:bold;">إحالات أوتو: ${refs}/5</small></td>
             <td><span class="badge-green">${start} إلى ${end}</span></td>
             <td><button type="button" class="btn-warning" onclick="adminExtendSub('${phone}', 30)">+شهر</button></td>
             <td><button type="button" class="btn-warning" onclick="adminExtendSub('${phone}', 7)">+أسبوع</button></td>
-            <td><button type="button" class="btn-info" onclick="adminAddReferral('${phone}')">+إحالة (+1)</button></td>
+            <td><button type="button" class="btn-info" onclick="adminChangeWaseetPin('${phone}')">تغيير PIN</button></td>
+            <td><button type="button" class="btn-danger" onclick="adminDeleteWaseet('${phone}')">حذف</button></td>
             <td><button type="button" class="btn-success" onclick="loginAsWaseetDirectly('${phone}', '${name}')">دخول</button></td>
         `;
         tbody.appendChild(tr);
@@ -125,22 +127,26 @@ function adminExtendSub(phone, days) {
     renderAdminWaseetsTable();
 }
 
-function adminAddReferral(phone) {
-    let refs = parseInt(localStorage.getItem('crow_refs_' + phone) || '0', 10) + 1;
-    let msg = `تم تسجيل إحالة جديدة! (العدد الحالي: ${refs}/5)`;
-    
-    if (refs >= 5) {
-        refs = 0; // تصفير العداد ومنح أسبوع مجاني تلقائياً
-        let currentEndStr = localStorage.getItem('crow_sub_end_' + phone) || new Date().toISOString().split('T')[0];
-        let endDate = new Date(currentEndStr);
-        if(endDate < new Date()) endDate = new Date();
-        endDate.setDate(endDate.getDate() + 7); // أسبوع مجاني مكافأة
-        let newEndStr = endDate.toISOString().split('T')[0];
-        localStorage.setItem('crow_sub_end_' + phone, newEndStr);
-        msg += `\n🎉 مبروك! أكمل الوسيط 5 إحالات وتم تمديد اشتراكه تلقائياً (أسبوع مجاني) حتى ${newEndStr}!`;
+function adminChangeWaseetPin(phone) {
+    let newPin = prompt("أدخل الرقم السري الجديد (PIN - 4 أرقام) للوسيط:");
+    if(newPin && newPin.trim().length >= 4) {
+        localStorage.setItem('crow_waseet_pin_' + phone, newPin.trim());
+        alert("تم تغيير الرقم السري للوسيط بنجاح!");
+    } else if(newPin !== null) {
+        alert("يرجى إدخال 4 أرقام صحيحة على الأقل!");
     }
-    
-    localStorage.setItem('crow_refs_' + phone, refs);
-    alert(msg);
-    renderAdminWaseetsTable();
+}
+
+function adminDeleteWaseet(phone) {
+    if(confirm(`هل أنت متأكد من حذف الوسيط برقم (${phone}) وجميع بياناته؟`)) {
+        localStorage.removeItem('crow_waseet_name_' + phone);
+        localStorage.removeItem('crow_waseet_pin_' + phone);
+        localStorage.removeItem('crow_sub_start_' + phone);
+        localStorage.removeItem('crow_sub_end_' + phone);
+        localStorage.removeItem('crow_refs_' + phone);
+        localStorage.removeItem('crow_prods_' + phone);
+        localStorage.removeItem('crow_orders_' + phone);
+        alert("تم حذف حساب الوسيط بنجاح!");
+        renderAdminWaseetsTable();
+    }
 }
