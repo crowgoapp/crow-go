@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crow Go - المنصة الذكية للوسطاء</title>
-    <!-- استدعاء ملف التصميم -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -29,8 +28,9 @@
 
             <button class="btn" onclick="showScreen('login-screen')">تسجيل دخول (مستخدم حالي)</button>
             <button class="btn btn-secondary" onclick="showScreen('register-screen')">حساب جديد (أسبوع مجاني)</button>
+            <button class="btn btn-success" onclick="loginAsDemoUser()" style="margin-top: 8px;">🚀 دخول سريع (مستخدم تجريبي)</button>
             
-            <div class="text-center" style="margin-top: 25px;">
+            <div class="text-center" style="margin-top: 20px;">
                 <button onclick="openAdminDirect()" style="background: none; border: none; color: #94a3b8; font-size: 12px; cursor: pointer;">⚙️ دخول السوبر أدمن</button>
             </div>
         </div>
@@ -146,7 +146,6 @@
         </div>
     </div>
 
-    <!-- استدعاء ملفات البرمجة المنفصلة -->
     <script src="app.js"></script>
     <script src="waseet.js"></script>
     <script src="admin.js"></script>
