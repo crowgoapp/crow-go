@@ -21,7 +21,7 @@ function handleLogin() {
     currentWaseetPhone = phone;
     showScreen('waseet-dashboard');
     document.getElementById('waseet-welcome-text').innerText = `أهلاً بك - هاتف: ${phone}`;
-    loadLocalProducts(phone);
+    loadLocalData(phone);
 }
 
 function handleRegister() {
@@ -36,7 +36,7 @@ function handleRegister() {
     alert("تم إنشاء حسابك ومنحك أسبوعاً تجريبياً مجانياً!");
     showScreen('waseet-dashboard');
     document.getElementById('waseet-welcome-text').innerText = `أهلاً بك يا ${name} (${prof} - ${gov})`;
-    loadLocalProducts(phone);
+    loadLocalData(phone);
 }
 
 function loginAsDemoUser() {
@@ -44,5 +44,5 @@ function loginAsDemoUser() {
     currentWaseetPhone = demoPhone;
     showScreen('waseet-dashboard');
     document.getElementById('waseet-welcome-text').innerText = `مرحباً بك (حساب تجريبي) - بورسعيد (عقارات)`;
-    loadLocalProducts(demoPhone);
+    loadLocalData(demoPhone);
 }
