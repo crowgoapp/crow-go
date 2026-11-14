@@ -12,6 +12,7 @@
             --silver-dark: #94a3b8;
             --bg-color: #f8fafc;
             --text-color: #1e293b;
+            --accent-gold: #d97706;
         }
         body {
             font-family: system-ui, -apple-system, sans-serif;
@@ -38,15 +39,17 @@
             text-align: center;
             margin-bottom: 24px;
         }
-        .logo-placeholder {
-            font-size: 28px;
+        .logo {
+            font-size: 32px;
             font-weight: bold;
             color: var(--secondary-blue);
             margin-bottom: 8px;
+            cursor: pointer;
         }
         .subtitle {
             font-size: 14px;
             color: var(--silver-dark);
+            line-height: 1.5;
         }
         .btn {
             background: linear-gradient(135deg, var(--secondary-blue), var(--primary-blue));
@@ -59,6 +62,10 @@
             width: 100%;
             cursor: pointer;
             margin-top: 12px;
+        }
+        .btn-secondary {
+            background: #e2e8f0;
+            color: var(--primary-blue);
         }
         .btn:active {
             transform: scale(0.98);
@@ -81,73 +88,195 @@
             font-size: 16px;
             box-sizing: border-box;
         }
+        .features-box {
+            background: #f1f5f9;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
         .hidden {
             display: none !important;
+        }
+        .text-center {
+            text-align: center;
+            margin-top: 15px;
+        }
+        .link-btn {
+            background: none;
+            border: none;
+            color: var(--secondary-blue);
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- شاشة الترحيب والدخول -->
-        <div id="auth-screen">
+        <!-- 1. الصفحة الرئيسية (التعريف بالمنصة ومميزاتها) -->
+        <div id="landing-screen">
             <div class="header">
-                <div class="logo-placeholder" id="logo-click-area">🦅 Crow Go</div>
-                <div class="subtitle">منصة إدارة السلع والوسطاء الميدانيين</div>
+                <!-- الضغط 3 مرات هنا سيفتح شاشة السوبر أدمن -->
+                <div class="logo" id="logo-click-area">🦅 Crow Go</div>
+                <div class="subtitle">منظومة الإدارة الذكية للوسطاء الميدانيين (عقارات، سيارات، دليفري، وخدمات)</div>
+            </div>
+
+            <div class="features-box">
+                <b>✨ مميزات المنصة:</b>
+                <ul>
+                    <li>إدارة عروضك وطلباتك بخصوصية تامة على جهازك.</li>
+                    <li>إصدار مجلات عرض منسقة بضغطة زر وبدون روابط مقلقة للزبائن.</li>
+                    <li>تتبع العملاء، السيريال التسلسلي، وأمان تام برمز PIN خاص بك.</li>
+                </ul>
+            </div>
+
+            <button class="btn" onclick="showScreen('login-screen')">تسجيل دخول (مستخدم حالي)</button>
+            <button class="btn btn-secondary" onclick="showScreen('register-screen')">حساب جديد (أسبوع تجريبي مجاني)</button>
+        </div>
+
+        <!-- 2. شاشة تسجيل الدخول (للمستخدم الحالي) -->
+        <div id="login-screen" class="hidden">
+            <div class="header">
+                <h2>تسجيل الدخول</h2>
+                <div class="subtitle">أدخل رقم هاتفك والرقم السري للوصول لحسابك</div>
             </div>
 
             <div class="input-group">
                 <label>رقم الهاتف المحمول</label>
-                <input type="tel" id="phone-input" placeholder="010XXXXXXXX" />
+                <input type="tel" id="login-phone" placeholder="010XXXXXXXX" />
             </div>
 
             <div class="input-group">
                 <label>الرقم السري (PIN - 4 أرقام)</label>
-                <input type="password" id="pin-input" maxlength="4" placeholder="****" />
+                <input type="password" id="login-pin" maxlength="4" placeholder="****" />
             </div>
 
-            <button class="btn" onclick="handleLoginRegister()">دخول / تسجيل جديد</button>
+            <button class="btn" onclick="handleLogin()">دخول لوحة التحكم</button>
+            <div class="text-center">
+                <button class="link-btn" onclick="showScreen('landing-screen')">← العودة للرئيسية</button>
+            </div>
         </div>
 
-        <!-- شاشة لوحة الوسيط (مبدئية) -->
+        <!-- 3. شاشة حساب جديد (للمستخدم الجديد) -->
+        <div id="register-screen" class="hidden">
+            <div class="header">
+                <h2>إنشاء حساب جديد</h2>
+                <div class="subtitle">احصل على أسبوع مجاني وابدأ إدارة صفقاتك فوراً</div>
+            </div>
+
+            <div class="input-group">
+                <label>الاسم الكامل</label>
+                <input type="text" id="reg-name" placeholder="اسمك الكريم" />
+            </div>
+
+            <div class="input-group">
+                <label>رقم الهاتف المحمول</label>
+                <input type="tel" id="reg-phone" placeholder="010XXXXXXXX" />
+            </div>
+
+            <div class="input-group">
+                <label>الرقم السري (PIN - 4 أرقام)</label>
+                <input type="password" id="reg-pin" maxlength="4" placeholder="****" />
+            </div>
+
+            <div class="input-group">
+                <label>المحافظة (إجباري)</label>
+                <input type="text" id="reg-gov" placeholder="مثال: بورسعيد، القاهرة..." />
+            </div>
+
+            <div class="input-group">
+                <label>المهنة / التخصص (إجباري)</label>
+                <select id="reg-prof">
+                    <option value="">اختر التخصص...</option>
+                    <option value="عقارات">سمسار عقارات</option>
+                    <option value="سيارات">سمسار سيارات</option>
+                    <option value="دليفري">مناديب وخدمات دليفري</option>
+                    <option value="أخرى">أنشطة وخدمات أخرى</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>كود الدعوة (اختياري)</label>
+                <input type="text" id="reg-ref" placeholder="لو دعك صديق اكتب الكود هنا" />
+            </div>
+
+            <button class="btn" onclick="handleRegister()">إنشاء الحساب وبدء الأسبوع المجاني</button>
+            <div class="text-center">
+                <button class="link-btn" onclick="showScreen('landing-screen')">← العودة للرئيسية</button>
+            </div>
+        </div>
+
+        <!-- 4. لوحة تحكم الوسيط (المؤقتة للاختبار) -->
         <div id="waseet-dashboard" class="hidden">
             <div class="header">
-                <h2>لوحة الوسيط</h2>
-                <p id="welcome-user"></p>
+                <h2>لوحة الوسيط الذكي</h2>
+                <p id="welcome-user" style="font-weight: bold; color: var(--secondary-blue);"></p>
             </div>
-            <button class="btn" onclick="logout()">تسجيل الخروج</button>
+            <div class="features-box text-center">
+                مرحباً بك في مساحة عملك الخاصة. سيتم تحميل أدوات إضافة المنتجات والمجلات هنا في الخطوة القادمة.
+            </div>
+            <button class="btn btn-secondary" onclick="logout()">تسجيل الخروج</button>
         </div>
     </div>
 
     <script>
-        // محاكاة سريعة للضغط 3 مرات على الشعار لفتح السوبر أدمن مستقبلاً
+        // التنقل بين الشاشات بسلاسة
+        function showScreen(screenId) {
+            document.getElementById('landing-screen').classList.add('hidden');
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('register-screen').classList.add('hidden');
+            document.getElementById('waseet-dashboard').classList.add('hidden');
+
+            document.getElementById(screenId).classList.remove('hidden');
+        }
+
+        // محاكاة الضغط 3 مرات على اللوجو لفتح شاشة السوبر أدمن مستقبلاً
         let logoClicks = 0;
         document.getElementById('logo-click-area').addEventListener('click', () => {
             logoClicks++;
             if (logoClicks === 3) {
-                alert("تم تفعيل وضع السوبر أدمن (قريباً)");
+                alert("تم تفعيل وضع السوبر أدمن (سيتم ربطه قريباً)");
                 logoClicks = 0;
             }
         });
 
-        function handleLoginRegister() {
-            const phone = document.getElementById('phone-input').value;
-            const pin = document.getElementById('pin-input').value;
-            
+        function handleLogin() {
+            const phone = document.getElementById('login-phone').value;
+            const pin = document.getElementById('login-pin').value;
             if(!phone || !pin) {
-                alert("يرجى إدخال رقم الهاتف والرقم السري الرباعي");
+                alert("يرجى إدخال رقم الهاتف والرقم السري");
+                return;
+            }
+            showScreen('waseet-dashboard');
+            document.getElementById('welcome-user').innerText = `أهلاً بك - هاتف: ${phone}`;
+        }
+
+        function handleRegister() {
+            const name = document.getElementById('reg-name').value;
+            const phone = document.getElementById('reg-phone').value;
+            const pin = document.getElementById('reg-pin').value;
+            const gov = document.getElementById('reg-gov').value;
+            const prof = document.getElementById('reg-prof').value;
+
+            if(!name || !phone || !pin || !gov || !prof) {
+                alert("يرجى إكمال جميع الحقول الإجبارية (المحافظة والمهنة أساسيتان)");
+                return;
+            }
+            if(pin.length !== 4) {
+                alert("الرقم السري يجب أن يكون 4 أرقام بالضبط");
                 return;
             }
 
-            // مؤقتاً للتأكد من عمل الواجهة
-            document.getElementById('auth-screen').classList.add('hidden');
-            document.getElementById('waseet-dashboard').classList.remove('hidden');
-            document.getElementById('welcome-user').innerText = `أهلاً بك، رقم الهاتف: ${phone}`;
+            alert("تم إنشاء الحساب بنجاح وتم منحك أسبوعاً تجريبياً مجانياً!");
+            showScreen('waseet-dashboard');
+            document.getElementById('welcome-user').innerText = `أهلاً بك يا ${name} (${prof} - ${gov})`;
         }
 
         function logout() {
-            document.getElementById('waseet-dashboard').classList.add('hidden');
-            document.getElementById('auth-screen').classList.remove('hidden');
+            showScreen('landing-screen');
         }
     </script>
 </body>
