@@ -28,7 +28,36 @@ function switchWaseetTab(tabName) {
     }
 }
 
-// --- رفع الصور بجودة عالية جداً والحفاظ على أبعادها الأصلية ---
+// كود الإحالة والمشاركة
+function getWaseetReferralCode(phone) {
+    let cleanPhone = phone ? phone.replace(/\D/g, '') : '1234';
+    let suffix = cleanPhone.length >= 4 ? cleanPhone.slice(-4) : '1234';
+    return `CROW-${suffix}`;
+}
+
+function updateWaseetReferralDisplay(phone) {
+    let codeEl = document.getElementById('waseet-ref-code-display');
+    if (codeEl) {
+        codeEl.innerText = getWaseetReferralCode(phone);
+    }
+}
+
+function shareWaseetInviteWhatsApp() {
+    let refCode = getWaseetReferralCode(currentWaseetPhone);
+    let waseetName = localStorage.getItem('crow_waseet_name_' + currentWaseetPhone) || currentWaseetName;
+
+    let msg = `أهلاً بك 👋\n`;
+    msg += `للتواصل المباشر مع مكتب ( ${waseetName} )\n`;
+    msg += `أو طلب عقار/سلعة وخدمات الوساطة الميدانية، يرجى ذكر كود الإحالة الخاص بي:\n\n`;
+    msg += `🔑 *كود الوسيط: ${refCode}*\n`;
+    msg += `📞 رقم التواصل: ${currentWaseetPhone}\n\n`;
+    msg += `يسعدنا خدمتكم دائماً!`;
+
+    let encoded = encodeURIComponent(msg);
+    window.open(`https://wa.me/?text=${encoded}`, '_blank');
+}
+
+// رفع وضغط الصور بجودة عالية
 function handleProductImagesUpload(event) {
     const files = Array.from(event.target.files);
     if (!files.length) return;
@@ -39,7 +68,6 @@ function handleProductImagesUpload(event) {
             const img = new Image();
             img.onload = function() {
                 const canvas = document.createElement('canvas');
-                // رفع الدقة القصوى إلى 1200px للحفاظ على وضوح التفاصيل والكتابة
                 const maxDim = 1200; 
                 let width = img.width;
                 let height = img.height;
@@ -61,7 +89,6 @@ function handleProductImagesUpload(event) {
                 ctx.imageSmoothingQuality = 'high';
                 ctx.drawImage(img, 0, 0, width, height);
 
-                // جودة عالية 0.90
                 const highQualityBase64 = canvas.toDataURL('image/jpeg', 0.90);
                 currentTempProductImages.push({
                     data: highQualityBase64,
@@ -273,6 +300,8 @@ function saveToLocalStorage() {
 
 function loadLocalData(phone) {
     if(phone) currentWaseetPhone = phone;
+    let savedName = localStorage.getItem('crow_waseet_name_' + currentWaseetPhone);
+    if(savedName) currentWaseetName = savedName;
     
     let savedProds = localStorage.getItem('crow_prods_' + currentWaseetPhone);
     localProducts = savedProds ? JSON.parse(savedProds) : [];
@@ -374,7 +403,7 @@ function deleteOrder(index) {
 }
 
 // =========================================================================
-// محرك توليد بوسترات الكتالوج (باسم الوسيط + جودة عالية + تقسيم صفحات لكل الصور)
+// محرك توليد بوسترات الكتالوج (جودة عالية + اسم الوسيط فقط + تقسيم صور متعددة)
 // =========================================================================
 
 function loadImageElement(src) {
@@ -386,9 +415,7 @@ function loadImageElement(src) {
     });
 }
 
-// رسم الصورة مع الحفاظ التام على أبعادها الأصلية دون مطّ أو تشويه (Object-Fit: Contain داخل إطار أنيق)
 function drawImagePreserveAspect(ctx, img, boxX, boxY, boxW, boxH) {
-    // خلفية خفيفة للإطار
     ctx.fillStyle = '#f8fafc';
     ctx.fillRect(boxX, boxY, boxW, boxH);
     ctx.strokeStyle = '#e2e8f0';
@@ -414,11 +441,10 @@ function drawImagePreserveAspect(ctx, img, boxX, boxY, boxW, boxH) {
     ctx.drawImage(img, drawX, drawY, drawW, drawH);
 }
 
-// توليد صفحة بوستر واحدة (تستوعب حتى 4 صور بأبعادها الأصلية وبجودة عالية)
 async function renderSingleFlyerPage(product, imgsChunk, pageNum, totalPages, waseetDisplayName) {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    const W = 1080; // دقة HD عالية جداً
+    const W = 1080;
     
     const isFirstPage = (pageNum === 1);
     const hasImages = imgsChunk.length > 0;
@@ -427,7 +453,7 @@ async function renderSingleFlyerPage(product, imgsChunk, pageNum, totalPages, wa
     if (hasImages) {
         if (imgsChunk.length === 1) imgGridHeight = 680;
         else if (imgsChunk.length === 2) imgGridHeight = 480;
-        else imgGridHeight = 820; // لـ 3 أو 4 صور (صفين)
+        else imgGridHeight = 820;
     }
 
     const headerHeight = 110;
@@ -438,15 +464,12 @@ async function renderSingleFlyerPage(product, imgsChunk, pageNum, totalPages, wa
     canvas.width = W;
     canvas.height = H;
 
-    // الخلفية
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, W, H);
 
-    // الهيدر العلوي باسم الوسيط فقط (بدون أي ذكر لاسم المنصة)
     ctx.fillStyle = '#0d233a';
     ctx.fillRect(0, 0, W, headerHeight);
 
-    // شارة الكود
     ctx.fillStyle = '#10b981';
     ctx.beginPath();
     if (ctx.roundRect) {
@@ -461,7 +484,6 @@ async function renderSingleFlyerPage(product, imgsChunk, pageNum, totalPages, wa
     ctx.textAlign = 'center';
     ctx.fillText(`كود #${product.serial}`, W - 132, 67);
 
-    // اسم الوسيط في الهيدر
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 32px sans-serif';
     ctx.textAlign = 'left';
@@ -471,20 +493,17 @@ async function renderSingleFlyerPage(product, imgsChunk, pageNum, totalPages, wa
     let currentY = headerHeight + 55;
 
     if (isFirstPage) {
-        // اسم المنتج
         ctx.fillStyle = '#0d233a';
         ctx.font = 'bold 44px sans-serif';
         ctx.textAlign = 'right';
         ctx.fillText(product.name, W - 40, currentY);
         currentY += 65;
 
-        // السعر
         ctx.fillStyle = '#059669';
         ctx.font = 'bold 40px sans-serif';
         ctx.fillText(`💰 السعر: ${product.price} ج.م`, W - 40, currentY);
         currentY += 55;
 
-        // الوصف
         if (product.desc) {
             ctx.fillStyle = '#475569';
             ctx.font = '30px sans-serif';
@@ -492,7 +511,6 @@ async function renderSingleFlyerPage(product, imgsChunk, pageNum, totalPages, wa
             currentY += 75;
         }
     } else {
-        // عنوان الصفحات التكميلية لنفس المنتج
         ctx.fillStyle = '#1b4982';
         ctx.font = 'bold 34px sans-serif';
         ctx.textAlign = 'right';
@@ -500,7 +518,6 @@ async function renderSingleFlyerPage(product, imgsChunk, pageNum, totalPages, wa
         currentY += 45;
     }
 
-    // رسم الصور بجودة عالية وأبعاد حقيقية
     if (hasImages) {
         const loadedImgs = await Promise.all(imgsChunk.map(i => loadImageElement(i.data)));
         const validImgs = loadedImgs.filter(img => img !== null);
@@ -523,7 +540,6 @@ async function renderSingleFlyerPage(product, imgsChunk, pageNum, totalPages, wa
         }
     }
 
-    // الفوتر السفلي
     ctx.fillStyle = '#f1f5f9';
     ctx.fillRect(0, H - footerHeight, W, footerHeight);
     ctx.fillStyle = '#1b4982';
@@ -542,7 +558,6 @@ async function renderSingleFlyerPage(product, imgsChunk, pageNum, totalPages, wa
     });
 }
 
-// تقسيم صور المنتج إلى مجموعات (كل صفحة 4 صور) وتوليد كل الصفحات بدون حد أقصى
 async function createAllFlyersForProduct(product, waseetDisplayName) {
     let imagesArr = Array.isArray(product.images) ? product.images : (product.image ? [{data: product.image, inCatalog: true}] : []);
     let catalogImgs = imagesArr.filter(i => i.inCatalog);
@@ -552,7 +567,6 @@ async function createAllFlyersForProduct(product, waseetDisplayName) {
         return [page];
     }
 
-    // تقسيم الصور لمجموعات من 4 صور لكل صفحة (لو 10 صور هيعمل 3 صفحات تلقائي)
     const chunks = [];
     for (let i = 0; i < catalogImgs.length; i += 4) {
         chunks.push(catalogImgs.slice(i, i + 4));
@@ -573,10 +587,9 @@ async function openCatalogPreview() {
         return;
     }
 
-    // التأكد من اسم الوسيط اللي هيظهر في المجلة
     let waseetName = localStorage.getItem('crow_waseet_name_' + currentWaseetPhone) || currentWaseetName;
     if (!waseetName || waseetName === "الوسيط") {
-        let enteredName = prompt("أدخل اسمك (اسم الوسيط) ليظهر في رأس المجلة بدلاً من اسم التطبيق:", "أحمد محمود");
+        let enteredName = prompt("أدخل اسمك (اسم الوسيط) ليظهر في رأس المجلة:", "أحمد محمود");
         if (enteredName && enteredName.trim()) {
             waseetName = enteredName.trim();
             localStorage.setItem('crow_waseet_name_' + currentWaseetPhone, waseetName);
@@ -585,7 +598,7 @@ async function openCatalogPreview() {
     }
 
     const previewBox = document.getElementById('catalog-preview-content');
-    previewBox.innerHTML = `<p style="text-align:center; color:#1b4982; font-weight:bold;">⏳ جاري تجهيز البوسترات بجودة عالية وتضمين جميع الصور المختارة...</p>`;
+    previewBox.innerHTML = `<p style="text-align:center; color:#1b4982; font-weight:bold;">⏳ جاري تجهيز البوسترات بجودة عالية...</p>`;
     document.getElementById('catalog-modal').classList.remove('hidden');
 
     generatedCatalogImageFiles = [];
@@ -599,7 +612,7 @@ async function openCatalogPreview() {
         });
     }
 
-    let htmlContent = `<div style="font-size:12px; color:#059669; background:#f0fdf4; padding:8px; border-radius:8px; margin-bottom:10px; text-align:center; font-weight:bold;">✅ تم تجهيز ${allGeneratedPages.length} صفحة/بوستر بجودة عالية باسم (${waseetName})</div>`;
+    let htmlContent = `<div style="font-size:12px; color:#059669; background:#f0fdf4; padding:8px; border-radius:8px; margin-bottom:10px; text-align:center; font-weight:bold;">✅ تم تجهيز ${allGeneratedPages.length} بوستر بجودة عالية باسم (${waseetName})</div>`;
 
     allGeneratedPages.forEach(pg => {
         htmlContent += `
