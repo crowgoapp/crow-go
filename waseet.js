@@ -2,7 +2,7 @@ let localProducts = [];
 let localOrders = [];
 let currentWaseetPhone = "01000000000";
 let currentTempProductImages = [];
-let generatedCatalogImageFiles = []; // لتخزين بوسترات الكتالوج المولدة كصور
+let generatedCatalogImageFiles = [];
 
 function switchWaseetTab(tabName) {
     let prodDiv = document.getElementById('waseet-tab-products');
@@ -27,7 +27,7 @@ function switchWaseetTab(tabName) {
     }
 }
 
-// --- رفع وضغط عدة صور للمنتج من الموبايل ---
+// --- رفع وضغط عدة صور وإضافتها فوق الصور الحالية ---
 function handleProductImagesUpload(event) {
     const files = Array.from(event.target.files);
     if (!files.length) return;
@@ -38,7 +38,7 @@ function handleProductImagesUpload(event) {
             const img = new Image();
             img.onload = function() {
                 const canvas = document.createElement('canvas');
-                const maxDim = 600; 
+                const maxDim = 550; // ضغط ذكي يسمح برفع صور كثيرة بدون امتلاء الذاكرة
                 let width = img.width;
                 let height = img.height;
 
@@ -59,7 +59,7 @@ function handleProductImagesUpload(event) {
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
 
-                const compressedBase64 = canvas.toDataURL('image/jpeg', 0.75);
+                const compressedBase64 = canvas.toDataURL('image/jpeg', 0.72);
                 currentTempProductImages.push({
                     data: compressedBase64,
                     inCatalog: true
@@ -75,6 +75,10 @@ function handleProductImagesUpload(event) {
 
 function renderTempImagesGallery() {
     const gallery = document.getElementById('prod-images-gallery');
+    const countBadge = document.getElementById('prod-img-count-badge');
+    if (countBadge) countBadge.innerText = currentTempProductImages.length;
+    if (!gallery) return;
+
     gallery.innerHTML = '';
 
     currentTempProductImages.forEach((imgObj, idx) => {
@@ -82,7 +86,7 @@ function renderTempImagesGallery() {
         card.style.cssText = `border: 2px solid ${imgObj.inCatalog ? '#10b981' : '#cbd5e1'}; border-radius: 8px; padding: 4px; background: #fff; text-align: center; width: 85px; position: relative;`;
         
         card.innerHTML = `
-            <button type="button" onclick="removeTempImage(${idx})" style="position:absolute; top:-6px; left:-6px; background:#ef4444; color:white; border:none; border-radius:50%; width:20px; height:20px; font-size:11px; cursor:pointer; font-weight:bold;">×</button>
+            <button type="button" onclick="removeTempImage(${idx})" style="position:absolute; top:-6px; left:-6px; background:#ef4444; color:white; border:none; border-radius:50%; width:22px; height:22px; font-size:12px; cursor:pointer; font-weight:bold; z-index:2;">×</button>
             <img src="${imgObj.data}" style="width:100%; height:65px; object-fit:cover; border-radius:5px; display:block; margin-bottom:4px;">
             <label style="font-size:10px; display:flex; align-items:center; justify-content:center; gap:3px; cursor:pointer; color:${imgObj.inCatalog ? '#059669' : '#64748b'}; font-weight:bold; margin:0;">
                 <input type="checkbox" ${imgObj.inCatalog ? 'checked' : ''} onchange="toggleTempImageCatalog(${idx})" style="width:auto; margin:0;">
@@ -103,36 +107,44 @@ function removeTempImage(idx) {
     renderTempImagesGallery();
 }
 
-function openProductModal(index = -1) {
-    document.getElementById('edit-prod-index').value = index;
+// --- فتح نافذة إضافة منتج جديد ---
+function openNewProductModal() {
+    document.getElementById('edit-prod-index').value = "-1";
     document.getElementById('prod-img-file').value = '';
+    document.getElementById('prod-modal-title').innerText = "➕ إضافة منتج جديد";
+    document.getElementById('prod-name').value = '';
+    document.getElementById('prod-price').value = '';
+    document.getElementById('prod-desc').value = '';
+    document.getElementById('prod-owner-name').value = '';
+    document.getElementById('prod-owner-phone').value = '';
+    document.getElementById('prod-owner-address').value = '';
+    currentTempProductImages = [];
 
-    if (index === -1) {
-        document.getElementById('prod-modal-title').innerText = "➕ إضافة منتج جديد";
-        document.getElementById('prod-name').value = '';
-        document.getElementById('prod-price').value = '';
-        document.getElementById('prod-desc').value = '';
-        document.getElementById('prod-owner-name').value = '';
-        document.getElementById('prod-owner-phone').value = '';
-        document.getElementById('prod-owner-address').value = '';
-        currentTempProductImages = [];
+    renderTempImagesGallery();
+    document.getElementById('product-modal').classList.remove('hidden');
+}
+
+// --- فتح نافذة معاينة وتعديل منتج موجود ---
+function openEditProductModal(index) {
+    const p = localProducts[index];
+    if (!p) return;
+
+    document.getElementById('edit-prod-index').value = String(index);
+    document.getElementById('prod-img-file').value = '';
+    document.getElementById('prod-modal-title').innerText = `✏️ معاينة وتعديل منتج (#${p.serial})`;
+    document.getElementById('prod-name').value = p.name || '';
+    document.getElementById('prod-price').value = p.price || '';
+    document.getElementById('prod-desc').value = p.desc || '';
+    document.getElementById('prod-owner-name').value = p.ownerName || '';
+    document.getElementById('prod-owner-phone').value = p.ownerPhone || '';
+    document.getElementById('prod-owner-address').value = p.ownerAddress || '';
+    
+    if (Array.isArray(p.images)) {
+        currentTempProductImages = JSON.parse(JSON.stringify(p.images));
+    } else if (p.image) {
+        currentTempProductImages = [{ data: p.image, inCatalog: true }];
     } else {
-        let p = localProducts[index];
-        document.getElementById('prod-modal-title').innerText = `✏️ معاينة وتعديل منتج (#${p.serial})`;
-        document.getElementById('prod-name').value = p.name;
-        document.getElementById('prod-price').value = p.price;
-        document.getElementById('prod-desc').value = p.desc;
-        document.getElementById('prod-owner-name').value = p.ownerName;
-        document.getElementById('prod-owner-phone').value = p.ownerPhone;
-        document.getElementById('prod-owner-address').value = p.ownerAddress;
-        
-        if (Array.isArray(p.images)) {
-            currentTempProductImages = JSON.parse(JSON.stringify(p.images));
-        } else if (p.image) {
-            currentTempProductImages = [{ data: p.image, inCatalog: true }];
-        } else {
-            currentTempProductImages = [];
-        }
+        currentTempProductImages = [];
     }
 
     renderTempImagesGallery();
@@ -144,7 +156,7 @@ function closeProductModal() {
 }
 
 function saveProductFromModal() {
-    let index = parseInt(document.getElementById('edit-prod-index').value);
+    let index = parseInt(document.getElementById('edit-prod-index').value, 10);
     let name = document.getElementById('prod-name').value.trim();
     let price = document.getElementById('prod-price').value.trim();
     let desc = document.getElementById('prod-desc').value.trim();
@@ -157,24 +169,26 @@ function saveProductFromModal() {
         return;
     }
 
-    if (index === -1) {
-        let nextSerial = localProducts.length > 0 ? localProducts[localProducts.length - 1].serial + 1 : 1;
+    if (isNaN(index) || index < 0 || index >= localProducts.length) {
+        // إضافة منتج جديد بسيريال تسلسلي ثابت
+        let nextSerial = localProducts.length > 0 ? Math.max(...localProducts.map(item => item.serial)) + 1 : 1;
         localProducts.push({
             serial: nextSerial,
             name: name,
             price: price,
             desc: desc,
-            images: currentTempProductImages,
+            images: JSON.parse(JSON.stringify(currentTempProductImages)),
             ownerName: ownerName,
             ownerPhone: ownerPhone,
             ownerAddress: ownerAddress,
             selectedForCatalog: true
         });
     } else {
+        // تعديل المنتج الحالي بنفس السيريال
         localProducts[index].name = name;
         localProducts[index].price = price;
         localProducts[index].desc = desc;
-        localProducts[index].images = currentTempProductImages;
+        localProducts[index].images = JSON.parse(JSON.stringify(currentTempProductImages));
         localProducts[index].ownerName = ownerName;
         localProducts[index].ownerPhone = ownerPhone;
         localProducts[index].ownerAddress = ownerAddress;
@@ -185,7 +199,7 @@ function saveProductFromModal() {
         renderProducts();
         closeProductModal();
     } catch (e) {
-        alert("مساحة التخزين ممتلئة! يرجى تقليل عدد الصور أو حذف منتجات قديمة.");
+        alert("مساحة التخزين على المتصفح ممتلئة! يرجى حذف بعض الصور أو المنتجات القديمة.");
     }
 }
 
@@ -194,25 +208,26 @@ function toggleProductCatalogSelection(index) {
     saveToLocalStorage();
 }
 
-// --- نافذة الطلبات ---
-function openOrderModal(index = -1) {
-    document.getElementById('edit-order-index').value = index;
+// --- نافذة الطلبات (إضافة وتعديل) ---
+function openNewOrderModal() {
+    document.getElementById('edit-order-index').value = "-1";
+    document.getElementById('order-modal-title').innerText = "➕ تسجيل طلب زبون";
+    document.getElementById('order-item').value = '';
+    document.getElementById('order-client-name').value = '';
+    document.getElementById('order-client-phone').value = '';
+    document.getElementById('order-client-address').value = '';
+    document.getElementById('order-modal').classList.remove('hidden');
+}
 
-    if (index === -1) {
-        document.getElementById('order-modal-title').innerText = "➕ تسجيل طلب زبون";
-        document.getElementById('order-item').value = '';
-        document.getElementById('order-client-name').value = '';
-        document.getElementById('order-client-phone').value = '';
-        document.getElementById('order-client-address').value = '';
-    } else {
-        let o = localOrders[index];
-        document.getElementById('order-modal-title').innerText = "✏️ معاينة وتعديل الطلب";
-        document.getElementById('order-item').value = o.itemNeeded;
-        document.getElementById('order-client-name').value = o.clientName;
-        document.getElementById('order-client-phone').value = o.clientPhone;
-        document.getElementById('order-client-address').value = o.clientAddress === 'غير محدد' ? '' : o.clientAddress;
-    }
-
+function openEditOrderModal(index) {
+    const o = localOrders[index];
+    if (!o) return;
+    document.getElementById('edit-order-index').value = String(index);
+    document.getElementById('order-modal-title').innerText = "✏️ معاينة وتعديل الطلب";
+    document.getElementById('order-item').value = o.itemNeeded || '';
+    document.getElementById('order-client-name').value = o.clientName || '';
+    document.getElementById('order-client-phone').value = o.clientPhone || '';
+    document.getElementById('order-client-address').value = o.clientAddress === 'غير محدد' ? '' : (o.clientAddress || '');
     document.getElementById('order-modal').classList.remove('hidden');
 }
 
@@ -221,7 +236,7 @@ function closeOrderModal() {
 }
 
 function saveOrderFromModal() {
-    let index = parseInt(document.getElementById('edit-order-index').value);
+    let index = parseInt(document.getElementById('edit-order-index').value, 10);
     let itemNeeded = document.getElementById('order-item').value.trim();
     let clientName = document.getElementById('order-client-name').value.trim();
     let clientPhone = document.getElementById('order-client-phone').value.trim();
@@ -232,7 +247,7 @@ function saveOrderFromModal() {
         return;
     }
 
-    if (index === -1) {
+    if (isNaN(index) || index < 0 || index >= localOrders.length) {
         localOrders.push({
             id: Date.now(),
             itemNeeded: itemNeeded,
@@ -290,15 +305,15 @@ function renderProducts() {
         div.style.cssText = "background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; font-size:13px; gap:8px;";
         
         let imgTag = coverImg 
-            ? `<div style="position:relative; flex-shrink:0;" onclick="openProductModal(${index})">
-                 <img src="${coverImg}" style="width:54px; height:54px; object-fit:cover; border-radius:8px; cursor:pointer;" />
-                 <span style="position:absolute; bottom:2px; right:2px; background:rgba(0,0,0,0.7); color:white; font-size:9px; padding:1px 4px; border-radius:4px;">📷 ${catalogImgsCount}/${imagesArr.length}</span>
+            ? `<div style="position:relative; flex-shrink:0;">
+                 <img src="${coverImg}" style="width:54px; height:54px; object-fit:cover; border-radius:8px;" />
+                 <span style="position:absolute; bottom:2px; right:2px; background:rgba(0,0,0,0.75); color:white; font-size:9px; padding:1px 4px; border-radius:4px;">📷 ${catalogImgsCount}/${imagesArr.length}</span>
                </div>` 
-            : `<div onclick="openProductModal(${index})" style="width:54px; height:54px; background:#f1f5f9; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; cursor:pointer;">📦</div>`;
+            : `<div style="width:54px; height:54px; background:#f1f5f9; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">📦</div>`;
 
         div.innerHTML = `
             <input type="checkbox" ${p.selectedForCatalog !== false ? 'checked' : ''} onchange="toggleProductCatalogSelection(${index})" title="تضمين في الكتالوج" style="width:18px; height:18px; cursor:pointer; flex-shrink:0;">
-            <div style="display:flex; align-items:center; gap:8px; flex:1; cursor:pointer;" onclick="openProductModal(${index})">
+            <div style="display:flex; align-items:center; gap:8px; flex:1;">
                 ${imgTag}
                 <div>
                     <span style="background:#1b4982; color:white; padding:2px 6px; border-radius:4px; font-size:11px; font-weight:bold;">#${p.serial}</span>
@@ -307,9 +322,9 @@ function renderProducts() {
                     <small style="color:#059669; font-weight:bold;">🔒 المالك: ${p.ownerName || '-'} | ${p.ownerPhone || '-'}</small>
                 </div>
             </div>
-            <div style="display:flex; flex-direction:column; gap:4px;">
-                <button onclick="openProductModal(${index})" style="background:#0284c7; color:white; border:none; padding:5px 8px; border-radius:6px; cursor:pointer; font-size:11px; font-weight:bold;">معاينة/تعديل</button>
-                <button onclick="deleteProduct(${index})" style="background:#ef4444; color:white; border:none; padding:5px 8px; border-radius:6px; cursor:pointer; font-size:11px;">حذف</button>
+            <div style="display:flex; flex-direction:column; gap:5px; flex-shrink:0;">
+                <button type="button" onclick="openEditProductModal(${index})" style="background:#0284c7; color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:11px; font-weight:bold;">✏️ تعديل</button>
+                <button type="button" onclick="deleteProduct(${index})" style="background:#ef4444; color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:11px;">حذف</button>
             </div>
         `;
         container.appendChild(div);
@@ -330,14 +345,14 @@ function renderOrders() {
         let div = document.createElement('div');
         div.style.cssText = "background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; font-size:13px; gap:8px;";
         div.innerHTML = `
-            <div style="flex:1; cursor:pointer;" onclick="openOrderModal(${index})">
+            <div style="flex:1;">
                 <b>🛒 المطلوب: ${o.itemNeeded}</b><br>
                 <small style="color:#1b4982; font-weight:bold;">👤 الطالب: ${o.clientName} (${o.clientPhone})</small><br>
                 <small style="color:#64748b;">📍 العنوان: ${o.clientAddress} | 📅 ${o.date}</small>
             </div>
-            <div style="display:flex; flex-direction:column; gap:4px;">
-                <button onclick="openOrderModal(${index})" style="background:#0284c7; color:white; border:none; padding:5px 8px; border-radius:6px; cursor:pointer; font-size:11px; font-weight:bold;">معاينة/تعديل</button>
-                <button onclick="deleteOrder(${index})" style="background:#ef4444; color:white; border:none; padding:5px 8px; border-radius:6px; cursor:pointer; font-size:11px;">حذف</button>
+            <div style="display:flex; flex-direction:column; gap:5px; flex-shrink:0;">
+                <button type="button" onclick="openEditOrderModal(${index})" style="background:#0284c7; color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:11px; font-weight:bold;">✏️ تعديل</button>
+                <button type="button" onclick="deleteOrder(${index})" style="background:#ef4444; color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:11px;">حذف</button>
             </div>
         `;
         container.appendChild(div);
@@ -361,7 +376,7 @@ function deleteOrder(index) {
 }
 
 // =========================================================================
-// محرك توليد بوسترات الكتالوج كصور حقيقية (Flyers) بدون أي روابط نهائياً
+// توليد بوسترات الكتالوج كصور حقيقية (بدون أي روابط نهائياً)
 // =========================================================================
 
 function loadImageElement(src) {
@@ -373,7 +388,6 @@ function loadImageElement(src) {
     });
 }
 
-// رسم بوستر احترافي لكل منتج يجمع صوره المختارة + بياناته + الكود
 async function createProductFlyerBlob(product) {
     let imagesArr = Array.isArray(product.images) ? product.images : (product.image ? [{data: product.image, inCatalog: true}] : []);
     let catalogImgs = imagesArr.filter(i => i.inCatalog);
@@ -382,7 +396,6 @@ async function createProductFlyerBlob(product) {
     const ctx = canvas.getContext('2d');
     const W = 800;
     
-    // حساب الارتفاع حسب وجود صور أو تفاصيل
     const hasImages = catalogImgs.length > 0;
     const imgGridHeight = hasImages ? (catalogImgs.length === 1 ? 420 : (catalogImgs.length <= 2 ? 320 : 520)) : 0;
     const H = 260 + imgGridHeight + (product.desc ? 80 : 0);
@@ -390,18 +403,19 @@ async function createProductFlyerBlob(product) {
     canvas.width = W;
     canvas.height = H;
 
-    // الخلفية البيضاء النظيفة
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, W, H);
 
-    // الهيدر العلوي (أزرق ملكي)
     ctx.fillStyle = '#0d233a';
     ctx.fillRect(0, 0, W, 95);
 
-    // شارة كود المنتج (#1)
     ctx.fillStyle = '#10b981';
     ctx.beginPath();
-    ctx.roundRect(W - 180, 22, 150, 50, 12);
+    if (ctx.roundRect) {
+        ctx.roundRect(W - 180, 22, 150, 50, 12);
+    } else {
+        ctx.rect(W - 180, 22, 150, 50);
+    }
     ctx.fill();
 
     ctx.fillStyle = '#ffffff';
@@ -409,26 +423,22 @@ async function createProductFlyerBlob(product) {
     ctx.textAlign = 'center';
     ctx.fillText(`كود #${product.serial}`, W - 105, 57);
 
-    // اسم المنصة في الهيدر
     ctx.fillStyle = '#e2e8f0';
     ctx.font = 'bold 24px sans-serif';
     ctx.textAlign = 'left';
     ctx.fillText('🦅 Crow Go - عرض متاح', 30, 56);
 
-    // اسم المنتج
     ctx.fillStyle = '#0d233a';
     ctx.font = 'bold 34px sans-serif';
     ctx.textAlign = 'right';
     ctx.fillText(product.name, W - 30, 150);
 
-    // السعر
     ctx.fillStyle = '#059669';
     ctx.font = 'bold 32px sans-serif';
     ctx.fillText(`💰 السعر: ${product.price} ج.م`, W - 30, 200);
 
     let currentY = 230;
 
-    // الوصف إن وجد
     if (product.desc) {
         ctx.fillStyle = '#475569';
         ctx.font = '24px sans-serif';
@@ -436,7 +446,6 @@ async function createProductFlyerBlob(product) {
         currentY += 65;
     }
 
-    // رسم الصور المختارة للكتالوج
     if (hasImages) {
         const loadedImgs = await Promise.all(catalogImgs.slice(0, 4).map(i => loadImageElement(i.data)));
         const validImgs = loadedImgs.filter(img => img !== null);
@@ -459,7 +468,6 @@ async function createProductFlyerBlob(product) {
         }
     }
 
-    // الفوتر السفلي (بدون أي روابط - للطلب اذكر رقم الكود فقط)
     ctx.fillStyle = '#f1f5f9';
     ctx.fillRect(0, H - 55, W, 55);
     ctx.fillStyle = '#1b4982';
@@ -475,7 +483,6 @@ async function createProductFlyerBlob(product) {
     });
 }
 
-// فتح معاينة البوسترات المصورة الجاهزة
 async function openCatalogPreview() {
     const selectedProds = localProducts.filter(p => p.selectedForCatalog !== false);
     if (selectedProds.length === 0) {
@@ -508,7 +515,6 @@ function closeCatalogModal() {
     document.getElementById('catalog-modal').classList.add('hidden');
 }
 
-// مشاركة بوسترات الكتالوج كصور مباشرة على الواتساب بدون أي روابط
 async function shareCatalogWithImages() {
     if (generatedCatalogImageFiles.length === 0) {
         alert("لا توجد صور جاهزة للمشاركة!");
@@ -529,7 +535,6 @@ async function shareCatalogWithImages() {
     }
 }
 
-// مشاركة نصية خالصة بدون أي روابط
 function shareCatalogTextOnly() {
     const selectedProds = localProducts.filter(p => p.selectedForCatalog !== false);
     let text = "🦅 *قائمة العروض المتاحة حالياً* 🦅\n\n";
