@@ -44,7 +44,7 @@
             <div class="text-center"><button class="link-btn" onclick="showScreen('landing-screen')">← العودة للرئيسية</button></div>
         </div>
 
-        <!-- 3. شاشة حساب جديد -->
+        <!-- 3. شاشة حساب جديد (تدعم كود الإحالة الأوتوماتيكي) -->
         <div id="register-screen" class="hidden">
             <div class="header"><h2>حساب جديد</h2></div>
             <div class="input-group"><label>الاسم الكامل</label><input type="text" id="reg-name" /></div>
@@ -59,6 +59,10 @@
                     <option value="دليفري">دليفري</option>
                 </select>
             </div>
+            <div class="input-group">
+                <label>كود إحالة الزميل (اختياري)</label>
+                <input type="text" id="reg-ref-code" placeholder="مثال: CROW-1111" />
+            </div>
             <button class="btn" onclick="handleRegister()">إنشاء الحساب</button>
             <div class="text-center"><button class="link-btn" onclick="showScreen('landing-screen')">← العودة للرئيسية</button></div>
         </div>
@@ -67,7 +71,7 @@
         <div id="admin-dashboard" class="hidden">
             <div class="header">
                 <h2>لوحة تحكم السوبر أدمن 👑</h2>
-                <div class="subtitle">إدارة النظام، الهوية، والوسطاء والاشتراكات</div>
+                <div class="subtitle">إدارة النظام، الوسطاء، الاشتراكات والإحالات الأوتوماتيكية</div>
             </div>
 
             <div class="features-box" style="background:#fee2e2; border:1px solid #fecaca; text-align:right;">
@@ -96,18 +100,19 @@
                 <button type="button" class="btn" onclick="savePlatformSettings()">حفظ وتحديث الواجهة فوراً</button>
             </div>
 
-            <h4 style="color:var(--primary-blue); margin-bottom:5px;">👥 قائمة الوسطاء المشتركين (إدارة الاشتراكات والإحالات):</h4>
+            <h4 style="color:var(--primary-blue); margin-bottom:5px;">👥 قائمة الوسطاء المشتركين (إدارة شاملة):</h4>
             <div style="overflow-x: auto;">
                 <table class="admin-table">
                     <thead>
                         <tr>
-                            <th>الوسيط (رقم وتليفون)</th>
+                            <th>الوسيط ورقم الهاتف</th>
                             <th>المحافظة والمهنة</th>
-                            <th>كود الإحالة والإنجاز</th>
+                            <th>كود الإحالة وإنجاز 5</th>
                             <th>الاشتراك (بداية ونهاية)</th>
-                            <th>تجديد شهر</th>
-                            <th>تجديد أسبوع</th>
-                            <th>تسجيل إحالة (+1)</th>
+                            <th>تجديد شهر (+30 يوم)</th>
+                            <th>تجديد أسبوع (+7 أيام)</th>
+                            <th>تغيير PIN</th>
+                            <th>حذف الحساب</th>
                             <th>دخول الحساب</th>
                         </tr>
                     </thead>
@@ -123,14 +128,13 @@
         <!-- 5. لوحة تحكم الوسيط -->
         <div id="waseet-dashboard" class="hidden">
             <div class="header">
-                <!-- عرض لوجو السوبر أدمن حصرياً بدل عنوان لوحة الوسيط الذكي -->
                 <div id="waseet-top-logo-container" style="margin-bottom: 8px; text-align: center;">
                     <div class="logo-text" id="waseet-header-logo-text">🦅 Crow Go</div>
                 </div>
                 <div class="subtitle" id="waseet-welcome-text">مرحباً بك في مساحة عملك الخاصة</div>
             </div>
 
-            <!-- كارت تفاصيل الاشتراك وتواريخ البداية والنهاية للوسيط -->
+            <!-- كارت تفاصيل الاشتراك وتواريخ البداية والنهاية -->
             <div style="background:#e0f2fe; border:1px solid #bae6fd; border-radius:10px; padding:10px 14px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
                 <div>
                     📅 <b>بداية الاشتراك:</b> <span id="sub-start-date">--/--/----</span><br>
@@ -141,7 +145,7 @@
                 </div>
             </div>
 
-            <!-- صندوق كود الإحالة ونظام الـ 5 اشتراكات للمكافأة (أسبوع مجاني) -->
+            <!-- صندوق كود الإحالة ونظام الـ 5 اشتراكات للمكافأة الأوتوماتيكية -->
             <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:12px; margin-bottom:12px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
                     <div>
@@ -153,8 +157,8 @@
                     </button>
                 </div>
                 <div style="font-size:11px; color:#166534; border-top:1px dashed #bbf7d0; padding-top:6px; display:flex; justify-content:space-between; align-items:center;">
-                    <span>🎁 نظام المكافآت: كل 5 اشتراكات بكودك = <b>أسبوع مجاني!</b></span>
-                    <span>التقدم الحالي: <b id="referral-progress-count">0</b> / 5</span>
+                    <span>🎁 المكافأة الأوتوماتيكية: كل 5 اشتراكات شهرية بكودك = <b>أسبوع مجاني تلقائي!</b></span>
+                    <span>التقدم: <b id="referral-progress-count">0</b> / 5</span>
                 </div>
             </div>
 
