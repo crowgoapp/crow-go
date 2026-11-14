@@ -63,7 +63,7 @@
             <div class="text-center"><button class="link-btn" onclick="showScreen('landing-screen')">← العودة للرئيسية</button></div>
         </div>
 
-        <!-- 4. لوحة تحكم السوبر أدمن الكاملة -->
+        <!-- 4. لوحة تحكم السوبر أدمن -->
         <div id="admin-dashboard" class="hidden">
             <div class="header">
                 <h2>لوحة تحكم السوبر أدمن 👑</h2>
@@ -126,23 +126,41 @@
             <button class="btn btn-secondary" style="margin-top:20px;" onclick="showScreen('landing-screen')">خروج من لوحة الأدمن</button>
         </div>
 
-        <!-- 5. لوحة تحكم الوسيط (المحلية) -->
+        <!-- 5. لوحة تحكم الوسيط (المحلية المتكاملة) -->
         <div id="waseet-dashboard" class="hidden">
             <div class="header">
                 <h2>لوحة الوسيط الذكي 🦅</h2>
                 <div class="subtitle" id="waseet-welcome-text">مرحباً بك في مساحة عملك الخاصة</div>
             </div>
 
-            <div class="features-box" style="background:#f1f5f9; padding:10px; text-align:center;">
-                <button class="btn" onclick="openAddProductModal()" style="margin-bottom:8px;">+ إضافة منتج جديد (سيريال تلقائي)</button>
+            <!-- أزرار التبويب والعمليات -->
+            <div style="display: flex; gap: 5px; margin-bottom: 12px;">
+                <button class="btn" onclick="openAddProductModal()" style="flex: 1; margin:0; font-size:12px;">+ إضافة منتج (عرض)</button>
+                <button class="btn btn-warning" onclick="openAddOrderModal()" style="flex: 1; margin:0; font-size:12px;">+ تسجيل طلب زبون</button>
             </div>
 
-            <h4 style="color:var(--primary-blue); margin-bottom:5px;">📦 منتجاتك المسجلة محلياً:</h4>
-            <div id="products-list-container" style="max-height: 300px; overflow-y: auto;">
-                <!-- المنتجات بتظهر هنا أوتوماتيك -->
+            <!-- تبويبات العرض (منتجات / طلبات) -->
+            <div style="display: flex; border-bottom: 2px solid var(--secondary-blue); margin-bottom: 10px;">
+                <button onclick="switchWaseetTab('products')" id="tab-btn-products" style="flex:1; padding:8px; background:var(--secondary-blue); color:white; border:none; font-weight:bold; cursor:pointer;">المنتجات (العروض)</button>
+                <button onclick="switchWaseetTab('orders')" id="tab-btn-orders" style="flex:1; padding:8px; background:#e2e8f0; color:var(--text-color); border:none; font-weight:bold; cursor:pointer;">طلبات الزبائن</button>
             </div>
 
-            <button class="btn btn-secondary" style="margin-top:20px;" onclick="showScreen('landing-screen')">تسجيل الخروج</button>
+            <!-- محتوى المنتجات -->
+            <div id="waseet-tab-products">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                    <h4 style="color:var(--primary-blue); margin:0;">📦 منتجاتك المسجلة:</h4>
+                    <button class="btn-success" onclick="generateCatalog()" style="padding:4px 10px; font-size:11px; border-radius:6px; border:none; cursor:pointer; color:white; font-weight:bold;">📤 تصدير مجلة الواتساب</button>
+                </div>
+                <div id="products-list-container" style="max-height: 280px; overflow-y: auto;"></div>
+            </div>
+
+            <!-- محتوى الطلبات -->
+            <div id="waseet-tab-orders" class="hidden">
+                <h4 style="color:var(--primary-blue); margin:0 0 5px 0;">🛒 طلبات الزبائن الواردة:</h4>
+                <div id="orders-list-container" style="max-height: 280px; overflow-y: auto;"></div>
+            </div>
+
+            <button class="btn btn-secondary" style="margin-top:15px;" onclick="showScreen('landing-screen')">تسجيل الخروج</button>
         </div>
     </div>
 
