@@ -9,6 +9,7 @@ function showScreen(screenId) {
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('register-screen').classList.add('hidden');
     document.getElementById('admin-dashboard').classList.add('hidden');
+    document.getElementById('waseet-dashboard').classList.add('hidden');
     document.getElementById(screenId).classList.remove('hidden');
 }
 
@@ -16,7 +17,11 @@ function handleLogin() {
     const phone = document.getElementById('login-phone').value;
     const pin = document.getElementById('login-pin').value;
     if(!phone || !pin) { alert("أدخل رقم الهاتف والـ PIN"); return; }
-    alert("تم تسجيل الدخول بنجاح!");
+    
+    currentWaseetPhone = phone;
+    showScreen('waseet-dashboard');
+    document.getElementById('waseet-welcome-text').innerText = `أهلاً بك - هاتف: ${phone}`;
+    loadLocalProducts(phone);
 }
 
 function handleRegister() {
@@ -26,5 +31,18 @@ function handleRegister() {
     const gov = document.getElementById('reg-gov').value;
     const prof = document.getElementById('reg-prof').value;
     if(!name || !phone || !pin || !gov || !prof) { alert("أكمل الحقول الإجبارية"); return; }
+    
+    currentWaseetPhone = phone;
     alert("تم إنشاء حسابك ومنحك أسبوعاً تجريبياً مجانياً!");
+    showScreen('waseet-dashboard');
+    document.getElementById('waseet-welcome-text').innerText = `أهلاً بك يا ${name} (${prof} - ${gov})`;
+    loadLocalProducts(phone);
+}
+
+function loginAsDemoUser() {
+    let demoPhone = "01099998888";
+    currentWaseetPhone = demoPhone;
+    showScreen('waseet-dashboard');
+    document.getElementById('waseet-welcome-text').innerText = `مرحباً بك (حساب تجريبي) - بورسعيد (عقارات)`;
+    loadLocalProducts(demoPhone);
 }
