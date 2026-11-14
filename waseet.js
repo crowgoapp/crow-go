@@ -28,7 +28,6 @@ function switchWaseetTab(tabName) {
     }
 }
 
-// كود الإحالة والمشاركة
 function getWaseetReferralCode(phone) {
     let cleanPhone = phone ? phone.replace(/\D/g, '') : '1234';
     let suffix = cleanPhone.length >= 4 ? cleanPhone.slice(-4) : '1234';
@@ -57,7 +56,6 @@ function shareWaseetInviteWhatsApp() {
     window.open(`https://wa.me/?text=${encoded}`, '_blank');
 }
 
-// رفع وضغط الصور بجودة عالية
 function handleProductImagesUpload(event) {
     const files = Array.from(event.target.files);
     if (!files.length) return;
@@ -402,10 +400,7 @@ function deleteOrder(index) {
     }
 }
 
-// =========================================================================
-// محرك توليد بوسترات الكتالوج (جودة عالية + اسم الوسيط فقط + تقسيم صور متعددة)
-// =========================================================================
-
+// محرك توليد بوسترات الكتالوج
 function loadImageElement(src) {
     return new Promise((resolve) => {
         const img = new Image();
