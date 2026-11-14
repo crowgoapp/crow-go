@@ -4,74 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crow Go - المنصة الذكية للوسطاء</title>
-    <style>
-        :root {
-            --primary-blue: #0d233a;
-            --secondary-blue: #1b4982;
-            --silver-light: #e2e8f0;
-            --silver-dark: #94a3b8;
-            --bg-color: #f8fafc;
-            --text-color: #1e293b;
-            --danger-red: #ef4444;
-            --warning-yellow: #f59e0b;
-            --success-green: #10b981;
-        }
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .container {
-            width: 100%;
-            max-width: 750px;
-            background: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(13, 35, 58, 0.1);
-            overflow: hidden;
-            padding: 20px;
-            box-sizing: border-box;
-            margin: 10px;
-        }
-        .header { text-align: center; margin-bottom: 20px; }
-        .logo-img { max-height: 60px; max-width: 100%; object-fit: contain; margin-bottom: 5px; }
-        .logo-text { font-size: 28px; font-weight: bold; color: var(--secondary-blue); margin-bottom: 5px; }
-        .subtitle { font-size: 13px; color: var(--silver-dark); line-height: 1.4; }
-        .btn {
-            background: linear-gradient(135deg, var(--secondary-blue), var(--primary-blue));
-            color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 8px;
-        }
-        .btn-secondary { background: #e2e8f0; color: var(--primary-blue); }
-        .btn-danger { background: var(--danger-red); color: white; }
-        .btn-warning { background: var(--warning-yellow); color: white; }
-        .btn-success { background: var(--success-green); color: white; }
-        .btn-info { background: #0284c7; color: white; }
-        .btn:active { transform: scale(0.98); }
-        .input-group { margin-bottom: 12px; text-align: right; }
-        .input-group label { display: block; font-size: 13px; margin-bottom: 4px; color: var(--primary-blue); font-weight: bold; }
-        .input-group input, .input-group select, .input-group textarea {
-            width: 100%; padding: 10px; border: 1px solid var(--silver-dark); border-radius: 8px; font-size: 14px; box-sizing: border-box;
-        }
-        .features-box { background: #f1f5f9; padding: 14px; border-radius: 12px; margin-bottom: 15px; font-size: 13px; line-height: 1.5; }
-        .hidden { display: none !important; }
-        .text-center { text-align: center; margin-top: 10px; }
-        .link-btn { background: none; border: none; color: var(--secondary-blue); font-weight: bold; cursor: pointer; text-decoration: underline; }
-        
-        /* جدول السوبر أدمن */
-        .admin-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; white-space: nowrap; }
-        .admin-table th, .admin-table td { border: 1px solid var(--silver-light); padding: 8px 6px; text-align: center; vertical-align: middle; }
-        .admin-table th { background-color: var(--secondary-blue); color: white; }
-        .badge-yellow { background-color: #fef3c7; color: #d97706; padding: 3px 6px; border-radius: 4px; font-weight: bold; }
-        .badge-red { background-color: #fee2e2; color: #dc2626; padding: 3px 6px; border-radius: 4px; font-weight: bold; }
-        .badge-green { background-color: #d1fae5; color: #059669; padding: 3px 6px; border-radius: 4px; font-weight: bold; }
-        .action-btns { display: flex; gap: 3px; justify-content: center; flex-wrap: wrap; }
-        .action-btns button { padding: 4px 6px; font-size: 11px; border-radius: 4px; border: none; cursor: pointer; color: white; font-weight: bold; }
-    </style>
+    <!-- استدعاء ملف التصميم -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -106,7 +40,7 @@
             <div class="header"><h2>تسجيل الدخول</h2></div>
             <div class="input-group"><label>رقم الهاتف المحمول</label><input type="tel" id="login-phone" placeholder="010XXXXXXXX" /></div>
             <div class="input-group"><label>الرقم السري (PIN - 4 أرقام)</label><input type="password" id="login-pin" maxlength="4" placeholder="****" /></div>
-            <button class="btn" onclick="alert('تم تسجيل الدخول')">دخول لوحة التحكم</button>
+            <button class="btn" onclick="handleLogin()">دخول لوحة التحكم</button>
             <div class="text-center"><button class="link-btn" onclick="showScreen('landing-screen')">← العودة للرئيسية</button></div>
         </div>
 
@@ -125,7 +59,7 @@
                     <option value="دليفري">دليفري</option>
                 </select>
             </div>
-            <button class="btn" onclick="alert('تم التسجيل بنجاح')">إنشاء الحساب</button>
+            <button class="btn" onclick="handleRegister()">إنشاء الحساب</button>
             <div class="text-center"><button class="link-btn" onclick="showScreen('landing-screen')">← العودة للرئيسية</button></div>
         </div>
 
@@ -136,7 +70,6 @@
                 <div class="subtitle">إدارة النظام، الهوية، والوسطاء</div>
             </div>
 
-            <!-- قسم تعديل إعدادات المنصة (اللوجو، النص، الواتساب) -->
             <div class="features-box" style="background:#e2e8f0; text-align:right;">
                 <h4 style="margin-top:0; color:var(--primary-blue);">🛠️ تعديل إعدادات الواجهة واللوجو:</h4>
                 <div class="input-group">
@@ -148,7 +81,7 @@
                     <textarea id="admin-subtitle-input" rows="2">منظومة الإدارة الذكية للوسطاء الميدانيين (عقارات، سيارات، دليفري، وخدمات)</textarea>
                 </div>
                 <div class="input-group">
-                    <label>رقم واتساب الإدارة (للتواصل والتجديد)</label>
+                    <label>رقم واتساب الإدارة</label>
                     <input type="text" id="admin-whatsapp-input" value="201000000000" />
                 </div>
                 <button class="btn" onclick="savePlatformSettings()">حفظ وتحديث الواجهة فوراً</button>
@@ -186,23 +119,6 @@
                                 </div>
                             </td>
                         </tr>
-                        <tr>
-                            <td><b>أحمد حسن</b><br><small>0103333 (PIN: 5678)</small></td>
-                            <td>القاهرة</td>
-                            <td>سيارات</td>
-                            <td>📦 5</td>
-                            <td>🛒 1</td>
-                            <td><span class="badge-yellow">قريب الانتهاء</span></td>
-                            <td>
-                                <div class="action-btns">
-                                    <button class="btn-warning" onclick="alert('تم التجديد شهر')">+شهر</button>
-                                    <button class="btn-warning" onclick="alert('تم التجديد أسبوع')">+أسبوع</button>
-                                    <button class="btn-info" onclick="alert('تغيير PIN')">PIN</button>
-                                    <button class="btn-danger" onclick="alert('تم الحظر')">حظر</button>
-                                    <button class="btn-success" onclick="alert('دخول الحساب')">دخول</button>
-                                </div>
-                            </td>
-                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -211,58 +127,9 @@
         </div>
     </div>
 
-    <script>
-        let platformConfig = {
-            logoBase64: '',
-            subtitle: 'منظومة الإدارة الذكية للوسطاء الميدانيين (عقارات، سيارات، دليفري، وخدمات)',
-            whatsapp: '201000000000'
-        };
-
-        function showScreen(screenId) {
-            document.getElementById('landing-screen').classList.add('hidden');
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('register-screen').classList.add('hidden');
-            document.getElementById('admin-dashboard').classList.add('hidden');
-            document.getElementById(screenId).classList.remove('hidden');
-        }
-
-        function openAdminDirect() {
-            let pass = prompt("أدخل كلمة مرور السوبر أدمن:");
-            if (pass === "admin123") {
-                showScreen('admin-dashboard');
-            } else if (pass !== null) {
-                alert("كلمة المرور غير صحيحة!");
-            }
-        }
-
-        let tempLogo = '';
-        function previewNewLogo(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    tempLogo = e.target.result;
-                }
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function savePlatformSettings() {
-            platformConfig.subtitle = document.getElementById('admin-subtitle-input').value;
-            platformConfig.whatsapp = document.getElementById('admin-whatsapp-input').value;
-            if(tempLogo) {
-                platformConfig.logoBase64 = tempLogo;
-            }
-
-            // تطبيق التعديلات على الواجهة الرئيسية للجميع
-            document.getElementById('display-subtitle').innerText = platformConfig.subtitle;
-            if(platformConfig.logoBase64) {
-                document.getElementById('logo-display-container').innerHTML = `<img src="${platformConfig.logoBase64}" class="logo-img" alt="Logo">`;
-            }
-
-            alert("تم حفظ التعديلات وتحديث اللوجو والنصوص ورقم الواتساب بنجاح!");
-            showScreen('landing-screen');
-        }
-    </script>
+    <!-- استدعاء ملفات البرمجة المنفصلة -->
+    <script src="app.js"></script>
+    <script src="waseet.js"></script>
+    <script src="admin.js"></script>
 </body>
 </html>
