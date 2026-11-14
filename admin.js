@@ -1,11 +1,24 @@
 function openAdminDirect() {
+    let savedAdminPass = localStorage.getItem('crow_admin_pass') || 'admin123';
     let pass = prompt("أدخل كلمة مرور السوبر أدمن:");
-    if (pass === "admin123") {
+    if (pass === savedAdminPass) {
         showScreen('admin-dashboard');
         loadAdminSettingsToUI();
     } else if (pass !== null) {
         alert("كلمة المرور غير صحيحة!");
     }
+}
+
+// دالة تغيير كلمة مرور الأدمن بنفسه
+function changeAdminPassword() {
+    let newPass = document.getElementById('admin-new-pass').value.trim();
+    if (!newPass || newPass.length < 4) {
+        alert("يرجى إدخال كلمة مرور جديدة لا تقل عن 4 أرقام/حروف!");
+        return;
+    }
+    localStorage.setItem('crow_admin_pass', newPass);
+    document.getElementById('admin-new-pass').value = '';
+    alert("تم تحديث كلمة مرور الأدمن بنجاح! احتفظ بها جيداً.");
 }
 
 function loadAdminSettingsToUI() {
