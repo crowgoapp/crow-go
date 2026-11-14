@@ -1,7 +1,6 @@
 function openAdminDirect() {
-    let savedAdminPass = localStorage.getItem('crow_admin_pass') || 'admin123';
     let pass = prompt("أدخل كلمة مرور السوبر أدمن:");
-    if (pass === savedAdminPass) {
+    if (pass === (localStorage.getItem('crow_admin_pass') || 'admin123')) {
         showScreen('admin-dashboard');
         loadAdminSettingsToUI();
         renderAdminWaseetsTable();
@@ -12,141 +11,95 @@ function openAdminDirect() {
 
 function changeAdminPassword() {
     let newPass = document.getElementById('admin-new-pass').value.trim();
-    if (!newPass || newPass.length < 4) {
-        alert("يرجى إدخال كلمة مرور جديدة لا تقل عن 4 أرقام/حروف!");
-        return;
-    }
+    if (!newPass || newPass.length < 4) { alert("أدخل 4 أحرف/أرقام على الأقل"); return; }
     localStorage.setItem('crow_admin_pass', newPass);
-    document.getElementById('admin-new-pass').value = '';
-    alert("تم تحديث كلمة مرور الأدمن بنجاح!");
+    let passInput = document.getElementById('admin-new-pass');
+    if(passInput) passInput.value = '';
+    alert("تم تحديث كلمة المرور بنجاح!");
 }
 
 function loadAdminSettingsToUI() {
     let savedLogo = localStorage.getItem('crow_platform_logo');
     let savedSub = localStorage.getItem('crow_platform_sub');
-    let savedWa = localStorage.getItem('crow_platform_wa');
-
-    if(savedLogo) {
-        platformConfig.logoBase64 = savedLogo;
-        document.getElementById('logo-display-container').innerHTML = `<img src="${savedLogo}" class="logo-img" alt="Logo">`;
-    }
-    if(savedSub) {
-        platformConfig.subtitle = savedSub;
-        document.getElementById('display-subtitle').innerText = savedSub;
-        document.getElementById('admin-subtitle-input').value = savedSub;
-    }
-    if(savedWa) {
-        platformConfig.whatsapp = savedWa;
-        document.getElementById('admin-whatsapp-input').value = savedWa;
-    }
+    let logoContainer = document.getElementById('logo-display-container');
+    let subInput = document.getElementById('admin-subtitle-input');
+    if(savedLogo && logoContainer) logoContainer.innerHTML = `<img src="${savedLogo}" class="logo-img">`;
+    if(savedSub && subInput) subInput.value = savedSub;
 }
 
 function previewNewLogo(event) {
     const file = event.target.files[0];
     if (file) {
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = (e) => {
             platformConfig.logoBase64 = e.target.result;
-            document.getElementById('logo-display-container').innerHTML = `<img src="${platformConfig.logoBase64}" class="logo-img" alt="Logo">`;
-        }
+            let logoContainer = document.getElementById('logo-display-container');
+            if(logoContainer) logoContainer.innerHTML = `<img src="${e.target.result}" class="logo-img">`;
+        };
         reader.readAsDataURL(file);
     }
 }
 
 function savePlatformSettings() {
-    platformConfig.subtitle = document.getElementById('admin-subtitle-input').value;
-    platformConfig.whatsapp = document.getElementById('admin-whatsapp-input').value;
-
-    localStorage.setItem('crow_platform_sub', platformConfig.subtitle);
-    localStorage.setItem('crow_platform_wa', platformConfig.whatsapp);
-    if(platformConfig.logoBase64) {
-        localStorage.setItem('crow_platform_logo', platformConfig.logoBase64);
-    }
-
-    document.getElementById('display-subtitle').innerText = platformConfig.subtitle;
-    alert("تم حفظ وتثبيت إعدادات المنصة واللوجو بنجاح!");
+    let subInput = document.getElementById('admin-subtitle-input');
+    if(subInput) localStorage.setItem('crow_platform_sub', subInput.value);
+    if(platformConfig.logoBase64) localStorage.setItem('crow_platform_logo', platformConfig.logoBase64);
+    alert("تم الحفظ بنجاح!");
     showScreen('landing-screen');
 }
 
-// عرض جدول الوسطاء للأدمن مع أعمدة الحذف وتغيير الباسورد ومتابعة الإحالات الأوتوماتيكية
 function renderAdminWaseetsTable() {
     let tbody = document.getElementById('admin-waseets-tbody');
     if(!tbody) return;
-
     let waseetPhones = [];
     for(let i=0; i<localStorage.length; i++) {
         let key = localStorage.key(i);
-        if(key.startsWith('crow_waseet_name_')) {
-            waseetPhones.push(key.replace('crow_waseet_name_', ''));
-        }
+        if(key.startsWith('crow_waseet_name_')) waseetPhones.push(key.replace('crow_waseet_name_', ''));
     }
-
     if(waseetPhones.length === 0) {
         waseetPhones.push("0101111");
         localStorage.setItem('crow_waseet_name_0101111', "محمود السيد");
         localStorage.setItem('crow_waseet_pin_0101111', "1234");
-        let today = new Date().toISOString().split('T')[0];
-        let weekLater = new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0];
-        localStorage.setItem('crow_sub_start_0101111', today);
-        localStorage.setItem('crow_sub_end_0101111', weekLater);
+        localStorage.setItem('crow_sub_start_0101111', new Date().toISOString().split('T')[0]);
+        localStorage.setItem('crow_sub_end_0101111', new Date(Date.now() + 7*86400000).toISOString().split('T')[0]);
     }
-
     tbody.innerHTML = '';
     waseetPhones.forEach(phone => {
-        let name = localStorage.getItem('crow_waseet_name_' + phone) || `وسيط (${phone})`;
-        let start = localStorage.getItem('crow_sub_start_' + phone) || '2026-11-01';
-        let end = localStorage.getItem('crow_sub_end_' + phone) || '2026-12-01';
-        let refs = parseInt(localStorage.getItem('crow_refs_' + phone) || '0', 10);
-        let refCode = `CROW-${phone.slice(-4)}`;
-
-        let tr = document.createElement('tr');
-        tr.innerHTML = `
+        let name = localStorage.getItem('crow_waseet_name_' + phone);
+        let start = localStorage.getItem('crow_sub_start_' + phone) || '--';
+        let end = localStorage.getItem('crow_sub_end_' + phone) || '--';
+        let refs = localStorage.getItem('crow_refs_' + phone) || '0';
+        
+        tbody.innerHTML += `<tr>
             <td><b>${name}</b><br><small>${phone}</small></td>
-            <td>ميداني عام</td>
-            <td><b>${refCode}</b><br><small style="color:#059669; font-weight:bold;">إحالات أوتو: ${refs}/5</small></td>
+            <td>CROW-${phone.slice(-4)}<br><small style="color:green;">إحالات: ${refs}/5</small></td>
             <td><span class="badge-green">${start} إلى ${end}</span></td>
-            <td><button type="button" class="btn-warning" onclick="adminExtendSub('${phone}', 30)">+شهر</button></td>
-            <td><button type="button" class="btn-warning" onclick="adminExtendSub('${phone}', 7)">+أسبوع</button></td>
-            <td><button type="button" class="btn-info" onclick="adminChangeWaseetPin('${phone}')">تغيير PIN</button></td>
-            <td><button type="button" class="btn-danger" onclick="adminDeleteWaseet('${phone}')">حذف</button></td>
-            <td><button type="button" class="btn-success" onclick="loginAsWaseetDirectly('${phone}', '${name}')">دخول</button></td>
-        `;
-        tbody.appendChild(tr);
+            <td><button class="btn-warning" onclick="adminExtendSub('${phone}', 30)">+شهر</button></td>
+            <td><button class="btn-warning" onclick="adminExtendSub('${phone}', 7)">+أسبوع</button></td>
+            <td><button class="btn-info" onclick="adminChangeWaseetPin('${phone}')">PIN</button></td>
+            <td><button class="btn-danger" onclick="adminDeleteWaseet('${phone}')">حذف</button></td>
+            <td><button class="btn-success" onclick="loginAsWaseetDirectly('${phone}', '${name}')">دخول</button></td>
+        </tr>`;
     });
 }
 
 function adminExtendSub(phone, days) {
-    let currentEndStr = localStorage.getItem('crow_sub_end_' + phone) || new Date().toISOString().split('T')[0];
-    let endDate = new Date(currentEndStr);
+    let endDate = new Date(localStorage.getItem('crow_sub_end_' + phone) || new Date());
     if(endDate < new Date()) endDate = new Date();
     endDate.setDate(endDate.getDate() + days);
-    
-    let newEndStr = endDate.toISOString().split('T')[0];
-    localStorage.setItem('crow_sub_end_' + phone, newEndStr);
-    alert(`تم تجديد الاشتراك للوسيط بنجاح حتى ${newEndStr}!`);
+    localStorage.setItem('crow_sub_end_' + phone, endDate.toISOString().split('T')[0]);
+    alert("تم التجديد بنجاح!");
     renderAdminWaseetsTable();
 }
 
 function adminChangeWaseetPin(phone) {
-    let newPin = prompt("أدخل الرقم السري الجديد (PIN - 4 أرقام) للوسيط:");
-    if(newPin && newPin.trim().length >= 4) {
-        localStorage.setItem('crow_waseet_pin_' + phone, newPin.trim());
-        alert("تم تغيير الرقم السري للوسيط بنجاح!");
-    } else if(newPin !== null) {
-        alert("يرجى إدخال 4 أرقام صحيحة على الأقل!");
-    }
+    let pin = prompt("أدخل PIN الجديد (4 أرقام):");
+    if(pin && pin.length >= 4) { localStorage.setItem('crow_waseet_pin_' + phone, pin); alert("تم التغيير!"); }
 }
 
 function adminDeleteWaseet(phone) {
-    if(confirm(`هل أنت متأكد من حذف الوسيط برقم (${phone}) وجميع بياناته؟`)) {
-        localStorage.removeItem('crow_waseet_name_' + phone);
-        localStorage.removeItem('crow_waseet_pin_' + phone);
-        localStorage.removeItem('crow_sub_start_' + phone);
-        localStorage.removeItem('crow_sub_end_' + phone);
-        localStorage.removeItem('crow_refs_' + phone);
-        localStorage.removeItem('crow_prods_' + phone);
-        localStorage.removeItem('crow_orders_' + phone);
-        alert("تم حذف حساب الوسيط بنجاح!");
+    if(confirm("هل أنت متأكد من الحذف؟")) {
+        ['crow_waseet_name_', 'crow_waseet_pin_', 'crow_sub_start_', 'crow_sub_end_', 'crow_refs_', 'crow_prods_', 'crow_orders_'].forEach(k => localStorage.removeItem(k + phone));
         renderAdminWaseetsTable();
     }
 }
