@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crow Go - المنصة الذكية للوسطاء</title>
+    <style>
+        :root {
+            --primary-blue: #0d233a;
+            --secondary-blue: #1b4982;
+            --silver-light: #e2e8f0;
+            --silver-dark: #94a3b8;
+            --bg-color: #f8fafc;
+            --text-color: #1e293b;
+        }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(13, 35, 58, 0.1);
+            overflow: hidden;
+            padding: 24px;
+            box-sizing: border-box;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .logo-placeholder {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--secondary-blue);
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            font-size: 14px;
+            color: var(--silver-dark);
+        }
+        .btn {
+            background: linear-gradient(135deg, var(--secondary-blue), var(--primary-blue));
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+        .btn:active {
+            transform: scale(0.98);
+        }
+        .input-group {
+            margin-bottom: 16px;
+        }
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 6px;
+            color: var(--primary-blue);
+            font-weight: bold;
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--silver-dark);
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- شاشة الترحيب والدخول -->
+        <div id="auth-screen">
+            <div class="header">
+                <div class="logo-placeholder" id="logo-click-area">🦅 Crow Go</div>
+                <div class="subtitle">منصة إدارة السلع والوسطاء الميدانيين</div>
+            </div>
+
+            <div class="input-group">
+                <label>رقم الهاتف المحمول</label>
+                <input type="tel" id="phone-input" placeholder="010XXXXXXXX" />
+            </div>
+
+            <div class="input-group">
+                <label>الرقم السري (PIN - 4 أرقام)</label>
+                <input type="password" id="pin-input" maxlength="4" placeholder="****" />
+            </div>
+
+            <button class="btn" onclick="handleLoginRegister()">دخول / تسجيل جديد</button>
+        </div>
+
+        <!-- شاشة لوحة الوسيط (مبدئية) -->
+        <div id="waseet-dashboard" class="hidden">
+            <div class="header">
+                <h2>لوحة الوسيط</h2>
+                <p id="welcome-user"></p>
+            </div>
+            <button class="btn" onclick="logout()">تسجيل الخروج</button>
+        </div>
+    </div>
+
+    <script>
+        // محاكاة سريعة للضغط 3 مرات على الشعار لفتح السوبر أدمن مستقبلاً
+        let logoClicks = 0;
+        document.getElementById('logo-click-area').addEventListener('click', () => {
+            logoClicks++;
+            if (logoClicks === 3) {
+                alert("تم تفعيل وضع السوبر أدمن (قريباً)");
+                logoClicks = 0;
+            }
+        });
+
+        function handleLoginRegister() {
+            const phone = document.getElementById('phone-input').value;
+            const pin = document.getElementById('pin-input').value;
+            
+            if(!phone || !pin) {
+                alert("يرجى إدخال رقم الهاتف والرقم السري الرباعي");
+                return;
+            }
+
+            // مؤقتاً للتأكد من عمل الواجهة
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('waseet-dashboard').classList.remove('hidden');
+            document.getElementById('welcome-user').innerText = `أهلاً بك، رقم الهاتف: ${phone}`;
+        }
+
+        function logout() {
+            document.getElementById('waseet-dashboard').classList.add('hidden');
+            document.getElementById('auth-screen').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
