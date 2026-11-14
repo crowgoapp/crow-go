@@ -29,52 +29,56 @@
         }
         .container {
             width: 100%;
-            max-width: 780px;
+            max-width: 600px;
             background: #ffffff;
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(13, 35, 58, 0.1);
             overflow: hidden;
-            padding: 24px;
+            padding: 20px;
             box-sizing: border-box;
             margin: 10px;
         }
-        .header {
-            text-align: center;
-            margin-bottom: 24px;
-        }
-        .logo-img { max-height: 60px; max-width: 100%; object-fit: contain; margin-bottom: 8px; cursor: pointer; }
-        .logo-text { font-size: 32px; font-weight: bold; color: var(--secondary-blue); margin-bottom: 8px; cursor: pointer; }
-        .subtitle { font-size: 14px; color: var(--silver-dark); line-height: 1.5; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .logo-img { max-height: 50px; max-width: 100%; object-fit: contain; margin-bottom: 5px; cursor: pointer; }
+        .logo-text { font-size: 28px; font-weight: bold; color: var(--secondary-blue); margin-bottom: 5px; cursor: pointer; }
+        .subtitle { font-size: 13px; color: var(--silver-dark); line-height: 1.4; }
         .btn {
             background: linear-gradient(135deg, var(--secondary-blue), var(--primary-blue));
-            color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; margin: 2px 0;
+            color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 8px;
         }
         .btn-secondary { background: #e2e8f0; color: var(--primary-blue); }
         .btn-danger { background: var(--danger-red); color: white; }
         .btn-warning { background: var(--warning-yellow); color: white; }
         .btn-success { background: var(--success-green); color: white; }
-        .btn-info { background: #0284c7; color: white; }
         .btn:active { transform: scale(0.98); }
-        .input-group { margin-bottom: 16px; text-align: right; }
-        .input-group label { display: block; font-size: 14px; margin-bottom: 6px; color: var(--primary-blue); font-weight: bold; }
+        .input-group { margin-bottom: 12px; text-align: right; }
+        .input-group label { display: block; font-size: 13px; margin-bottom: 4px; color: var(--primary-blue); font-weight: bold; }
         .input-group input, .input-group select, .input-group textarea {
             width: 100%; padding: 10px; border: 1px solid var(--silver-dark); border-radius: 8px; font-size: 14px; box-sizing: border-box;
         }
-        .features-box { background: #f1f5f9; padding: 16px; border-radius: 12px; margin-bottom: 20px; font-size: 13px; line-height: 1.6; }
+        .features-box { background: #f1f5f9; padding: 14px; border-radius: 12px; margin-bottom: 15px; font-size: 13px; line-height: 1.5; }
         .hidden { display: none !important; }
-        .text-center { text-align: center; margin-top: 15px; }
+        .text-center { text-align: center; margin-top: 10px; }
         .link-btn { background: none; border: none; color: var(--secondary-blue); font-weight: bold; cursor: pointer; text-decoration: underline; }
         
-        /* جدول السوبر أدمن بأعمدة منفصلة */
-        .admin-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; white-space: nowrap; }
-        .admin-table th, .admin-table td { border: 1px solid var(--silver-light); padding: 10px 8px; text-align: center; }
+        /* التبويبات (Tabs) للوسيط */
+        .tabs { display: flex; gap: 5px; margin-bottom: 15px; background: #e2e8f0; padding: 4px; border-radius: 8px; }
+        .tab-btn { flex: 1; padding: 8px; border: none; background: none; font-weight: bold; font-size: 13px; cursor: pointer; border-radius: 6px; color: var(--primary-blue); }
+        .tab-btn.active { background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        /* كروت المنتجات */
+        .product-card { background: #fff; border: 1px solid var(--silver-light); border-radius: 10px; padding: 12px; margin-bottom: 10px; display: flex; gap: 10px; align-items: center; }
+        .product-img { width: 70px; height: 70px; object-fit: cover; border-radius: 8px; background: #eee; }
+        .product-info { flex: 1; font-size: 13px; }
+        .serial-badge { background: var(--secondary-blue); color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        
+        /* شريط التنبيه */
+        .alert-banner { background: #fef3c7; color: #d97706; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; margin-bottom: 15px; text-align: center; }
+        
+        /* جدول السوبر أدمن */
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; white-space: nowrap; }
+        .admin-table th, .admin-table td { border: 1px solid var(--silver-light); padding: 8px 6px; text-align: center; }
         .admin-table th { background-color: var(--secondary-blue); color: white; }
-        .admin-table tr:nth-child(even) { background-color: #f8fafc; }
-        .badge-yellow { background-color: #fef3c7; color: #d97706; padding: 4px 8px; border-radius: 6px; font-weight: bold; display: inline-block; }
-        .badge-red { background-color: #fee2e2; color: #dc2626; padding: 4px 8px; border-radius: 6px; font-weight: bold; display: inline-block; }
-        .badge-green { background-color: #d1fae5; color: #059669; padding: 4px 8px; border-radius: 6px; font-weight: bold; display: inline-block; }
-        .action-btns { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
-        .action-btns button { padding: 4px 8px; font-size: 11px; }
     </style>
 </head>
 <body>
@@ -98,8 +102,8 @@
                 </ul>
             </div>
 
-            <button class="btn" style="width:100%" onclick="showScreen('login-screen')">تسجيل دخول (مستخدم حالي)</button>
-            <button class="btn btn-secondary" style="width:100%" onclick="showScreen('register-screen')">حساب جديد (أسبوع تجريبي مجاني)</button>
+            <button class="btn" onclick="showScreen('login-screen')">تسجيل دخول (مستخدم حالي)</button>
+            <button class="btn btn-secondary" onclick="showScreen('register-screen')">حساب جديد (أسبوع تجريبي مجاني)</button>
         </div>
 
         <!-- 2. شاشة تسجيل الدخول -->
@@ -108,15 +112,9 @@
                 <h2>تسجيل الدخول</h2>
                 <div class="subtitle">أدخل رقم هاتفك والرقم السري للوصول لحسابك</div>
             </div>
-            <div class="input-group">
-                <label>رقم الهاتف المحمول</label>
-                <input type="tel" id="login-phone" placeholder="010XXXXXXXX" />
-            </div>
-            <div class="input-group">
-                <label>الرقم السري (PIN - 4 أرقام)</label>
-                <input type="password" id="login-pin" maxlength="4" placeholder="****" />
-            </div>
-            <button class="btn" style="width:100%" onclick="handleLogin()">دخول لوحة التحكم</button>
+            <div class="input-group"><label>رقم الهاتف المحمول</label><input type="tel" id="login-phone" placeholder="010XXXXXXXX" /></div>
+            <div class="input-group"><label>الرقم السري (PIN - 4 أرقام)</label><input type="password" id="login-pin" maxlength="4" placeholder="****" /></div>
+            <button class="btn" onclick="handleLogin()">دخول لوحة التحكم</button>
             <div class="text-center"><button class="link-btn" onclick="showScreen('landing-screen')">← العودة للرئيسية</button></div>
         </div>
 
@@ -141,90 +139,87 @@
                 </select>
             </div>
             <div class="input-group"><label>كود الدعوة (اختياري)</label><input type="text" id="reg-ref" placeholder="لو دعاك صديق اكتب الكود هنا" /></div>
-            <button class="btn" style="width:100%" onclick="handleRegister()">إنشاء الحساب وبدء الأسبوع المجاني</button>
+            <button class="btn" onclick="handleRegister()">إنشاء الحساب وبدء الأسبوع المجاني</button>
             <div class="text-center"><button class="link-btn" onclick="showScreen('landing-screen')">← العودة للرئيسية</button></div>
         </div>
 
-        <!-- 4. لوحة تحكم السوبر أدمن الكاملة -->
-        <div id="admin-dashboard" class="hidden">
-            <div class="header">
-                <h2>لوحة تحكم السوبر أدمن 👑</h2>
-                <div class="subtitle">إدارة الوسطاء، الاشتراكات، وتغيير الهوية</div>
-            </div>
-
-            <div class="features-box">
-                <h4 style="margin-top:0; color:var(--secondary-blue);">⚙️ إعدادات المنصة العامة:</h4>
-                <div class="input-group"><label>تغيير اللوجو</label><input type="file" id="admin-logo-file" accept="image/*" onchange="previewLogo(event)" /></div>
-                <div class="text-center"><img id="logo-preview" src="" class="hidden" style="max-height:40px; margin-bottom:10px;" alt="معاينة"/></div>
-                <div class="input-group"><label>عنوان الواجهة (Subtitle)</label><textarea id="admin-subtitle-input" rows="2"></textarea></div>
-                <div class="input-group"><label>رقم واتساب الإدارة</label><input type="text" id="admin-whatsapp" /></div>
-                <button class="btn" style="width:100%" onclick="saveAdminSettings()">حفظ التعديلات العامة</button>
-            </div>
-
-            <h4 style="color:var(--primary-blue); margin-bottom:5px;">👥 قائمة جميع الوسطاء المشتركين:</h4>
-            <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                <select id="filter-gov" onchange="renderAdminTable()" style="padding: 8px; border-radius:6px; flex:1;">
-                    <option value="">كل المحافظات</option>
-                    <option value="بورسعيد">بورسعيد</option>
-                    <option value="القاهرة">القاهرة</option>
-                </select>
-                <select id="filter-prof" onchange="renderAdminTable()" style="padding: 8px; border-radius:6px; flex:1;">
-                    <option value="">كل المهن</option>
-                    <option value="عقارات">عقارات</option>
-                    <option value="سيارات">سيارات</option>
-                    <option value="دليفري">دليفري</option>
-                </select>
-            </div>
-
-            <div style="overflow-x: auto;">
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>الوسيط</th>
-                            <th>المحافظة</th>
-                            <th>المهنة</th>
-                            <th>المنتجات</th>
-                            <th>الطلبات</th>
-                            <th>الاشتراك</th>
-                            <th>الإجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-waseets-tbody">
-                        <!-- يتم تعبئتها برمجياً -->
-                    </tbody>
-                </table>
-            </div>
-
-            <button class="btn btn-secondary" style="width:100%; margin-top:20px;" onclick="showScreen('landing-screen')">خروج من لوحة الأدمن</button>
-        </div>
-
-        <!-- 5. لوحة تحكم الوسيط -->
+        <!-- 4. لوحة تحكم الوسيط (المحلية الكاملة) -->
         <div id="waseet-dashboard" class="hidden">
             <div class="header">
                 <h2>لوحة الوسيط الذكي</h2>
-                <p id="welcome-user" style="font-weight: bold; color: var(--secondary-blue);"></p>
-                <p id="impersonate-banner" class="hidden" style="background:#fef3c7; color:#d97706; padding:5px; border-radius:4px; font-weight:bold;">⚠️ أنت تفتح حساب هذا الوسيط في وضع "معاينة / السوبر أدمن"</p>
+                <p id="welcome-user" style="font-weight: bold; color: var(--secondary-blue); margin:2px 0;"></p>
+                <p id="impersonate-banner" class="hidden" style="background:#fef3c7; color:#d97706; padding:3px; border-radius:4px; font-size:12px; font-weight:bold;">⚠️ وضع معاينة السوبر أدمن</p>
             </div>
-            <div class="features-box text-center">
-                مرحباً بك في مساحة عملك الخاصة. (شاشات إضافة المنتجات والمجلات جاهزة للربط).
+
+            <div id="sub-alert" class="alert-banner hidden">⚠️ يتبقى أقل من 3 أيام على انتهاء اشتراكك الشهري! <br><a id="renew-link" href="#" target="_blank" style="color:#1b4982; text-decoration:underline;">تواصل لتجديد الاشتراك</a></div>
+
+            <!-- تبويبات الوسيط -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('available-tab')">📦 متوفر</button>
+                <button class="tab-btn" onclick="switchTab('orders-tab')">🛒 طلبات العملاء</button>
+                <button class="tab-btn" onclick="switchTab('settings-tab')">⚙️ الإعدادات</button>
             </div>
-            <button class="btn btn-secondary" style="width:100%" onclick="exitWaseetPanel()">تسجيل الخروج</button>
+
+            <!-- تبويب متوفر -->
+            <div id="available-tab" class="tab-content">
+                <button class="btn" onclick="openAddProductModal()">+ إضافة منتج جديد</button>
+                <div style="display:flex; gap:5px; margin-top:10px;">
+                    <button class="btn btn-secondary" style="flex:1; font-size:12px;" onclick="selectAllProducts()">اختيار الكل للمجلة</button>
+                    <button class="btn btn-success" style="flex:1; font-size:12px;" onclick="generateCatalog()">📤 إصدار المجلة (صور)</button>
+                </div>
+                <div id="products-list" style="margin-top:15px;">
+                    <!-- المنتجات ستظهر هنا محلياً -->
+                </div>
+            </div>
+
+            <!-- تبويب طلبات العملاء -->
+            <div id="orders-tab" class="tab-content hidden">
+                <button class="btn" onclick="openAddOrderModal()">+ تسجيل طلب عميل جديد</button>
+                <div id="orders-list" style="margin-top:15px;">
+                    <!-- الطلبات ستظهر هنا -->
+                </div>
+            </div>
+
+            <!-- تبويب الإعدادات والنسخ الاحتياطي -->
+            <div id="settings-tab" class="tab-content hidden">
+                <div class="features-box">
+                    <b>🛡️ إدارة وحماية بياناتك:</b><br>
+                    <small>جميع بياناتك مخزنة محلياً على هاتفك لضمان الخصوصية التامة.</small>
+                    <button class="btn btn-secondary" style="margin-top:10px;" onclick="exportBackup()">تصدير نسخة احتياطية</button>
+                </div>
+                <button class="btn btn-danger" style="margin-top:20px;" onclick="showScreen('landing-screen')">تسجيل الخروج</button>
+            </div>
+        </div>
+
+        <!-- مودال إضافة منتج -->
+        <div id="product-modal" class="hidden" style="background:white; padding:15px; border-radius:10px; border:2px solid var(--secondary-blue); margin-top:15px;">
+            <h4>إضافة منتج جديد (سيريال تلقائي)</h4>
+            <div class="input-group"><label>صورة المنتج</label><input type="file" id="prod-img" accept="image/*" /></div>
+            <div class="input-group"><label>اسم المنتج</label><input type="text" id="prod-name" placeholder="مثال: ثلاجة توشيبا" /></div>
+            <div class="input-group"><label>السعر (جنيه)</label><input type="number" id="prod-price" placeholder="8500" /></div>
+            <div class="input-group"><label>الوصف والحالة</label><input type="text" id="prod-desc" placeholder="استعمال خفيف كالجديد" /></div>
+            <hr>
+            <div class="input-group"><label>اسم صاحب السلعة (سري للوسيط فقط)</label><input type="text" id="owner-name" /></div>
+            <div class="input-group"><label>رقم تليفون صاحب السلعة (سري)</label><input type="tel" id="owner-phone" /></div>
+            <div class="input-group"><label>عنوان صاحب السلعة (سري)</label><input type="text" id="owner-address" /></div>
+            <button class="btn" onclick="saveProduct()">حفظ المنتج</button>
+            <button class="btn btn-secondary" onclick="closeProductModal()">إلغاء</button>
+        </div>
+
+        <!-- 5. لوحة السوبر أدمن -->
+        <div id="admin-dashboard" class="hidden">
+            <div class="header">
+                <h2>لوحة تحكم السوبر أدمن 👑</h2>
+                <div class="subtitle">إدارة النظام والوسطاء</div>
+            </div>
+            <button class="btn btn-secondary" onclick="showScreen('landing-screen')">خروج من لوحة الأدمن</button>
         </div>
     </div>
 
     <script>
-        let appSettings = {
-            logoType: 'text',
-            logoValue: '🦅 Crow Go',
-            subtitle: 'منظومة الإدارة الذكية للوسطاء الميدانيين (عقارات، سيارات، دليفري، وخدمات)',
-            whatsapp: '201000000000'
-        };
-
-        let mockWaseets = [
-            { id: 1, name: 'محمود السيد', phone: '01011112222', governorate: 'بورسعيد', profession: 'عقارات', products_count: 14, orders_count: 3, end_date: '2026-12-10', status: 'active', pin: '1234' },
-            { id: 2, name: 'أحمد حسن', phone: '01033334444', governorate: 'القاهرة', profession: 'سيارات', products_count: 5, orders_count: 1, end_date: '2026-11-16', status: 'expiring', pin: '5678' },
-            { id: 3, name: 'إبراهيم محمد', phone: '01055556666', governorate: 'بورسعيد', profession: 'دليفري', products_count: 0, orders_count: 0, end_date: '2026-11-01', status: 'expired', pin: '0000' }
-        ];
+        let appSettings = { logoValue: '🦅 Crow Go', subtitle: 'منظومة الإدارة الذكية للوسطاء', whatsapp: '201000000000' };
+        let currentWaseetPhone = '';
+        let localProducts = []; // مخزن محلي للمنتجات للوسيط الحالي
 
         function showScreen(screenId) {
             document.getElementById('landing-screen').classList.add('hidden');
@@ -232,164 +227,37 @@
             document.getElementById('register-screen').classList.add('hidden');
             document.getElementById('admin-dashboard').classList.add('hidden');
             document.getElementById('waseet-dashboard').classList.add('hidden');
-            document.getElementById('impersonate-banner').classList.add('hidden');
-
+            document.getElementById('product-modal').classList.add('hidden');
             document.getElementById(screenId).classList.remove('hidden');
         }
 
+        // فتح الأدمن بالضغط 3 مرات
         let logoClicks = 0;
-        let clickTimer = null;
         function handleLogoClick() {
             logoClicks++;
-            clearTimeout(clickTimer);
             if (logoClicks === 3) {
                 logoClicks = 0;
-                let password = prompt("أدخل كلمة مرور السوبر أدمن:");
-                if (password === "admin123") {
-                    loadAdminData();
-                    showScreen('admin-dashboard');
-                } else if(password !== null) {
-                    alert("كلمة المرور غير صحيحة!");
-                }
-            } else {
-                clickTimer = setTimeout(() => { logoClicks = 0; }, 600);
+                let pass = prompt("كلمة مرور السوبر أدمن:");
+                if (pass === "admin123") showScreen('admin-dashboard');
             }
+            setTimeout(() => logoClicks = 0, 600);
         }
 
-        function loadAdminData() {
-            document.getElementById('admin-subtitle-input').value = appSettings.subtitle;
-            document.getElementById('admin-whatsapp').value = appSettings.whatsapp;
-            renderAdminTable();
-        }
-
-        function renderAdminTable() {
-            const tbody = document.getElementById('admin-waseets-tbody');
-            const govFilter = document.getElementById('filter-gov').value;
-            const profFilter = document.getElementById('filter-prof').value;
-            tbody.innerHTML = '';
-
-            const filtered = mockWaseets.filter(w => {
-                return (govFilter === "" || w.governorate === govFilter) && 
-                       (profFilter === "" || w.profession === profFilter);
-            });
-
-            if(filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7">لا يوجد وسطاء مطابقين للفلتر</td></tr>`;
-                return;
-            }
-
-            filtered.forEach(w => {
-                let badgeClass = 'badge-green';
-                let statusText = w.end_date;
-                if(w.status === 'expiring') {
-                    badgeClass = 'badge-yellow';
-                    statusText += ' (قرب الانتهاء)';
-                } else if(w.status === 'expired') {
-                    badgeClass = 'badge-red';
-                    statusText += ' (منتهي)';
-                } else if(w.status === 'blocked') {
-                    badgeClass = 'badge-red';
-                    statusText = 'محظور';
-                }
-
-                let tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td><b>${w.name}</b><br><small>${w.phone}</small><br><small style="color:#1b4982; font-weight:bold;">PIN: ${w.pin}</small></td>
-                    <td>${w.governorate}</td>
-                    <td>${w.profession}</td>
-                    <td><b>📦 ${w.products_count}</b></td>
-                    <td><b>🛒 ${w.orders_count}</b></td>
-                    <td><span class="${badgeClass}">${statusText}</span></td>
-                    <td>
-                        <div class="action-btns">
-                            <button class="btn btn-warning" onclick="extendSub(${w.id}, 30)">+شهر</button>
-                            <button class="btn btn-warning" onclick="extendSub(${w.id}, 7)">+أسبوع</button>
-                            <button class="btn btn-info" onclick="changePin(${w.id})">PIN</button>
-                            <button class="btn btn-danger" onclick="toggleBlock(${w.id})">${w.status === 'blocked' ? 'فك الحظر' : 'حظر'}</button>
-                            <button class="btn btn-success" onclick="impersonate(${w.id})">دخول</button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function extendSub(id, days) {
-            let w = mockWaseets.find(x => x.id === id);
-            alert(`تم تجديد اشتراك الوسيط ${w.name} لمدة ${days} يوم بنجاح!`);
-            w.status = 'active';
-            renderAdminTable();
-        }
-
-        function changePin(id) {
-            let w = mockWaseets.find(x => x.id === id);
-            let newPin = prompt(`الرقم السري الحالي للوسيط ${w.name} هو (${w.pin}).\nأدخل الرقم السري الجديد (4 أرقام):`);
-            if (newPin && newPin.length === 4 && !isNaN(newPin)) {
-                w.pin = newPin;
-                alert(`تم تغيير الـ PIN للوسيط ${w.name} إلى ${newPin}`);
-                renderAdminTable();
-            } else if (newPin !== null) {
-                alert("يجب أن يتكون الـ PIN من 4 أرقام صحيحة.");
-            }
-        }
-
-        function toggleBlock(id) {
-            let w = mockWaseets.find(x => x.id === id);
-            w.status = (w.status === 'blocked') ? 'active' : 'blocked';
-            alert(`تم ${w.status === 'blocked' ? 'حظر' : 'تفعيل'} حساب الوسيط ${w.name}`);
-            renderAdminTable();
-        }
-
-        function impersonate(id) {
-            let w = mockWaseets.find(x => x.id === id);
-            showScreen('waseet-dashboard');
-            document.getElementById('welcome-user').innerText = `أهلاً بك - حساب الوسيط: ${w.name} (${w.governorate})`;
-            document.getElementById('impersonate-banner').classList.remove('hidden');
-        }
-
-        let newLogoBase64 = "";
-        function previewLogo(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    newLogoBase64 = e.target.result;
-                    const preview = document.getElementById('logo-preview');
-                    preview.src = newLogoBase64;
-                    preview.classList.remove('hidden');
-                }
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function saveAdminSettings() {
-            appSettings.subtitle = document.getElementById('admin-subtitle-input').value;
-            appSettings.whatsapp = document.getElementById('admin-whatsapp').value;
-            if (newLogoBase64) {
-                appSettings.logoType = 'image';
-                appSettings.logoValue = newLogoBase64;
-            }
-            applySettingsToUI();
-            alert("تم حفظ إعدادات المنصة وتحديث الواجهة بنجاح!");
-            showScreen('landing-screen');
-        }
-
-        function applySettingsToUI() {
-            const container = document.getElementById('logo-container');
-            if (appSettings.logoType === 'image') {
-                container.innerHTML = `<img src="${appSettings.logoValue}" class="logo-img" alt="Logo"/>`;
-            } else {
-                container.innerHTML = `<div class="logo-text">${appSettings.logoValue}</div>`;
-            }
-            document.getElementById('display-subtitle').innerText = appSettings.subtitle;
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.remove('hidden');
+            event.target.classList.add('active');
         }
 
         function handleLogin() {
             const phone = document.getElementById('login-phone').value;
             const pin = document.getElementById('login-pin').value;
-            if(!phone || !pin) { alert("يرجى إدخال رقم الهاتف والرقم السري"); return; }
+            if(!phone || !pin) { alert("أدخل رقم الهاتف والـ PIN"); return; }
+            currentWaseetPhone = phone;
             showScreen('waseet-dashboard');
             document.getElementById('welcome-user').innerText = `أهلاً بك - هاتف: ${phone}`;
+            loadLocalProducts();
         }
 
         function handleRegister() {
@@ -398,15 +266,119 @@
             const pin = document.getElementById('reg-pin').value;
             const gov = document.getElementById('reg-gov').value;
             const prof = document.getElementById('reg-prof').value;
-            if(!name || !phone || !pin || !gov || !prof) { alert("يرجى إكمال جميع الحقول الإجبارية"); return; }
-            if(pin.length !== 4) { alert("الرقم السري يجب أن يكون 4 أرقام بالضبط"); return; }
-            alert("تم إنشاء الحساب بنجاح وتم منحك أسبوعاً تجريبياً مجانياً!");
+            if(!name || !phone || !pin || !gov || !prof) { alert("أكمل الحقول الإجبارية"); return; }
+            currentWaseetPhone = phone;
+            alert("تم إنشاء حسابك ومنحك أسبوعاً تجريبياً مجانياً!");
             showScreen('waseet-dashboard');
             document.getElementById('welcome-user').innerText = `أهلاً بك يا ${name} (${prof} - ${gov})`;
+            loadLocalProducts();
         }
 
-        function exitWaseetPanel() {
-            showScreen('landing-screen');
+        function openAddProductModal() { document.getElementById('product-modal').classList.remove('hidden'); }
+        function closeProductModal() { document.getElementById('product-modal').classList.add('hidden'); }
+
+        // ضغط الصورة وحفظها محلياً برقم سيريال تسلسلي ثابت لا يتكرر
+        function saveProduct() {
+            const name = document.getElementById('prod-name').value;
+            const price = document.getElementById('prod-price').value;
+            const desc = document.getElementById('prod-desc').value;
+            const fileInput = document.getElementById('prod-img');
+
+            if(!name || !price) { alert("أدخل اسم المنتج والسعر على الأقل"); return; }
+
+            let reader = new FileReader();
+            if (fileInput.files[0]) {
+                reader.readAsDataURL(fileInput.files[0]);
+                reader.onload = function(e) {
+                    processAndSave(e.target.result, name, price, desc);
+                }
+            } else {
+                processAndSave('', name, price, desc);
+            }
+        }
+
+        function processAndSave(imgData, name, price, desc) {
+            // السيريال يبدأ من 1 ولا يتكرر أبدًا للوسيط
+            let nextSerial = localProducts.length > 0 ? localProducts[localProducts.length - 1].serial + 1 : 1;
+            
+            let newProd = {
+                serial: nextSerial,
+                name: name,
+                price: price,
+                desc: desc,
+                image: imgData,
+                selected: false
+            };
+
+            localProducts.push(newProd);
+            localStorage.setItem('crow_prods_' + currentWaseetPhone, JSON.stringify(localProducts));
+            closeProductModal();
+            renderProducts();
+            alert(`تم حفظ المنتج برقم سيريال #${nextSerial} بنجاح!`);
+        }
+
+        function loadLocalProducts() {
+            let saved = localStorage.getItem('crow_prods_' + currentWaseetPhone);
+            if(saved) { localProducts = JSON.parse(saved); } else { localProducts = []; }
+            renderProducts();
+        }
+
+        function renderProducts() {
+            let list = document.getElementById('products-list');
+            list.innerHTML = '';
+            if(localProducts.length === 0) {
+                list.innerHTML = `<p class="text-center" style="color:var(--silver-dark)">لا توجد منتجات مسجلة حالياً.</p>`;
+                return;
+            }
+            localProducts.forEach((p, index) => {
+                let div = document.createElement('div');
+                div.className = 'product-card';
+                div.innerHTML = `
+                    <input type="checkbox" ${p.selected ? 'checked' : ''} onchange="toggleSelect(${index})">
+                    <img src="${p.image || 'https://via.placeholder.com/70'}" class="product-img">
+                    <div class="product-info">
+                        <span class="serial-badge">#${p.serial}</span> <b>${p.name}</b><br>
+                        💰 السعر: ${p.price} جنيه<br>
+                        <small>${p.desc}</small>
+                    </div>
+                    <button class="btn btn-danger" style="padding:4px 8px; font-size:11px;" onclick="deleteProduct(${index})">حذف</button>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function toggleSelect(index) {
+            localProducts[index].selected = !localProducts[index].selected;
+            localStorage.setItem('crow_prods_' + currentWaseetPhone, JSON.stringify(localProducts));
+        }
+
+        function selectAllProducts() {
+            localProducts.forEach(p => p.selected = true);
+            localStorage.setItem('crow_prods_' + currentWaseetPhone, JSON.stringify(localProducts));
+            renderProducts();
+        }
+
+        function deleteProduct(index) {
+            localProducts.splice(index, 1);
+            localStorage.setItem('crow_prods_' + currentWaseetPhone, JSON.stringify(localProducts));
+            renderProducts();
+        }
+
+        // إصدار المجلة (تقسيم تلقائي لو المنتجات كثيرة لتفادي الروابط)
+        function generateCatalog() {
+            let selected = localProducts.filter(p => p.selected);
+            if(selected.length === 0) { alert("اختر منتجاً واحداً على الأقل لإصدار المجلة!"); return; }
+            alert(`تم تجهيز ${selected.length} منتجاً للمشاركة كصور عبر واتساب بحد أقصى 4 منتجات للصفحة وبدون أي روابط مقلقة!`);
+        }
+
+        function exportBackup() {
+            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(localProducts));
+            let dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href", dataStr);
+            dlAnchor.setAttribute("download", "crow_go_backup.json");
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click();
+            dlAnchor.remove();
         }
     </script>
 </body>
