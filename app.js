@@ -18,13 +18,13 @@ function handleLogin() {
     const pin = document.getElementById('login-pin').value.trim();
     if(!phone || !pin) { alert("أدخل رقم الهاتف والـ PIN"); return; }
     
-    // استرجاع اسم الوسيط المسجل مسبقاً إن وجد
     let savedName = localStorage.getItem('crow_waseet_name_' + phone) || `وسيط (${phone})`;
     currentWaseetPhone = phone;
     currentWaseetName = savedName;
 
     showScreen('waseet-dashboard');
     document.getElementById('waseet-welcome-text').innerText = `أهلاً بك يا ${savedName}`;
+    updateWaseetReferralDisplay(phone);
     loadLocalData(phone);
 }
 
@@ -43,6 +43,7 @@ function handleRegister() {
     alert("تم إنشاء حسابك ومنحك أسبوعاً تجريبياً مجانياً!");
     showScreen('waseet-dashboard');
     document.getElementById('waseet-welcome-text').innerText = `أهلاً بك يا ${name} (${prof} - ${gov})`;
+    updateWaseetReferralDisplay(phone);
     loadLocalData(phone);
 }
 
@@ -54,5 +55,6 @@ function loginAsDemoUser() {
 
     showScreen('waseet-dashboard');
     document.getElementById('waseet-welcome-text').innerText = `مرحباً بك يا ${demoName}`;
+    updateWaseetReferralDisplay(demoPhone);
     loadLocalData(demoPhone);
 }
