@@ -28,6 +28,23 @@ function switchWaseetTab(tabName) {
     }
 }
 
+// دالة الدخول المباشر للوسيط من لوحة الأدمن
+function loginAsWaseetDirectly(phone, waseetName) {
+    currentWaseetPhone = phone;
+    currentWaseetName = waseetName || `وسيط (${phone})`;
+    
+    if(!localStorage.getItem('crow_waseet_name_' + phone)) {
+        localStorage.setItem('crow_waseet_name_' + phone, currentWaseetName);
+    }
+
+    document.getElementById('admin-dashboard').classList.add('hidden');
+    document.getElementById('waseet-dashboard').classList.remove('hidden');
+    
+    document.getElementById('waseet-welcome-text').innerText = `أهلاً بك يا ${currentWaseetName} (دخول إداري)`;
+    updateWaseetReferralDisplay(phone);
+    loadLocalData(phone);
+}
+
 function getWaseetReferralCode(phone) {
     let cleanPhone = phone ? phone.replace(/\D/g, '') : '1234';
     let suffix = cleanPhone.length >= 4 ? cleanPhone.slice(-4) : '1234';
