@@ -14,25 +14,32 @@ function showScreen(screenId) {
 }
 
 function handleLogin() {
-    const phone = document.getElementById('login-phone').value;
-    const pin = document.getElementById('login-pin').value;
+    const phone = document.getElementById('login-phone').value.trim();
+    const pin = document.getElementById('login-pin').value.trim();
     if(!phone || !pin) { alert("أدخل رقم الهاتف والـ PIN"); return; }
     
+    // استرجاع اسم الوسيط المسجل مسبقاً إن وجد
+    let savedName = localStorage.getItem('crow_waseet_name_' + phone) || `وسيط (${phone})`;
     currentWaseetPhone = phone;
+    currentWaseetName = savedName;
+
     showScreen('waseet-dashboard');
-    document.getElementById('waseet-welcome-text').innerText = `أهلاً بك - هاتف: ${phone}`;
+    document.getElementById('waseet-welcome-text').innerText = `أهلاً بك يا ${savedName}`;
     loadLocalData(phone);
 }
 
 function handleRegister() {
-    const name = document.getElementById('reg-name').value;
-    const phone = document.getElementById('reg-phone').value;
-    const pin = document.getElementById('reg-pin').value;
-    const gov = document.getElementById('reg-gov').value;
+    const name = document.getElementById('reg-name').value.trim();
+    const phone = document.getElementById('reg-phone').value.trim();
+    const pin = document.getElementById('reg-pin').value.trim();
+    const gov = document.getElementById('reg-gov').value.trim();
     const prof = document.getElementById('reg-prof').value;
     if(!name || !phone || !pin || !gov || !prof) { alert("أكمل الحقول الإجبارية"); return; }
     
+    localStorage.setItem('crow_waseet_name_' + phone, name);
     currentWaseetPhone = phone;
+    currentWaseetName = name;
+
     alert("تم إنشاء حسابك ومنحك أسبوعاً تجريبياً مجانياً!");
     showScreen('waseet-dashboard');
     document.getElementById('waseet-welcome-text').innerText = `أهلاً بك يا ${name} (${prof} - ${gov})`;
@@ -41,8 +48,11 @@ function handleRegister() {
 
 function loginAsDemoUser() {
     let demoPhone = "01099998888";
+    let demoName = localStorage.getItem('crow_waseet_name_' + demoPhone) || "أحمد محمود - وسيط معتمد";
     currentWaseetPhone = demoPhone;
+    currentWaseetName = demoName;
+
     showScreen('waseet-dashboard');
-    document.getElementById('waseet-welcome-text').innerText = `مرحباً بك (حساب تجريبي) - بورسعيد (عقارات)`;
+    document.getElementById('waseet-welcome-text').innerText = `مرحباً بك يا ${demoName}`;
     loadLocalData(demoPhone);
 }
