@@ -28,7 +28,6 @@ function switchWaseetTab(tabName) {
     }
 }
 
-// دخول مباشر للوسيط (من لوحة الأدمن) مع تفعيل اللوجو وتحديث بيانات الاشتراك والإحالات
 function loginAsWaseetDirectly(phone, waseetName) {
     currentWaseetPhone = phone;
     currentWaseetName = waseetName || `وسيط (${phone})`;
@@ -49,11 +48,17 @@ function loginAsWaseetDirectly(phone, waseetName) {
     
     document.getElementById('waseet-welcome-text').innerText = `أهلاً بك يا ${currentWaseetName}`;
     
-    // عرض لوجو السوبر أدمن حصرياً في هيدر الوسيط
     let savedLogo = localStorage.getItem('crow_platform_logo');
     let logoContainer = document.getElementById('waseet-top-logo-container');
     if (savedLogo && logoContainer) {
         logoContainer.innerHTML = `<img src="${savedLogo}" class="logo-img" alt="Logo">`;
+    }
+
+    // التحقق من وجود رسالة مكافأة أوتوماتيكية جديدة (أسبوع مجاني للإحالات)
+    let rewardMsg = localStorage.getItem('crow_reward_msg_' + phone);
+    if(rewardMsg) {
+        alert(rewardMsg);
+        localStorage.removeItem('crow_reward_msg_' + phone);
     }
 
     updateWaseetReferralDisplay(phone);
@@ -103,7 +108,7 @@ function shareWaseetInviteWhatsApp() {
 
     let msg = `أهلاً بك 👋\n`;
     msg += `للتواصل المباشر مع مكتب ( ${waseetName} )\n`;
-    msg += `أو طلب عقار/سلعة وخدمات الوساطة الميدانية، يرجى ذكر كود الإحالة الخاص بي:\n\n`;
+    msg += `أو طلب عقار/سلعة وخدمات الوساطة الميدانية، يرجى ذكر كود الإحالة الخاص بي عند التسجيل:\n\n`;
     msg += `🔑 *كود الوسيط: ${refCode}*\n`;
     msg += `📞 رقم التواصل: ${currentWaseetPhone}\n\n`;
     msg += `يسعدنا خدمتكم دائماً!`;
