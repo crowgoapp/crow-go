@@ -67,10 +67,9 @@
         <div id="admin-dashboard" class="hidden">
             <div class="header">
                 <h2>لوحة تحكم السوبر أدمن 👑</h2>
-                <div class="subtitle">إدارة النظام، الهوية، والوسطاء</div>
+                <div class="subtitle">إدارة النظام، الهوية، والوسطاء والاشتراكات</div>
             </div>
 
-            <!-- إعدادات الأمان وتغيير كلمة مرور الأدمن -->
             <div class="features-box" style="background:#fee2e2; border:1px solid #fecaca; text-align:right;">
                 <h4 style="margin-top:0; color:#991b1b;">🔐 أمان لوحة الأدمن (تغيير كلمة المرور):</h4>
                 <div class="input-group" style="margin-bottom:8px;">
@@ -97,34 +96,23 @@
                 <button type="button" class="btn" onclick="savePlatformSettings()">حفظ وتحديث الواجهة فوراً</button>
             </div>
 
-            <h4 style="color:var(--primary-blue); margin-bottom:5px;">👥 قائمة الوسطاء المشتركين:</h4>
+            <h4 style="color:var(--primary-blue); margin-bottom:5px;">👥 قائمة الوسطاء المشتركين (إدارة الاشتراكات والإحالات):</h4>
             <div style="overflow-x: auto;">
                 <table class="admin-table">
                     <thead>
                         <tr>
                             <th>الوسيط (رقم وتليفون)</th>
                             <th>المحافظة والمهنة</th>
-                            <th>كود الإحالة</th>
-                            <th>الاشتراك</th>
-                            <th>إضافة شهر</th>
-                            <th>إضافة أسبوع</th>
-                            <th>تغيير PIN</th>
-                            <th>حظر / تفعيل</th>
+                            <th>كود الإحالة والإنجاز</th>
+                            <th>الاشتراك (بداية ونهاية)</th>
+                            <th>تجديد شهر</th>
+                            <th>تجديد أسبوع</th>
+                            <th>تسجيل إحالة (+1)</th>
                             <th>دخول الحساب</th>
                         </tr>
                     </thead>
                     <tbody id="admin-waseets-tbody">
-                        <tr>
-                            <td><b>محمود السيد</b><br><small>0101111 (PIN: 1234)</small></td>
-                            <td>بورسعيد (عقارات)</td>
-                            <td><span style="background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; font-weight:bold;">REF-1111</span></td>
-                            <td><span class="badge-green">2026-12-10</span></td>
-                            <td><button type="button" class="btn-warning" onclick="alert('تم التجديد شهر')">+شهر</button></td>
-                            <td><button type="button" class="btn-warning" onclick="alert('تم التجديد أسبوع')">+أسبوع</button></td>
-                            <td><button type="button" class="btn-info" onclick="alert('تغيير PIN')">تغيير PIN</button></td>
-                            <td><button type="button" class="btn-danger" onclick="alert('تم الحظر')">حظر</button></td>
-                            <td><button type="button" class="btn-success" onclick="loginAsWaseetDirectly('0101111', 'محمود السيد')">دخول</button></td>
-                        </tr>
+                        <!-- يُعبأ تلقائياً برمجياً -->
                     </tbody>
                 </table>
             </div>
@@ -135,18 +123,39 @@
         <!-- 5. لوحة تحكم الوسيط -->
         <div id="waseet-dashboard" class="hidden">
             <div class="header">
-                <h2>لوحة الوسيط الذكي 🦅</h2>
+                <!-- عرض لوجو السوبر أدمن حصرياً بدل عنوان لوحة الوسيط الذكي -->
+                <div id="waseet-top-logo-container" style="margin-bottom: 8px; text-align: center;">
+                    <div class="logo-text" id="waseet-header-logo-text">🦅 Crow Go</div>
+                </div>
                 <div class="subtitle" id="waseet-welcome-text">مرحباً بك في مساحة عملك الخاصة</div>
             </div>
 
-            <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:12px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <!-- كارت تفاصيل الاشتراك وتواريخ البداية والنهاية للوسيط -->
+            <div style="background:#e0f2fe; border:1px solid #bae6fd; border-radius:10px; padding:10px 14px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
                 <div>
-                    <span style="font-size:12px; color:#15803d; font-weight:bold;">🔗 كود الإحالة الخاص بك للزبائن:</span>
-                    <div id="waseet-ref-code-display" style="font-size:15px; font-weight:bold; color:var(--primary-blue); font-family:monospace;">CROW-XXXX</div>
+                    📅 <b>بداية الاشتراك:</b> <span id="sub-start-date">--/--/----</span><br>
+                    ⏳ <b>نهاية الاشتراك:</b> <span id="sub-end-date" style="color:#0369a1; font-weight:bold;">--/--/----</span>
                 </div>
-                <button type="button" class="btn-success" onclick="shareWaseetInviteWhatsApp()" style="padding:7px 12px; font-size:11px; border-radius:8px; border:none; cursor:pointer; color:white; font-weight:bold; margin:0;">
-                    📤 مشاركة كود الإحالة واتساب
-                </button>
+                <div style="text-align: left;">
+                    <span id="sub-status-badge" class="badge-green" style="font-size:11px; padding:4px 10px;">نشط</span>
+                </div>
+            </div>
+
+            <!-- صندوق كود الإحالة ونظام الـ 5 اشتراكات للمكافأة (أسبوع مجاني) -->
+            <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:12px; margin-bottom:12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
+                    <div>
+                        <span style="font-size:12px; color:#15803d; font-weight:bold;">🔗 كود الإحالة الخاص بك:</span>
+                        <div id="waseet-ref-code-display" style="font-size:15px; font-weight:bold; color:var(--primary-blue); font-family:monospace;">CROW-XXXX</div>
+                    </div>
+                    <button type="button" class="btn-success" onclick="shareWaseetInviteWhatsApp()" style="padding:7px 12px; font-size:11px; border-radius:8px; border:none; cursor:pointer; color:white; font-weight:bold; margin:0;">
+                        📤 مشاركة كود الإحالة واتساب
+                    </button>
+                </div>
+                <div style="font-size:11px; color:#166534; border-top:1px dashed #bbf7d0; padding-top:6px; display:flex; justify-content:space-between; align-items:center;">
+                    <span>🎁 نظام المكافآت: كل 5 اشتراكات بكودك = <b>أسبوع مجاني!</b></span>
+                    <span>التقدم الحالي: <b id="referral-progress-count">0</b> / 5</span>
+                </div>
             </div>
 
             <div style="display: flex; gap: 6px; margin-bottom: 12px;">
@@ -164,12 +173,12 @@
                     <span style="font-size:12px; color:var(--primary-blue); font-weight:bold;">☑️ حدد المنتجات للمجلة:</span>
                     <button type="button" class="btn-success" onclick="openCatalogPreview()" style="padding:6px 12px; font-size:12px; border-radius:6px; border:none; cursor:pointer; color:white; font-weight:bold;">📤 تصدير الكتالوج (صور)</button>
                 </div>
-                <div id="products-list-container" style="max-height: 320px; overflow-y: auto;"></div>
+                <div id="products-list-container" style="max-height: 300px; overflow-y: auto;"></div>
             </div>
 
             <div id="waseet-tab-orders" class="hidden">
                 <h4 style="color:var(--primary-blue); margin:0 0 8px 0;">🛒 طلبات الزبائن الواردة:</h4>
-                <div id="orders-list-container" style="max-height: 320px; overflow-y: auto;"></div>
+                <div id="orders-list-container" style="max-height: 300px; overflow-y: auto;"></div>
             </div>
 
             <button type="button" class="btn btn-secondary" style="margin-top:15px;" onclick="showScreen('landing-screen')">تسجيل الخروج</button>
