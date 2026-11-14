@@ -12,7 +12,9 @@
             --silver-dark: #94a3b8;
             --bg-color: #f8fafc;
             --text-color: #1e293b;
-            --accent-gold: #d97706;
+            --danger-red: #ef4444;
+            --warning-yellow: #f59e0b;
+            --success-green: #10b981;
         }
         body {
             font-family: system-ui, -apple-system, sans-serif;
@@ -27,101 +29,48 @@
         }
         .container {
             width: 100%;
-            max-width: 480px;
+            max-width: 600px;
             background: #ffffff;
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(13, 35, 58, 0.1);
             overflow: hidden;
             padding: 24px;
             box-sizing: border-box;
+            margin: 10px;
         }
         .header {
             text-align: center;
             margin-bottom: 24px;
         }
-        .logo-img {
-            max-height: 60px;
-            max-width: 100%;
-            object-fit: contain;
-            margin-bottom: 8px;
-            cursor: pointer;
-        }
-        .logo-text {
-            font-size: 32px;
-            font-weight: bold;
-            color: var(--secondary-blue);
-            margin-bottom: 8px;
-            cursor: pointer;
-        }
-        .subtitle {
-            font-size: 14px;
-            color: var(--silver-dark);
-            line-height: 1.5;
-        }
+        .logo-img { max-height: 60px; max-width: 100%; object-fit: contain; margin-bottom: 8px; cursor: pointer; }
+        .logo-text { font-size: 32px; font-weight: bold; color: var(--secondary-blue); margin-bottom: 8px; cursor: pointer; }
+        .subtitle { font-size: 14px; color: var(--silver-dark); line-height: 1.5; }
         .btn {
             background: linear-gradient(135deg, var(--secondary-blue), var(--primary-blue));
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            width: 100%;
-            cursor: pointer;
-            margin-top: 12px;
+            color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; margin: 4px 0;
         }
-        .btn-secondary {
-            background: #e2e8f0;
-            color: var(--primary-blue);
-        }
-        .btn-danger {
-            background: #ef4444;
-            color: white;
-        }
-        .btn:active {
-            transform: scale(0.98);
-        }
-        .input-group {
-            margin-bottom: 16px;
-        }
-        .input-group label {
-            display: block;
-            font-size: 14px;
-            margin-bottom: 6px;
-            color: var(--primary-blue);
-            font-weight: bold;
-        }
+        .btn-secondary { background: #e2e8f0; color: var(--primary-blue); }
+        .btn-danger { background: var(--danger-red); color: white; }
+        .btn-warning { background: var(--warning-yellow); color: white; }
+        .btn-success { background: var(--success-green); color: white; }
+        .btn:active { transform: scale(0.98); }
+        .input-group { margin-bottom: 16px; text-align: right; }
+        .input-group label { display: block; font-size: 14px; margin-bottom: 6px; color: var(--primary-blue); font-weight: bold; }
         .input-group input, .input-group select, .input-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--silver-dark);
-            border-radius: 8px;
-            font-size: 16px;
-            box-sizing: border-box;
+            width: 100%; padding: 10px; border: 1px solid var(--silver-dark); border-radius: 8px; font-size: 14px; box-sizing: border-box;
         }
-        .features-box {
-            background: #f1f5f9;
-            padding: 16px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            font-size: 13px;
-            line-height: 1.6;
-        }
-        .hidden {
-            display: none !important;
-        }
-        .text-center {
-            text-align: center;
-            margin-top: 15px;
-        }
-        .link-btn {
-            background: none;
-            border: none;
-            color: var(--secondary-blue);
-            font-weight: bold;
-            cursor: pointer;
-            text-decoration: underline;
-        }
+        .features-box { background: #f1f5f9; padding: 16px; border-radius: 12px; margin-bottom: 20px; font-size: 13px; line-height: 1.6; }
+        .hidden { display: none !important; }
+        .text-center { text-align: center; margin-top: 15px; }
+        .link-btn { background: none; border: none; color: var(--secondary-blue); font-weight: bold; cursor: pointer; text-decoration: underline; }
+        
+        /* جدول السوبر أدمن */
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+        .admin-table th, .admin-table td { border: 1px solid var(--silver-light); padding: 8px; text-align: center; }
+        .admin-table th { background-color: var(--secondary-blue); color: white; }
+        .badge-yellow { background-color: #fef3c7; color: #d97706; padding: 3px 6px; border-radius: 4px; font-weight: bold; }
+        .badge-red { background-color: #fee2e2; color: #dc2626; padding: 3px 6px; border-radius: 4px; font-weight: bold; }
+        .badge-green { background-color: #d1fae5; color: #059669; padding: 3px 6px; border-radius: 4px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -130,7 +79,6 @@
         <!-- 1. الصفحة الرئيسية -->
         <div id="landing-screen">
             <div class="header">
-                <!-- الضغط 3 مرات هنا يفتح نافذة باسورد السوبر أدمن -->
                 <div id="logo-container" onclick="handleLogoClick()">
                     <div class="logo-text" id="display-logo-text">🦅 Crow Go</div>
                 </div>
@@ -146,8 +94,8 @@
                 </ul>
             </div>
 
-            <button class="btn" onclick="showScreen('login-screen')">تسجيل دخول (مستخدم حالي)</button>
-            <button class="btn btn-secondary" onclick="showScreen('register-screen')">حساب جديد (أسبوع تجريبي مجاني)</button>
+            <button class="btn" style="width:100%" onclick="showScreen('login-screen')">تسجيل دخول (مستخدم حالي)</button>
+            <button class="btn btn-secondary" style="width:100%" onclick="showScreen('register-screen')">حساب جديد (أسبوع تجريبي مجاني)</button>
         </div>
 
         <!-- 2. شاشة تسجيل الدخول -->
@@ -156,21 +104,16 @@
                 <h2>تسجيل الدخول</h2>
                 <div class="subtitle">أدخل رقم هاتفك والرقم السري للوصول لحسابك</div>
             </div>
-
             <div class="input-group">
                 <label>رقم الهاتف المحمول</label>
                 <input type="tel" id="login-phone" placeholder="010XXXXXXXX" />
             </div>
-
             <div class="input-group">
                 <label>الرقم السري (PIN - 4 أرقام)</label>
                 <input type="password" id="login-pin" maxlength="4" placeholder="****" />
             </div>
-
-            <button class="btn" onclick="handleLogin()">دخول لوحة التحكم</button>
-            <div class="text-center">
-                <button class="link-btn" onclick="showScreen('landing-screen')">← العودة للرئيسية</button>
-            </div>
+            <button class="btn" style="width:100%" onclick="handleLogin()">دخول لوحة التحكم</button>
+            <div class="text-center"><button class="link-btn" onclick="showScreen('landing-screen')">← العودة للرئيسية</button></div>
         </div>
 
         <!-- 3. شاشة حساب جديد -->
@@ -179,27 +122,10 @@
                 <h2>إنشاء حساب جديد</h2>
                 <div class="subtitle">احصل على أسبوع مجاني وابدأ إدارة صفقاتك فوراً</div>
             </div>
-
-            <div class="input-group">
-                <label>الاسم الكامل</label>
-                <input type="text" id="reg-name" placeholder="اسمك الكريم" />
-            </div>
-
-            <div class="input-group">
-                <label>رقم الهاتف المحمول</label>
-                <input type="tel" id="reg-phone" placeholder="010XXXXXXXX" />
-            </div>
-
-            <div class="input-group">
-                <label>الرقم السري (PIN - 4 أرقام)</label>
-                <input type="password" id="reg-pin" maxlength="4" placeholder="****" />
-            </div>
-
-            <div class="input-group">
-                <label>المحافظة (إجباري)</label>
-                <input type="text" id="reg-gov" placeholder="مثال: بورسعيد، القاهرة..." />
-            </div>
-
+            <div class="input-group"><label>الاسم الكامل</label><input type="text" id="reg-name" placeholder="اسمك الكريم" /></div>
+            <div class="input-group"><label>رقم الهاتف المحمول</label><input type="tel" id="reg-phone" placeholder="010XXXXXXXX" /></div>
+            <div class="input-group"><label>الرقم السري (PIN - 4 أرقام)</label><input type="password" id="reg-pin" maxlength="4" placeholder="****" /></div>
+            <div class="input-group"><label>المحافظة (إجباري)</label><input type="text" id="reg-gov" placeholder="مثال: بورسعيد، القاهرة..." /></div>
             <div class="input-group">
                 <label>المهنة / التخصص (إجباري)</label>
                 <select id="reg-prof">
@@ -210,48 +136,60 @@
                     <option value="أخرى">أنشطة وخدمات أخرى</option>
                 </select>
             </div>
-
-            <div class="input-group">
-                <label>كود الدعوة (اختياري)</label>
-                <input type="text" id="reg-ref" placeholder="لو دعاك صديق اكتب الكود هنا" />
-            </div>
-
-            <button class="btn" onclick="handleRegister()">إنشاء الحساب وبدء الأسبوع المجاني</button>
-            <div class="text-center">
-                <button class="link-btn" onclick="showScreen('landing-screen')">← العودة للرئيسية</button>
-            </div>
+            <div class="input-group"><label>كود الدعوة (اختياري)</label><input type="text" id="reg-ref" placeholder="لو دعاك صديق اكتب الكود هنا" /></div>
+            <button class="btn" style="width:100%" onclick="handleRegister()">إنشاء الحساب وبدء الأسبوع المجاني</button>
+            <div class="text-center"><button class="link-btn" onclick="showScreen('landing-screen')">← العودة للرئيسية</button></div>
         </div>
 
-        <!-- 4. لوحة تحكم السوبر أدمن (التحكم باللوجو والنصوص) -->
+        <!-- 4. لوحة تحكم السوبر أدمن الكاملة -->
         <div id="admin-dashboard" class="hidden">
             <div class="header">
-                <h2>لوحة السوبر أدمن 👑</h2>
-                <div class="subtitle">التحكم في الهوية البصرية، النصوص، وإدارة الوسطاء</div>
+                <h2>لوحة تحكم السوبر أدمن 👑</h2>
+                <div class="subtitle">إدارة الوسطاء، الاشتراكات، وتغيير الهوية</div>
             </div>
 
             <div class="features-box">
-                <div class="input-group">
-                    <label>تغيير اللوجو (اختر صورة من جهازك)</label>
-                    <input type="file" id="admin-logo-file" accept="image/*" onchange="previewLogo(event)" />
-                </div>
-                <div class="text-center" style="margin-bottom: 15px;">
-                    <img id="logo-preview" src="" class="hidden" style="max-height: 50px;" alt="معاينة اللوجو"/>
-                </div>
-
-                <div class="input-group">
-                    <label>عنوان الواجهة الرئيسية (Subtitle)</label>
-                    <textarea id="admin-subtitle-input" rows="2">منظومة الإدارة الذكية للوسطاء الميدانيين (عقارات، سيارات، دليفري، وخدمات)</textarea>
-                </div>
-
-                <div class="input-group">
-                    <label>رقم واتساب الإدارة (للتجديد والحظر)</label>
-                    <input type="text" id="admin-whatsapp" placeholder="2010XXXXXXXX" value="201000000000" />
-                </div>
-
-                <button class="btn" onclick="saveAdminSettings()">حفظ التعديلات وتحديث الواجهة فوراً</button>
+                <h4 style="margin-top:0; color:var(--secondary-blue);">⚙️ إعدادات المنصة العامة:</h4>
+                <div class="input-group"><label>تغيير اللوجو</label><input type="file" id="admin-logo-file" accept="image/*" onchange="previewLogo(event)" /></div>
+                <div class="text-center"><img id="logo-preview" src="" class="hidden" style="max-height:40px; margin-bottom:10px;" alt="معاينة"/></div>
+                <div class="input-group"><label>عنوان الواجهة (Subtitle)</label><textarea id="admin-subtitle-input" rows="2"></textarea></div>
+                <div class="input-group"><label>رقم واتساب الإدارة</label><input type="text" id="admin-whatsapp" /></div>
+                <button class="btn" style="width:100%" onclick="saveAdminSettings()">حفظ التعديلات العامة</button>
             </div>
 
-            <button class="btn btn-secondary" onclick="showScreen('landing-screen')">خروج من لوحة الأدمن</button>
+            <h4 style="color:var(--primary-blue); margin-bottom:5px;">👥 قائمة جميع الوسطاء المشتركين:</h4>
+            <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                <select id="filter-gov" onchange="renderAdminTable()" style="padding: 6px; border-radius:6px; flex:1;">
+                    <option value="">كل المحافظات</option>
+                    <option value="بورسعيد">بورسعيد</option>
+                    <option value="القاهرة">القاهرة</option>
+                </select>
+                <select id="filter-prof" onchange="renderAdminTable()" style="padding: 6px; border-radius:6px; flex:1;">
+                    <option value="">كل المهن</option>
+                    <option value="عقارات">عقارات</option>
+                    <option value="سيارات">سيارات</option>
+                    <option value="دليفري">دليفري</option>
+                </select>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>الوسيط</th>
+                            <th>المحافظة/المهنة</th>
+                            <th>المنتجات/الطلبات</th>
+                            <th>الاشتراك</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-waseets-tbody">
+                        <!-- يتم تعبئتها برمجياً -->
+                    </tbody>
+                </table>
+            </div>
+
+            <button class="btn btn-secondary" style="width:100%; margin-top:20px;" onclick="showScreen('landing-screen')">خروج من لوحة الأدمن</button>
         </div>
 
         <!-- 5. لوحة تحكم الوسيط -->
@@ -259,22 +197,30 @@
             <div class="header">
                 <h2>لوحة الوسيط الذكي</h2>
                 <p id="welcome-user" style="font-weight: bold; color: var(--secondary-blue);"></p>
+                <p id="impersonate-banner" class="hidden" style="background:#fef3c7; color:#d97706; padding:5px; border-radius:4px; font-weight:bold;">⚠️ أنت تفتح حساب هذا الوسيط وضع "معاينة / السوبر أدمن"</p>
             </div>
             <div class="features-box text-center">
-                مرحباً بك في مساحة عملك الخاصة. سيتم تحميل أدوات إضافة المنتجات والمجلات هنا.
+                مرحباً بك في مساحة عملك الخاصة. (شاشات إضافة المنتجات والمجلات جاهزة للربط).
             </div>
-            <button class="btn btn-secondary" onclick="showScreen('landing-screen')">تسجيل الخروج</button>
+            <button class="btn btn-secondary" style="width:100%" onclick="exitWaseetPanel()">تسجيل الخروج</button>
         </div>
     </div>
 
     <script>
-        // الذاكرة المؤقتة للإعدادات (سيتم ربطها بقاعدة البيانات لاحقاً)
+        // إعدادات النظام الافتراضية
         let appSettings = {
-            logoType: 'text', // 'text' or 'image'
+            logoType: 'text',
             logoValue: '🦅 Crow Go',
             subtitle: 'منظومة الإدارة الذكية للوسطاء الميدانيين (عقارات، سيارات، دليفري، وخدمات)',
             whatsapp: '201000000000'
         };
+
+        // داتا افتراضية للوسطاء للاختبار في لوحة الأدمن
+        let mockWaseets = [
+            { id: 1, name: 'محمود السيد', phone: '01011112222', governorate: 'بورسعيد', profession: 'عقارات', products_count: 14, orders_count: 3, end_date: '2026-06-10', status: 'active', pin: '1234' },
+            { id: 2, name: 'أحمد حسن', phone: '01033334444', governorate: 'القاهرة', profession: 'سيارات', products_count: 5, orders_count: 1, end_date: '2026-04-14', status: 'expiring', pin: '5678' }, // باقي 3 أيام أو أقل (أصفر)
+            { id: 3, name: 'إبراهيم محمد', phone: '01055556666', governorate: 'بورسعيد', profession: 'دليفري', products_count: 0, orders_count: 0, end_date: '2026-04-01', status: 'expired', pin: '0000' } // منتهي (أحمر)
+        ];
 
         function showScreen(screenId) {
             document.getElementById('landing-screen').classList.add('hidden');
@@ -282,11 +228,12 @@
             document.getElementById('register-screen').classList.add('hidden');
             document.getElementById('admin-dashboard').classList.add('hidden');
             document.getElementById('waseet-dashboard').classList.add('hidden');
+            document.getElementById('impersonate-banner').classList.add('hidden');
 
             document.getElementById(screenId).classList.remove('hidden');
         }
 
-        // خاصية الضغط 3 مرات على اللوجو لفتح لوحة الأدمن
+        // فتح لوحة الأدمن بالضغط 3 مرات على اللوجو
         let logoClicks = 0;
         let clickTimer = null;
         function handleLogoClick() {
@@ -294,9 +241,9 @@
             clearTimeout(clickTimer);
             if (logoClicks === 3) {
                 logoClicks = 0;
-                let password = prompt("أدخل كلمة مرور السوبر أدمن (Master Password):");
-                if (password === "admin123") { // كلمة المرور الافتراضية المؤقتة
-                    loadAdminSettings();
+                let password = prompt("أدخل كلمة مرور السوبر أدمن:");
+                if (password === "admin123") {
+                    loadAdminData();
                     showScreen('admin-dashboard');
                 } else if(password !== null) {
                     alert("كلمة المرور غير صحيحة!");
@@ -304,6 +251,80 @@
             } else {
                 clickTimer = setTimeout(() => { logoClicks = 0; }, 600);
             }
+        }
+
+        // تحميل بيانات لوحة الأدمن
+        function loadAdminData() {
+            document.getElementById('admin-subtitle-input').value = appSettings.subtitle;
+            document.getElementById('admin-whatsapp').value = appSettings.whatsapp;
+            renderAdminTable();
+        }
+
+        // عرض جدول الوسطاء مع التنبيهات الملونة والفلترة
+        function renderAdminTable() {
+            const tbody = document.getElementById('admin-waseets-tbody');
+            const govFilter = document.getElementById('filter-gov').value;
+            const profFilter = document.getElementById('filter-prof').value;
+            tbody.innerHTML = '';
+
+            const filtered = mockWaseets.filter(w => {
+                return (govFilter === "" || w.governorate === govFilter) && 
+                       (profFilter === "" || w.profession === profFilter);
+            });
+
+            if(filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5">لا يوجد وسطاء مطابقين للفلتر</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(w => {
+                // تحديد لون حالة الاشتراك
+                let badgeClass = 'badge-green';
+                let statusText = w.end_date;
+                if(w.status === 'expiring') {
+                    badgeClass = 'badge-yellow'; // أصفر (قرب الانتهاء)
+                    statusText += ' (قريب الإنهاء)';
+                } else if(w.status === 'expired') {
+                    badgeClass = 'badge-red'; // أحمر (منتهي)
+                    statusText += ' (منتهي)';
+                }
+
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><b>${w.name}</b><br><small>${w.phone}</small><br><small>PIN: ${w.pin}</small></td>
+                    <td>${w.governorate}<br><small>${w.profession}</small></td>
+                    <td>📦 ${w.products_count}<br>🛒 ${w.orders_count}</td>
+                    <td><span class="${badgeClass}">${statusText}</span></td>
+                    <td>
+                        <button class="btn btn-warning" style="padding:4px 8px; font-size:12px;" onclick="extendSub(${w.id})">+شهر</button>
+                        <button class="btn btn-danger" style="padding:4px 8px; font-size:12px;" onclick="toggleBlock(${w.id})">حظر</button>
+                        <button class="btn btn-success" style="padding:4px 8px; font-size:12px;" onclick="impersonate(${w.id})">دخول الحساب</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // تمديد الاشتراك شهر
+        function extendSub(id) {
+            let w = mockWaseets.find(x => x.id === id);
+            alert(`تم تجديد اشتراك الوسيط ${w.name} لمدة شهر بنجاح!`);
+            w.status = 'active';
+            renderAdminTable();
+        }
+
+        // حظر أو إيقاف الحساب
+        function toggleBlock(id) {
+            let w = mockWaseets.find(x => x.id === id);
+            alert(`تم تغيير حالة حساب الوسيط ${w.name}`);
+        }
+
+        // ميزة الدخول بحساب الوسيط (Impersonation)
+        function impersonate(id) {
+            let w = mockWaseets.find(x => x.id === id);
+            showScreen('waseet-dashboard');
+            document.getElementById('welcome-user').innerText = `أهلاً بك - حساب الوسيط: ${w.name} (${w.governorate})`;
+            document.getElementById('impersonate-banner').classList.remove('hidden');
         }
 
         // معاينة اللوجو المرفوع
@@ -322,28 +343,18 @@
             }
         }
 
-        // تحميل الإعدادات في لوحة الأدمن
-        function loadAdminSettings() {
-            document.getElementById('admin-subtitle-input').value = appSettings.subtitle;
-            document.getElementById('admin-whatsapp').value = appSettings.whatsapp;
-        }
-
-        // حفظ إعدادات الأدمن وتحديث الواجهة
         function saveAdminSettings() {
             appSettings.subtitle = document.getElementById('admin-subtitle-input').value;
             appSettings.whatsapp = document.getElementById('admin-whatsapp').value;
-            
             if (newLogoBase64) {
                 appSettings.logoType = 'image';
                 appSettings.logoValue = newLogoBase64;
             }
-
             applySettingsToUI();
-            alert("تم حفظ وتحديث إعدادات الواجهة واللوجو بنجاح!");
+            alert("تم حفظ إعدادات المنصة وتحديث الواجهة بنجاح!");
             showScreen('landing-screen');
         }
 
-        // تطبيق الإعدادات على الواجهة الرئيسية للجميع
         function applySettingsToUI() {
             const container = document.getElementById('logo-container');
             if (appSettings.logoType === 'image') {
@@ -357,10 +368,7 @@
         function handleLogin() {
             const phone = document.getElementById('login-phone').value;
             const pin = document.getElementById('login-pin').value;
-            if(!phone || !pin) {
-                alert("يرجى إدخال رقم الهاتف والرقم السري");
-                return;
-            }
+            if(!phone || !pin) { alert("يرجى إدخال رقم الهاتف والرقم السري"); return; }
             showScreen('waseet-dashboard');
             document.getElementById('welcome-user').innerText = `أهلاً بك - هاتف: ${phone}`;
         }
@@ -371,19 +379,15 @@
             const pin = document.getElementById('reg-pin').value;
             const gov = document.getElementById('reg-gov').value;
             const prof = document.getElementById('reg-prof').value;
-
-            if(!name || !phone || !pin || !gov || !prof) {
-                alert("يرجى إكمال جميع الحقول الإجبارية");
-                return;
-            }
-            if(pin.length !== 4) {
-                alert("الرقم السري يجب أن يكون 4 أرقام بالضبط");
-                return;
-            }
-
+            if(!name || !phone || !pin || !gov || !prof) { alert("يرجى إكمال جميع الحقول الإجبارية"); return; }
+            if(pin.length !== 4) { alert("الرقم السري يجب أن يكون 4 أرقام بالضبط"); return; }
             alert("تم إنشاء الحساب بنجاح وتم منحك أسبوعاً تجريبياً مجانياً!");
             showScreen('waseet-dashboard');
             document.getElementById('welcome-user').innerText = `أهلاً بك يا ${name} (${prof} - ${gov})`;
+        }
+
+        function exitWaseetPanel() {
+            showScreen('landing-screen');
         }
     </script>
 </body>
