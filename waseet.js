@@ -3,6 +3,7 @@ let localOrders = [];
 let currentWaseetPhone = "01000000000";
 let currentWaseetName = "الوسيط";
 let currentTempProductImages = [];
+let catalogGeneratedFiles = [];
 
 function loginAsWaseetDirectly(phone, waseetName) {
     currentWaseetPhone = phone;
@@ -176,7 +177,7 @@ function saveProductFromModal() {
 
     if(isNaN(index) || index < 0) {
         let nextSerial = localProducts.length > 0 ? Math.max(...localProducts.map(i => i.serial)) + 1 : 1;
-        localProducts.push({ serial: nextSerial, name, price, desc, images: JSON.parse(JSON.stringify(currentTempProductImages)), ownerName, ownerPhone, ownerAddress });
+        localProducts.push({ serial: nextSerial, name, price, desc, images: JSON.parse(JSON.stringify(currentTempProductImages)), ownerName, ownerPhone, ownerAddress, selectedForCatalog: true });
     } else {
         localProducts[index].name = name;
         localProducts[index].price = price;
@@ -191,15 +192,22 @@ function saveProductFromModal() {
     closeProductModal();
 }
 
+function toggleCatalogSelection(index) {
+    localProducts[index].selectedForCatalog = localProducts[index].selectedForCatalog !== false ? false : true;
+    saveToLocalStorage();
+}
+
 function renderProducts() {
     let container = document.getElementById('products-list-container');
     if(!container) return;
     container.innerHTML = localProducts.length === 0 ? '<p style="text-align:center; color:#94a3b8;">لا توجد منتجات مسجلة.</p>' : '';
     localProducts.forEach((p, i) => {
+        let isSelected = p.selectedForCatalog !== false;
         let cover = (p.images && p.images.length > 0) ? p.images[0].data : '';
         let imgTag = cover ? `<img src="${cover}" style="width:45px; height:45px; object-fit:cover; border-radius:6px;">` : '📦';
-        container.innerHTML += `<div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:8px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
-            <div style="display:flex; align-items:center; gap:8px;">
+        container.innerHTML += `<div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:8px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; font-size:12px; gap:8px;">
+            <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleCatalogSelection(${i})" style="width:18px; height:18px; cursor:pointer;" title="تضمين في الكتالوج">
+            <div style="display:flex; align-items:center; gap:8px; flex:1;">
                 ${imgTag}
                 <div><b>#${p.serial} - ${p.name}</b> (${p.price} ج.م)<br><small style="color:#059669;">المالك: ${p.ownerName || 'غير مسجل'}</small></div>
             </div>
@@ -244,34 +252,114 @@ function renderOrders() {
     });
 }
 
-function openCatalogPreview() {
-    let content = document.getElementById('catalog-preview-content');
-    if(!content) return;
-    content.innerHTML = '';
-    if(localProducts.length === 0) { alert("أضف منتجات أولاً!"); return; }
-    
-    localProducts.forEach(p => {
-        let imgHtml = (p.images && p.images.length > 0) ? `<img src="${p.images[0].data}" style="width:100%; max-height:180px; object-fit:cover; border-radius:6px; margin-bottom:6px;">` : '';
-        content.innerHTML += `<div style="border:1px solid #cbd5e1; border-radius:8px; padding:10px; margin-bottom:10px; background:#f8fafc; text-align:right;">
-            ${imgHtml}
-            <div style="font-weight:bold; color:var(--primary-blue);">كود (#${p.serial}) : ${p.name}</div>
-            <div style="color:green; font-weight:bold;">السعر: ${p.price} ج.م</div>
-            <div style="font-size:12px; color:#475569;">${p.desc || ''}</div>
-        </div>`;
-    });
+// محرك رسم الكتالوج المصور وتوليد الألبوم
+async function renderFlyerCanvas(product, waseetName) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 1080;
+    canvas.height = 1350;
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, 1080, 1350);
+
+    ctx.fillStyle = '#0d233a';
+    ctx.fillRect(0, 0, 1080, 150);
+
+    ctx.fillStyle = '#10b981';
+    ctx.fillRect(850, 40, 200, 70);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 36px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`كود #${product.serial}`, 950, 88);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 36px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(`👤 ${waseetName}`, 40, 95);
+
+    let imgData = (product.images && product.images.length > 0) ? product.images[0].data : '';
+    if (imgData) {
+        await new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+                ctx.fillStyle = '#f1f5f9';
+                ctx.fillRect(40, 180, 1000, 700);
+                ctx.drawImage(img, 40, 180, 1000, 700);
+                resolve();
+            };
+            img.onerror = () => resolve();
+            img.src = imgData;
+        });
+    }
+
+    ctx.fillStyle = '#0d233a';
+    ctx.font = 'bold 44px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(product.name, 1040, 950);
+
+    ctx.fillStyle = '#059669';
+    ctx.font = 'bold 42px sans-serif';
+    ctx.fillText(`💰 السعر: ${product.price} ج.م`, 1040, 1020);
+
+    if (product.desc) {
+        ctx.fillStyle = '#475569';
+        ctx.font = '32px sans-serif';
+        ctx.fillText(`📝 ${product.desc.substring(0, 70)}`, 1040, 1090);
+    }
+
+    ctx.fillStyle = '#1b4982';
+    ctx.fillRect(0, 1230, 1080, 120);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 32px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`للاستعلام والمعاينة تواصل مع (${waseetName}) واذكر رقم الكود`, 540, 1300);
+
+    return canvas.toDataURL('image/jpeg', 0.90);
+}
+
+async function openCatalogPreview() {
+    let selectedProducts = localProducts.filter(p => p.selectedForCatalog !== false);
+    if (selectedProducts.length === 0) {
+        alert("يرجى اختيار وتحديد منتج واحد على الأقل من القائمة لتصديره في الكتالوج!");
+        return;
+    }
+
+    let previewBox = document.getElementById('catalog-preview-content');
+    previewBox.innerHTML = `<p style="text-align:center; color:#1b4982; font-weight:bold;">⏳ جاري إعداد وتجهيز ألبوم الصور للكتالوج...</p>`;
     document.getElementById('catalog-modal').classList.remove('hidden');
+
+    catalogGeneratedFiles = [];
+    previewBox.innerHTML = '';
+
+    for (const p of selectedProducts) {
+        let dataUrl = await renderFlyerCanvas(p, currentWaseetName);
+        let blob = await (await fetch(dataUrl)).blob();
+        let file = new File([blob], `code_${p.serial}.jpg`, { type: 'image/jpeg' });
+        catalogGeneratedFiles.push(file);
+
+        previewBox.innerHTML += `<div style="margin-bottom:14px; border:1px solid #cbd5e1; border-radius:10px; overflow:hidden; background:#fff;">
+            <img src="${dataUrl}" style="width:100%; display:block;">
+            <a href="${dataUrl}" download="code_${p.serial}.jpg" style="display:block; text-align:center; background:#e2e8f0; color:#0d233a; padding:8px; font-size:13px; font-weight:bold; text-decoration:none;">⬇️ حفظ بوستر (كود #${p.serial}) في الاستوديو</a>
+        </div>`;
+    }
 }
 
 function closeCatalogModal() { document.getElementById('catalog-modal').classList.add('hidden'); }
 
-function shareCatalogWhatsAppDirect() {
-    let text = `📋 *عروض مكتب (${currentWaseetName}) الحالية*\n\n`;
-    localProducts.forEach(p => {
-        text += `🔹 *كود (#${p.serial})* : ${p.name}\n`;
-        text += `💰 السعر: ${p.price} ج.م\n`;
-        if(p.desc) text += `📝 ${p.desc}\n`;
-        text += `-------------------\n`;
-    });
-    text += `\nللاستعلام والمعاينة يرجى ذكر رقم الكود المطلوب في رسالة.`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+async function shareCatalogAlbumWhatsApp() {
+    if (catalogGeneratedFiles.length === 0) { alert("لا توجد صور جاهزة في الألبوم!"); return; }
+
+    if (navigator.canShare && navigator.canShare({ files: catalogGeneratedFiles })) {
+        try {
+            await navigator.share({
+                files: catalogGeneratedFiles,
+                title: `ألبوم عروض ${currentWaseetName}`,
+                text: `مرحباً، إليكم ألبوم العروض والمنتجات المتاحة من مكتب (${currentWaseetName}). يرجى ذكر كود المنتج المطلوب للاستعلام.`
+            });
+        } catch (err) {
+            console.log("تم إلغاء المشاركة");
+        }
+    } else {
+        alert("متصفحك لا يدعم مشاركة الألبوم دفعة واحدة، قم بالضغط على زر (⬇️ حفظ البوستر في الاستوديو) تحت الصور، ثم شاركها كألبوم عبر واتساب بكل سهولة!");
+    }
 }
