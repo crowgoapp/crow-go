@@ -10,7 +10,140 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    <link rel="stylesheet" href="style.css">
+    <style>
+        :root {
+            --primary-blue: #0d233a;
+            --secondary-blue: #1b4982;
+            --accent-green: #10b981;
+            --bg-color: #f8fafc;
+            --text-color: #1e293b;
+        }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            direction: rtl;
+        }
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 16px;
+            min-height: 100vh;
+            box-sizing: border-box;
+            background: #fff;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo-text {
+            font-size: 26px;
+            font-weight: bold;
+            color: var(--primary-blue);
+        }
+        .logo-img {
+            max-height: 60px;
+            max-width: 180px;
+            object-fit: contain;
+        }
+        .subtitle {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 6px;
+        }
+        .features-box {
+            background: #f1f5f9;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+        .features-box ul {
+            margin: 5px 0 0 0;
+            padding-right: 20px;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 10px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        .btn-secondary { background: #64748b; }
+        .btn-success { background: var(--accent-green); color: white; }
+        .btn-warning { background: #f59e0b; color: white; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-info { background: #0284c7; color: white; }
+        
+        .input-group {
+            margin-bottom: 12px;
+            text-align: right;
+        }
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: var(--primary-blue);
+        }
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .hidden { display: none !important; }
+        .text-center { text-align: center; }
+        .link-btn { background: none; border: none; color: var(--secondary-blue); cursor: pointer; font-size: 13px; text-decoration: underline; }
+        
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        .admin-table th, .admin-table td {
+            border: 1px solid #e2e8f0;
+            padding: 8px;
+            text-align: center;
+        }
+        .admin-table th { background: #f1f5f9; color: var(--primary-blue); }
+        .badge-green { background: #d1fae5; color: #065f46; padding: 3px 6px; border-radius: 4px; font-weight: bold; }
+        .badge-red { background: #fee2e2; color: #991b1b; padding: 3px 6px; border-radius: 4px; font-weight: bold; }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            z-index: 1000;
+        }
+        .modal-box {
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            width: 100%;
+            max-width: 420px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+    </style>
 </head>
 <body>
 
@@ -21,27 +154,27 @@
                 <div id="logo-display-container">
                     <div class="logo-text" id="display-logo-text">🦅 Crow Go</div>
                 </div>
-                <div class="subtitle" id="display-subtitle">منظومة الإدارة الذكية للوسطاء الميدانيين (عقارات، سيارات، دليفري، وخدمات)</div>
+                <div class="subtitle" id="display-subtitle">منظومة الإدارة الذكية للوسطاء الميدانيين</div>
             </div>
 
             <div class="features-box">
                 <b>✨ مميزات المنصة:</b>
                 <ul>
                     <li>إدارة عروضك وطلباتك بخصوصية تامة على جهازك.</li>
-                    <li>إصدار مجلات عرض مصورة بضغطة زر وبدون أي روابط مقلقة.</li>
+                    <li>إصدار مجلات عرض مصورة بضغطة زر.</li>
                 </ul>
             </div>
 
             <button class="btn" onclick="showScreen('login-screen')">تسجيل دخول (مستخدم حالي)</button>
             <button class="btn btn-secondary" onclick="showScreen('register-screen')">حساب جديد (أسبوع مجاني)</button>
-            <button class="btn btn-success" onclick="loginAsDemoUser()" style="margin-top: 8px;">🚀 دخول سريع (مستخدم تجريبي)</button>
+            <button class="btn btn-success" onclick="loginAsDemoUser()">🚀 دخول سريع (مستخدم تجريبي)</button>
             
-            <button id="install-pwa-btn" class="btn btn-info" onclick="installPWA()" style="display: none; margin-top: 8px; background: #0284c7; color: white;">
+            <button id="install-pwa-btn" class="btn btn-info" onclick="installPWA()" style="display: none;">
                 📲 تثبيت المنصة كتطبيق على موبايلك
             </button>
 
             <div class="text-center" style="margin-top: 20px;">
-                <button onclick="openAdminDirect()" style="background: none; border: none; color: #94a3b8; font-size: 12px; cursor: pointer;">⚙️ دخول السوبر أدمن</button>
+                <button onclick="openAdminDirect()" class="link-btn">⚙️ دخول السوبر أدمن</button>
             </div>
         </div>
 
@@ -81,49 +214,44 @@
         <div id="admin-dashboard" class="hidden">
             <div class="header">
                 <h2>لوحة تحكم السوبر أدمن 👑</h2>
-                <div class="subtitle">إدارة النظام، الوسطاء، الاشتراكات والإحالات الأوتوماتيكية</div>
+                <div class="subtitle">إدارة النظام، الوسطاء والاشتراكات</div>
             </div>
 
             <div class="features-box" style="background:#fee2e2; border:1px solid #fecaca; text-align:right;">
-                <h4 style="margin-top:0; color:#991b1b;">🔐 أمان لوحة الأدمن (تغيير كلمة المرور):</h4>
+                <h4 style="margin-top:0; color:#991b1b;">🔐 أمان لوحة الأدمن:</h4>
                 <div class="input-group" style="margin-bottom:8px;">
                     <label>كلمة المرور الجديدة للأدمن</label>
-                    <input type="password" id="admin-new-pass" placeholder="أدخل الباسورد الجديد">
+                    <input type="password" id="admin-new-pass" placeholder="الباسورد الجديد">
                 </div>
-                <button type="button" class="btn btn-danger" onclick="changeAdminPassword()" style="margin:0; padding:8px;">تحديث كلمة مرور الأدمن</button>
+                <button type="button" class="btn btn-danger" onclick="changeAdminPassword()" style="margin:0; padding:8px;">تحديث كلمة المرور</button>
             </div>
 
             <div class="features-box" style="background:#e2e8f0; text-align:right;">
                 <h4 style="margin-top:0; color:var(--primary-blue);">🛠️ إعدادات الواجهة واللوجو:</h4>
                 <div class="input-group">
-                    <label>رفع لوجو جديد (صورة)</label>
+                    <label>رفع لوجو جديد</label>
                     <input type="file" id="admin-logo-file" accept="image/*" onchange="previewNewLogo(event)" />
                 </div>
                 <div class="input-group">
                     <label>النص المكتوب (Subtitle)</label>
-                    <textarea id="admin-subtitle-input" rows="2">منظومة الإدارة الذكية للوسطاء الميدانيين (عقارات، سيارات، دليفري، وخدمات)</textarea>
+                    <textarea id="admin-subtitle-input" rows="2">منظومة الإدارة الذكية للوسطاء الميدانيين</textarea>
                 </div>
-                <div class="input-group">
-                    <label>رقم واتساب الإدارة</label>
-                    <input type="text" id="admin-whatsapp-input" value="201000000000" />
-                </div>
-                <button type="button" class="btn" onclick="savePlatformSettings()">حفظ وتحديث الواجهة فوراً</button>
+                <button type="button" class="btn" onclick="savePlatformSettings()">حفظ وتحديث الواجهة</button>
             </div>
 
-            <h4 style="color:var(--primary-blue); margin-bottom:5px;">👥 قائمة الوسطاء المشتركين (إدارة شاملة):</h4>
+            <h4 style="color:var(--primary-blue); margin-bottom:5px;">👥 قائمة الوسطاء المشتركين:</h4>
             <div style="overflow-x: auto;">
                 <table class="admin-table">
                     <thead>
                         <tr>
-                            <th>الوسيط ورقم الهاتف</th>
-                            <th>المحافظة والمهنة</th>
-                            <th>كود الإحالة وإنجاز 5</th>
-                            <th>الاشتراك (بداية ونهاية)</th>
-                            <th>تجديد شهر (+30 يوم)</th>
-                            <th>تجديد أسبوع (+7 أيام)</th>
+                            <th>الوسيط</th>
+                            <th>كود الإحالة</th>
+                            <th>الاشتراك</th>
+                            <th>تجديد شهر</th>
+                            <th>تجديد أسبوع</th>
                             <th>تغيير PIN</th>
-                            <th>حذف الحساب</th>
-                            <th>دخول الحساب</th>
+                            <th>حذف</th>
+                            <th>دخول</th>
                         </tr>
                     </thead>
                     <tbody id="admin-waseets-tbody"></tbody>
@@ -139,13 +267,13 @@
                 <div id="waseet-top-logo-container" style="margin-bottom: 8px; text-align: center;">
                     <div class="logo-text" id="waseet-header-logo-text">🦅 Crow Go</div>
                 </div>
-                <div class="subtitle" id="waseet-welcome-text">مرحباً بك في مساحة عملك الخاصة</div>
+                <div class="subtitle" id="waseet-welcome-text">مرحباً بك</div>
             </div>
 
             <div style="background:#e0f2fe; border:1px solid #bae6fd; border-radius:10px; padding:10px 14px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
                 <div>
-                    📅 <b>بداية الاشتراك:</b> <span id="sub-start-date">--/--/----</span><br>
-                    ⏳ <b>نهاية الاشتراك:</b> <span id="sub-end-date" style="color:#0369a1; font-weight:bold;">--/--/----</span>
+                    📅 <b>البداية:</b> <span id="sub-start-date">--/--/----</span><br>
+                    ⏳ <b>النهاية:</b> <span id="sub-end-date" style="color:#0369a1; font-weight:bold;">--/--/----</span>
                 </div>
                 <div style="text-align: left;">
                     <span id="sub-status-badge" class="badge-green" style="font-size:11px; padding:4px 10px;">نشط</span>
@@ -155,39 +283,39 @@
             <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:12px; margin-bottom:12px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
                     <div>
-                        <span style="font-size:12px; color:#15803d; font-weight:bold;">🔗 كود الإحالة الخاص بك:</span>
+                        <span style="font-size:12px; color:#15803d; font-weight:bold;">🔗 كود الإحالة:</span>
                         <div id="waseet-ref-code-display" style="font-size:15px; font-weight:bold; color:var(--primary-blue); font-family:monospace;">CROW-XXXX</div>
                     </div>
                     <button type="button" class="btn-success" onclick="shareWaseetInviteWhatsApp()" style="padding:7px 12px; font-size:11px; border-radius:8px; border:none; cursor:pointer; color:white; font-weight:bold; margin:0;">
-                        📤 مشاركة كود الإحالة واتساب
+                        📤 مشاركة واتساب
                     </button>
                 </div>
-                <div style="font-size:11px; color:#166534; border-top:1px dashed #bbf7d0; padding-top:6px; display:flex; justify-content:space-between; align-items:center;">
-                    <span>🎁 المكافأة الأوتوماتيكية: كل 5 اشتراكات شهرية بكودك = <b>أسبوع مجاني تلقائي!</b></span>
+                <div style="font-size:11px; color:#166534; border-top:1px dashed #bbf7d0; padding-top:6px; display:flex; justify-content:space-between;">
+                    <span>🎁 كل 5 اشتراكات بكودك = أسبوع مجاني!</span>
                     <span>التقدم: <b id="referral-progress-count">0</b> / 5</span>
                 </div>
             </div>
 
             <div style="display: flex; gap: 6px; margin-bottom: 12px;">
-                <button type="button" class="btn" onclick="openNewProductModal()" style="flex: 1; margin:0; font-size:13px;">+ إضافة منتج (عرض)</button>
-                <button type="button" class="btn btn-warning" onclick="openNewOrderModal()" style="flex: 1; margin:0; font-size:13px;">+ تسجيل طلب زبون</button>
+                <button type="button" class="btn" onclick="openNewProductModal()" style="flex: 1; margin:0; font-size:13px;">+ إضافة منتج</button>
+                <button type="button" class="btn btn-warning" onclick="openNewOrderModal()" style="flex: 1; margin:0; font-size:13px;">+ تسجيل طلب</button>
             </div>
 
             <div style="display: flex; border-bottom: 2px solid var(--secondary-blue); margin-bottom: 10px;">
-                <button type="button" onclick="switchWaseetTab('products')" id="tab-btn-products" style="flex:1; padding:8px; background:var(--secondary-blue); color:white; border:none; font-weight:bold; cursor:pointer;">المنتجات (العروض)</button>
-                <button type="button" onclick="switchWaseetTab('orders')" id="tab-btn-orders" style="flex:1; padding:8px; background:#e2e8f0; color:var(--text-color); border:none; font-weight:bold; cursor:pointer;">طلبات الزبائن</button>
+                <button type="button" onclick="switchWaseetTab('products')" id="tab-btn-products" style="flex:1; padding:8px; background:var(--secondary-blue); color:white; border:none; font-weight:bold; cursor:pointer;">المنتجات</button>
+                <button type="button" onclick="switchWaseetTab('orders')" id="tab-btn-orders" style="flex:1; padding:8px; background:#e2e8f0; color:var(--text-color); border:none; font-weight:bold; cursor:pointer;">الطلبات</button>
             </div>
 
             <div id="waseet-tab-products">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:#f1f5f9; padding:8px; border-radius:8px;">
-                    <span style="font-size:12px; color:var(--primary-blue); font-weight:bold;">☑️ حدد المنتجات للمجلة:</span>
-                    <button type="button" class="btn-success" onclick="openCatalogPreview()" style="padding:6px 12px; font-size:12px; border-radius:6px; border:none; cursor:pointer; color:white; font-weight:bold;">📤 تصدير الكتالوج (صور)</button>
+                    <span style="font-size:12px; color:var(--primary-blue); font-weight:bold;">الكتالوج:</span>
+                    <button type="button" class="btn-success" onclick="openCatalogPreview()" style="padding:6px 12px; font-size:12px; border-radius:6px; border:none; cursor:pointer; color:white; font-weight:bold;">📤 تصدير الكتالوج</button>
                 </div>
                 <div id="products-list-container" style="max-height: 300px; overflow-y: auto;"></div>
             </div>
 
             <div id="waseet-tab-orders" class="hidden">
-                <h4 style="color:var(--primary-blue); margin:0 0 8px 0;">🛒 طلبات الزبائن الواردة:</h4>
+                <h4 style="color:var(--primary-blue); margin:0 0 8px 0;">🛒 طلبات الزبائن:</h4>
                 <div id="orders-list-container" style="max-height: 300px; overflow-y: auto;"></div>
             </div>
 
@@ -202,28 +330,25 @@
             <input type="hidden" id="edit-prod-index" value="-1">
             
             <div class="input-group" style="background:#f8fafc; padding:10px; border-radius:8px; border:1px dashed var(--secondary-blue);">
-                <label>📸 صور المنتج (<span id="prod-img-count-badge">0</span> صور مضافة)</label>
+                <label>📸 صور المنتج (<span id="prod-img-count-badge">0</span> صور)</label>
                 <input type="file" id="prod-img-file" accept="image/*" multiple style="display:none;" onchange="handleProductImagesUpload(event)">
-                <button type="button" class="btn btn-info" onclick="document.getElementById('prod-img-file').click()" style="margin-top:4px; padding:8px; font-size:13px;">
-                    ➕ اختر صورة أو عدة صور من الموبايل
-                </button>
-                <div style="font-size:11px; color:#64748b; margin-top:5px;">* حدد (✅ في الكتالوج) للصور التي تريد إظهارها للزبائن.</div>
+                <button type="button" class="btn btn-info" onclick="document.getElementById('prod-img-file').click()" style="margin-top:4px; padding:8px; font-size:13px;">➕ اختر صور المنتج</button>
                 <div id="prod-images-gallery" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;"></div>
             </div>
 
-            <div class="input-group"><label>اسم المنتج / العرض *</label><input type="text" id="prod-name" placeholder="مثال: شقة تمليك 120م"></div>
-            <div class="input-group"><label>السعر (بالجنيه) *</label><input type="number" id="prod-price" placeholder="مثال: 500000"></div>
-            <div class="input-group"><label>الوصف والتفاصيل (تظهر للزبائن)</label><textarea id="prod-desc" rows="2" placeholder="التفاصيل، الحالة، المميزات..."></textarea></div>
+            <div class="input-group"><label>اسم المنتج *</label><input type="text" id="prod-name"></div>
+            <div class="input-group"><label>السعر (ج.م) *</label><input type="number" id="prod-price"></div>
+            <div class="input-group"><label>الوصف</label><textarea id="prod-desc" rows="2"></textarea></div>
 
             <div style="background:#f0fdf4; padding:10px; border-radius:8px; border:1px solid #bbf7d0; margin-bottom:12px;">
-                <div style="font-size:12px; font-weight:bold; color:#15803d; margin-bottom:6px;">🔒 بيانات صاحب السلعة (سرية للوسيط فقط):</div>
-                <div class="input-group" style="margin-bottom:8px;"><label>اسم صاحب السلعة</label><input type="text" id="prod-owner-name" placeholder="الاسم"></div>
-                <div class="input-group" style="margin-bottom:8px;"><label>رقم تليفون صاحب السلعة</label><input type="tel" id="prod-owner-phone" placeholder="010XXXXXXXX"></div>
-                <div class="input-group" style="margin-bottom:0;"><label>عنوان صاحب السلعة / مكان المعاينة</label><input type="text" id="prod-owner-address" placeholder="العنوان بالتفصيل"></div>
+                <div style="font-size:12px; font-weight:bold; color:#15803d; margin-bottom:6px;">🔒 بيانات صاحب السلعة (سري):</div>
+                <div class="input-group" style="margin-bottom:8px;"><label>الاسم</label><input type="text" id="prod-owner-name"></div>
+                <div class="input-group" style="margin-bottom:8px;"><label>الهاتف</label><input type="tel" id="prod-owner-phone"></div>
+                <div class="input-group" style="margin-bottom:0;"><label>العنوان</label><input type="text" id="prod-owner-address"></div>
             </div>
 
             <div style="display:flex; gap:8px;">
-                <button type="button" class="btn" onclick="saveProductFromModal()" style="margin:0;">💾 حفظ التعديلات والبيانات</button>
+                <button type="button" class="btn" onclick="saveProductFromModal()" style="margin:0;">💾 حفظ</button>
                 <button type="button" class="btn btn-secondary" onclick="closeProductModal()" style="margin:0;">إلغاء</button>
             </div>
         </div>
@@ -232,14 +357,14 @@
     <!-- نافذة الطلب -->
     <div id="order-modal" class="modal-overlay hidden">
         <div class="modal-box">
-            <h3 id="order-modal-title" style="margin-top:0; color:var(--primary-blue);">تسجيل طلب زبون</h3>
+            <h3 style="margin-top:0; color:var(--primary-blue);">تسجيل طلب زبون</h3>
             <input type="hidden" id="edit-order-index" value="-1">
-            <div class="input-group"><label>المنتج / السلعة المطلوبة *</label><textarea id="order-item" rows="2" placeholder="مثال: مطلوب شقة إيجار 3 غرف"></textarea></div>
-            <div class="input-group"><label>اسم الزبون طالب السلعة *</label><input type="text" id="order-client-name" placeholder="اسم العميل"></div>
-            <div class="input-group"><label>رقم موبايل الزبون *</label><input type="tel" id="order-client-phone" placeholder="010XXXXXXXX"></div>
-            <div class="input-group"><label>عنوان الزبون (اختياري)</label><input type="text" id="order-client-address" placeholder="المنطقة أو العنوان"></div>
+            <div class="input-group"><label>المطلوب *</label><textarea id="order-item" rows="2"></textarea></div>
+            <div class="input-group"><label>اسم الزبون *</label><input type="text" id="order-client-name"></div>
+            <div class="input-group"><label>هاتف الزبون *</label><input type="tel" id="order-client-phone"></div>
+            <div class="input-group"><label>العنوان</label><input type="text" id="order-client-address"></div>
             <div style="display:flex; gap:8px;">
-                <button type="button" class="btn btn-warning" onclick="saveOrderFromModal()" style="margin:0;">💾 حفظ الطلب</button>
+                <button type="button" class="btn btn-warning" onclick="saveOrderFromModal()" style="margin:0;">💾 حفظ</button>
                 <button type="button" class="btn btn-secondary" onclick="closeOrderModal()" style="margin:0;">إلغاء</button>
             </div>
         </div>
@@ -249,22 +374,498 @@
     <div id="catalog-modal" class="modal-overlay hidden">
         <div class="modal-box" style="max-width:550px;">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:8px; margin-bottom:10px;">
-                <h3 style="margin:0; color:var(--primary-blue);">🦅 بوسترات الكتالوج (بدون روابط)</h3>
-                <button type="button" onclick="closeCatalogModal()" style="background:none; border:none; font-size:18px; cursor:pointer; color:#64748b;">✖</button>
+                <h3 style="margin:0; color:var(--primary-blue);">🦅 بوسترات الكتالوج</h3>
+                <button type="button" onclick="closeCatalogModal()" style="background:none; border:none; font-size:18px; cursor:pointer;">✖</button>
             </div>
-            
             <div id="catalog-preview-content" style="max-height: 55vh; overflow-y: auto; padding:5px;"></div>
-
             <div style="display:flex; flex-direction:column; gap:8px; margin-top:12px;">
-                <button type="button" class="btn btn-success" onclick="shareCatalogWithImages()" style="margin:0;">📲 إرسال الصور مباشرة عبر واتساب / مشاركة</button>
-                <button type="button" class="btn" onclick="shareCatalogTextOnly()" style="margin:0;">📝 إرسال كقائمة نصية بدون روابط</button>
+                <button type="button" class="btn btn-success" onclick="shareCatalogWithImages()" style="margin:0;">📲 مشاركة الصور واتساب</button>
+                <button type="button" class="btn" onclick="shareCatalogTextOnly()" style="margin:0;">📝 مشاركة نصية</button>
                 <button type="button" class="btn btn-secondary" onclick="closeCatalogModal()" style="margin:0;">إغلاق</button>
             </div>
         </div>
     </div>
 
-    <script src="app.js"></script>
-    <script src="waseet.js"></script>
-    <script src="admin.js"></script>
+    <!-- الجافاسكريبت الموحد والكامل لتشغيل كل الأزرار والشاشات بانتظام -->
+    <script>
+        let platformConfig = { logoBase64: '', subtitle: 'منظومة الإدارة الذكية للوسطاء الميدانيين' };
+        let localProducts = [];
+        let localOrders = [];
+        let currentWaseetPhone = "01000000000";
+        let currentWaseetName = "الوسيط";
+        let currentTempProductImages = [];
+
+        function showScreen(screenId) {
+            ['landing-screen', 'login-screen', 'register-screen', 'admin-dashboard', 'waseet-dashboard'].forEach(id => {
+                let el = document.getElementById(id);
+                if(el) el.classList.add('hidden');
+            });
+            let target = document.getElementById(screenId);
+            if(target) target.classList.remove('hidden');
+        }
+
+        function handleLogin() {
+            const phone = document.getElementById('login-phone').value.trim();
+            const pin = document.getElementById('login-pin').value.trim();
+            if(!phone || !pin) { alert("أدخل رقم الهاتف والـ PIN"); return; }
+            
+            let savedPin = localStorage.getItem('crow_waseet_pin_' + phone) || '1234';
+            if(pin !== savedPin) { alert("الرقم السري غير صحيح!"); return; }
+
+            let savedName = localStorage.getItem('crow_waseet_name_' + phone) || `وسيط (${phone})`;
+            loginAsWaseetDirectly(phone, savedName);
+        }
+
+        function handleRegister() {
+            const name = document.getElementById('reg-name').value.trim();
+            const phone = document.getElementById('reg-phone').value.trim();
+            const pin = document.getElementById('reg-pin').value.trim();
+            const gov = document.getElementById('reg-gov').value.trim();
+            const prof = document.getElementById('reg-prof').value;
+            const refCodeInput = document.getElementById('reg-ref-code').value.trim();
+
+            if(!name || !phone || !pin || !gov || !prof) { alert("أكمل الحقول الإجبارية"); return; }
+            
+            localStorage.setItem('crow_waseet_name_' + phone, name);
+            localStorage.setItem('crow_waseet_pin_' + phone, pin);
+            
+            let today = new Date().toISOString().split('T')[0];
+            let weekLater = new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0];
+            localStorage.setItem('crow_sub_start_' + phone, today);
+            localStorage.setItem('crow_sub_end_' + phone, weekLater);
+
+            if(refCodeInput) {
+                let cleanRef = refCodeInput.toUpperCase().trim();
+                let waseetPhones = [];
+                for(let i=0; i<localStorage.length; i++) {
+                    let key = localStorage.key(i);
+                    if(key.startsWith('crow_waseet_name_')) waseetPhones.push(key.replace('crow_waseet_name_', ''));
+                }
+                let targetPhone = waseetPhones.find(p => `CROW-${p.slice(-4)}` === cleanRef);
+                if(targetPhone) processAutomaticReferral(targetPhone);
+            }
+
+            alert("تم إنشاء حسابك ومنحك أسبوعاً تجريبياً مجانياً!");
+            loginAsWaseetDirectly(phone, name);
+        }
+
+        function processAutomaticReferral(ownerPhone) {
+            let refs = parseInt(localStorage.getItem('crow_refs_' + ownerPhone) || '0', 10) + 1;
+            if (refs >= 5) {
+                refs = 0;
+                let currentEndStr = localStorage.getItem('crow_sub_end_' + ownerPhone) || new Date().toISOString().split('T')[0];
+                let endDate = new Date(currentEndStr);
+                if(endDate < new Date()) endDate = new Date();
+                endDate.setDate(endDate.getDate() + 7);
+                let newEndStr = endDate.toISOString().split('T')[0];
+                localStorage.setItem('crow_sub_end_' + ownerPhone, newEndStr);
+                localStorage.setItem('crow_reward_msg_' + ownerPhone, `🎉 تهانينا! أكملت 5 إحالات وتم منحك أسبوع مجاني حتى ${newEndStr}!`);
+            }
+            localStorage.setItem('crow_refs_' + ownerPhone, refs);
+        }
+
+        function loginAsDemoUser() {
+            loginAsWaseetDirectly("01099998888", "أحمد محمود - وسيط معتمد");
+        }
+
+        function loginAsWaseetDirectly(phone, waseetName) {
+            currentWaseetPhone = phone;
+            currentWaseetName = waseetName;
+            
+            if(!localStorage.getItem('crow_waseet_name_' + phone)) {
+                localStorage.setItem('crow_waseet_name_' + phone, waseetName);
+            }
+            if(!localStorage.getItem('crow_sub_start_' + phone)) {
+                let today = new Date().toISOString().split('T')[0];
+                let weekLater = new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0];
+                localStorage.setItem('crow_sub_start_' + phone, today);
+                localStorage.setItem('crow_sub_end_' + phone, weekLater);
+            }
+
+            showScreen('waseet-dashboard');
+            let welcomeEl = document.getElementById('waseet-welcome-text');
+            if(welcomeEl) welcomeEl.innerText = `أهلاً بك يا ${waseetName}`;
+            
+            let savedLogo = localStorage.getItem('crow_platform_logo');
+            let logoContainer = document.getElementById('waseet-top-logo-container');
+            if (savedLogo && logoContainer) {
+                logoContainer.innerHTML = `<img src="${savedLogo}" class="logo-img" alt="Logo">`;
+            }
+
+            let rewardMsg = localStorage.getItem('crow_reward_msg_' + phone);
+            if(rewardMsg) { alert(rewardMsg); localStorage.removeItem('crow_reward_msg_' + phone); }
+
+            updateWaseetReferralDisplay(phone);
+            updateWaseetSubscriptionUI(phone);
+            loadLocalData(phone);
+        }
+
+        function updateWaseetSubscriptionUI(phone) {
+            let start = localStorage.getItem('crow_sub_start_' + phone) || '2026-11-01';
+            let end = localStorage.getItem('crow_sub_end_' + phone) || '2026-12-01';
+            let refs = localStorage.getItem('crow_refs_' + phone) || '0';
+
+            let sEl = document.getElementById('sub-start-date');
+            let eEl = document.getElementById('sub-end-date');
+            let rEl = document.getElementById('referral-progress-count');
+            if(sEl) sEl.innerText = start;
+            if(eEl) eEl.innerText = end;
+            if(rEl) rEl.innerText = refs;
+
+            let diffDays = Math.ceil((new Date(end) - new Date()) / (1000 * 60 * 60 * 24));
+            let badge = document.getElementById('sub-status-badge');
+            if(badge) {
+                badge.className = diffDays > 0 ? "badge-green" : "badge-red";
+                badge.innerText = diffDays > 0 ? `نشط (${diffDays} يوم)` : "منتهي";
+            }
+        }
+
+        function getWaseetReferralCode(phone) {
+            let cleanPhone = phone ? phone.replace(/\D/g, '') : '1234';
+            return `CROW-${cleanPhone.slice(-4)}`;
+        }
+
+        function updateWaseetReferralDisplay(phone) {
+            let codeEl = document.getElementById('waseet-ref-code-display');
+            if (codeEl) codeEl.innerText = getWaseetReferralCode(phone);
+        }
+
+        function shareWaseetInviteWhatsApp() {
+            let msg = `أهلاً بك 👋\nللتواصل مع مكتب (${currentWaseetName}) اذكر كود الإحالة:\n🔑 *كود الوسيط: ${getWaseetReferralCode(currentWaseetPhone)}*\n📞 ${currentWaseetPhone}`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        function openAdminDirect() {
+            let pass = prompt("أدخل كلمة مرور السوبر أدمن:");
+            if (pass === (localStorage.getItem('crow_admin_pass') || 'admin123')) {
+                showScreen('admin-dashboard');
+                loadAdminSettingsToUI();
+                renderAdminWaseetsTable();
+            } else if (pass !== null) {
+                alert("كلمة المرور غير صحيحة!");
+            }
+        }
+
+        function changeAdminPassword() {
+            let newPass = document.getElementById('admin-new-pass').value.trim();
+            if (!newPass || newPass.length < 4) { alert("أدخل 4 أحرف/أرقام على الأقل"); return; }
+            localStorage.setItem('crow_admin_pass', newPass);
+            let passInput = document.getElementById('admin-new-pass');
+            if(passInput) passInput.value = '';
+            alert("تم تحديث كلمة المرور بنجاح!");
+        }
+
+        function loadAdminSettingsToUI() {
+            let savedLogo = localStorage.getItem('crow_platform_logo');
+            let savedSub = localStorage.getItem('crow_platform_sub');
+            let logoContainer = document.getElementById('logo-display-container');
+            let subInput = document.getElementById('admin-subtitle-input');
+            if(savedLogo && logoContainer) logoContainer.innerHTML = `<img src="${savedLogo}" class="logo-img">`;
+            if(savedSub && subInput) subInput.value = savedSub;
+        }
+
+        function previewNewLogo(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    platformConfig.logoBase64 = e.target.result;
+                    let logoContainer = document.getElementById('logo-display-container');
+                    if(logoContainer) logoContainer.innerHTML = `<img src="${e.target.result}" class="logo-img">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function savePlatformSettings() {
+            let subInput = document.getElementById('admin-subtitle-input');
+            if(subInput) localStorage.setItem('crow_platform_sub', subInput.value);
+            if(platformConfig.logoBase64) localStorage.setItem('crow_platform_logo', platformConfig.logoBase64);
+            alert("تم الحفظ بنجاح!");
+            showScreen('landing-screen');
+        }
+
+        function renderAdminWaseetsTable() {
+            let tbody = document.getElementById('admin-waseets-tbody');
+            if(!tbody) return;
+            let waseetPhones = [];
+            for(let i=0; i<localStorage.length; i++) {
+                let key = localStorage.key(i);
+                if(key.startsWith('crow_waseet_name_')) waseetPhones.push(key.replace('crow_waseet_name_', ''));
+            }
+            if(waseetPhones.length === 0) {
+                waseetPhones.push("0101111");
+                localStorage.setItem('crow_waseet_name_0101111', "محمود السيد");
+                localStorage.setItem('crow_waseet_pin_0101111', "1234");
+                localStorage.setItem('crow_sub_start_0101111', new Date().toISOString().split('T')[0]);
+                localStorage.setItem('crow_sub_end_0101111', new Date(Date.now() + 7*86400000).toISOString().split('T')[0]);
+            }
+            tbody.innerHTML = '';
+            waseetPhones.forEach(phone => {
+                let name = localStorage.getItem('crow_waseet_name_' + phone);
+                let start = localStorage.getItem('crow_sub_start_' + phone) || '--';
+                let end = localStorage.getItem('crow_sub_end_' + phone) || '--';
+                let refs = localStorage.getItem('crow_refs_' + phone) || '0';
+                
+                tbody.innerHTML += `<tr>
+                    <td><b>${name}</b><br><small>${phone}</small></td>
+                    <td>CROW-${phone.slice(-4)}<br><small style="color:green;">إحالات: ${refs}/5</small></td>
+                    <td><span class="badge-green">${start} إلى ${end}</span></td>
+                    <td><button class="btn-warning" onclick="adminExtendSub('${phone}', 30)">+شهر</button></td>
+                    <td><button class="btn-warning" onclick="adminExtendSub('${phone}', 7)">+أسبوع</button></td>
+                    <td><button class="btn-info" onclick="adminChangeWaseetPin('${phone}')">PIN</button></td>
+                    <td><button class="btn-danger" onclick="adminDeleteWaseet('${phone}')">حذف</button></td>
+                    <td><button class="btn-success" onclick="loginAsWaseetDirectly('${phone}', '${name}')">دخول</button></td>
+                </tr>`;
+            });
+        }
+
+        function adminExtendSub(phone, days) {
+            let endDate = new Date(localStorage.getItem('crow_sub_end_' + phone) || new Date());
+            if(endDate < new Date()) endDate = new Date();
+            endDate.setDate(endDate.getDate() + days);
+            localStorage.setItem('crow_sub_end_' + phone, endDate.toISOString().split('T')[0]);
+            alert("تم التجديد بنجاح!");
+            renderAdminWaseetsTable();
+        }
+
+        function adminChangeWaseetPin(phone) {
+            let pin = prompt("أدخل PIN الجديد (4 أرقام):");
+            if(pin && pin.length >= 4) { localStorage.setItem('crow_waseet_pin_' + phone, pin); alert("تم التغيير!"); }
+        }
+
+        function adminDeleteWaseet(phone) {
+            if(confirm("هل أنت متأكد من الحذف؟")) {
+                ['crow_waseet_name_', 'crow_waseet_pin_', 'crow_sub_start_', 'crow_sub_end_', 'crow_refs_', 'crow_prods_', 'crow_orders_'].forEach(k => localStorage.removeItem(k + phone));
+                renderAdminWaseetsTable();
+            }
+        }
+
+        function switchWaseetTab(tab) {
+            let isProd = tab === 'products';
+            let pTab = document.getElementById('waseet-tab-products');
+            let oTab = document.getElementById('waseet-tab-orders');
+            let btnP = document.getElementById('tab-btn-products');
+            let btnO = document.getElementById('tab-btn-orders');
+
+            if(pTab) pTab.classList.toggle('hidden', !isProd);
+            if(oTab) oTab.classList.toggle('hidden', isProd);
+            if(btnP) { btnP.style.background = isProd ? 'var(--secondary-blue)' : '#e2e8f0'; btnP.style.color = isProd ? 'white' : 'var(--text-color)'; }
+            if(btnO) { btnO.style.background = !isProd ? 'var(--secondary-blue)' : '#e2e8f0'; btnO.style.color = !isProd ? 'white' : 'var(--text-color)'; }
+        }
+
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            let btn = document.getElementById('install-pwa-btn');
+            if(btn) btn.style.display = 'block';
+        });
+        async function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                await deferredPrompt.userChoice;
+                deferredPrompt = null;
+            }
+        }
+
+        function loadLocalData(phone) {
+            localProducts = JSON.parse(localStorage.getItem('crow_prods_' + phone) || '[]');
+            localOrders = JSON.parse(localStorage.getItem('crow_orders_' + phone) || '[]');
+            renderProducts(); renderOrders();
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('crow_prods_' + currentWaseetPhone, JSON.stringify(localProducts));
+            localStorage.setItem('crow_orders_' + currentWaseetPhone, JSON.stringify(localOrders));
+        }
+
+        function handleProductImagesUpload(event) {
+            const files = Array.from(event.target.files);
+            if (!files.length) return;
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width, h = img.height;
+                        let maxDim = 1000;
+                        if (w > maxDim || h > maxDim) {
+                            if (w > h) { h = Math.round(h * (maxDim / w)); w = maxDim; }
+                            else { w = Math.round(w * (maxDim / h)); h = maxDim; }
+                        }
+                        canvas.width = w; canvas.height = h;
+                        let ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+                        currentTempProductImages.push({ data: canvas.toDataURL('image/jpeg', 0.85), inCatalog: true });
+                        renderTempImagesGallery();
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+            event.target.value = '';
+        }
+
+        function renderTempImagesGallery() {
+            let gallery = document.getElementById('prod-images-gallery');
+            let badge = document.getElementById('prod-img-count-badge');
+            if(badge) badge.innerText = currentTempProductImages.length;
+            if(!gallery) return;
+            gallery.innerHTML = '';
+            currentTempProductImages.forEach((imgObj, idx) => {
+                gallery.innerHTML += `<div style="position:relative; width:70px; height:70px; border:2px solid #10b981; border-radius:6px; overflow:hidden;">
+                    <img src="${imgObj.data}" style="width:100%; height:100%; object-fit:cover;">
+                    <button type="button" onclick="currentTempProductImages.splice(${idx},1); renderTempImagesGallery();" style="position:absolute; top:0; left:0; background:red; color:white; border:none; width:20px; height:20px; font-size:10px; cursor:pointer;">×</button>
+                </div>`;
+            });
+        }
+
+        function openNewProductModal() {
+            document.getElementById('edit-prod-index').value = "-1";
+            document.getElementById('prod-modal-title').innerText = "➕ إضافة منتج جديد";
+            document.getElementById('prod-name').value = '';
+            document.getElementById('prod-price').value = '';
+            document.getElementById('prod-desc').value = '';
+            document.getElementById('prod-owner-name').value = '';
+            document.getElementById('prod-owner-phone').value = '';
+            document.getElementById('prod-owner-address').value = '';
+            currentTempProductImages = [];
+            renderTempImagesGallery();
+            document.getElementById('product-modal').classList.remove('hidden');
+        }
+
+        function openEditProductModal(index) {
+            let p = localProducts[index];
+            if(!p) return;
+            document.getElementById('edit-prod-index').value = index;
+            document.getElementById('prod-modal-title').innerText = `✏️ تعديل منتج (#${p.serial})`;
+            document.getElementById('prod-name').value = p.name || '';
+            document.getElementById('prod-price').value = p.price || '';
+            document.getElementById('prod-desc').value = p.desc || '';
+            document.getElementById('prod-owner-name').value = p.ownerName || '';
+            document.getElementById('prod-owner-phone').value = p.ownerPhone || '';
+            document.getElementById('prod-owner-address').value = p.ownerAddress || '';
+            currentTempProductImages = Array.isArray(p.images) ? JSON.parse(JSON.stringify(p.images)) : [];
+            renderTempImagesGallery();
+            document.getElementById('product-modal').classList.remove('hidden');
+        }
+
+        function closeProductModal() { document.getElementById('product-modal').classList.add('hidden'); }
+
+        function saveProductFromModal() {
+            let index = parseInt(document.getElementById('edit-prod-index').value, 10);
+            let name = document.getElementById('prod-name').value.trim();
+            let price = document.getElementById('prod-price').value.trim();
+            let desc = document.getElementById('prod-desc').value.trim();
+            let ownerName = document.getElementById('prod-owner-name').value.trim();
+            let ownerPhone = document.getElementById('prod-owner-phone').value.trim();
+            let ownerAddress = document.getElementById('prod-owner-address').value.trim();
+
+            if(!name || !price) { alert("أدخل اسم المنتج والسعر!"); return; }
+
+            if(isNaN(index) || index < 0) {
+                let nextSerial = localProducts.length > 0 ? Math.max(...localProducts.map(i => i.serial)) + 1 : 1;
+                localProducts.push({ serial: nextSerial, name, price, desc, images: JSON.parse(JSON.stringify(currentTempProductImages)), ownerName, ownerPhone, ownerAddress });
+            } else {
+                localProducts[index].name = name;
+                localProducts[index].price = price;
+                localProducts[index].desc = desc;
+                localProducts[index].images = JSON.parse(JSON.stringify(currentTempProductImages));
+                localProducts[index].ownerName = ownerName;
+                localProducts[index].ownerPhone = ownerPhone;
+                localProducts[index].ownerAddress = ownerAddress;
+            }
+            saveToLocalStorage();
+            renderProducts();
+            closeProductModal();
+        }
+
+        function renderProducts() {
+            let container = document.getElementById('products-list-container');
+            if(!container) return;
+            container.innerHTML = localProducts.length === 0 ? '<p style="text-align:center; color:#94a3b8;">لا توجد منتجات مسجلة.</p>' : '';
+            localProducts.forEach((p, i) => {
+                let cover = (p.images && p.images.length > 0) ? p.images[0].data : '';
+                let imgTag = cover ? `<img src="${cover}" style="width:45px; height:45px; object-fit:cover; border-radius:6px;">` : '📦';
+                container.innerHTML += `<div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:8px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        ${imgTag}
+                        <div><b>#${p.serial} - ${p.name}</b> (${p.price} ج.م)<br><small style="color:#059669;">المالك: ${p.ownerName || 'غير مسجل'}</small></div>
+                    </div>
+                    <div style="display:flex; gap:4px;">
+                        <button class="btn-info" onclick="openEditProductModal(${i})" style="padding:5px 8px; margin:0; font-size:11px;">تعديل</button>
+                        <button class="btn-danger" onclick="deleteProduct(${i})" style="padding:5px 8px; margin:0; font-size:11px;">حذف</button>
+                    </div>
+                </div>`;
+            });
+        }
+
+        function deleteProduct(i) {
+            if(confirm("هل أنت متأكد من حذف هذا المنتج؟")) {
+                localProducts.splice(i, 1);
+                saveToLocalStorage();
+                renderProducts();
+            }
+        }
+
+        function openNewOrderModal() { document.getElementById('order-modal').classList.remove('hidden'); }
+        function closeOrderModal() { document.getElementById('order-modal').classList.add('hidden'); }
+
+        function saveOrderFromModal() {
+            let itemNeeded = document.getElementById('order-item').value.trim();
+            let clientName = document.getElementById('order-client-name').value.trim();
+            let clientPhone = document.getElementById('order-client-phone').value.trim();
+            let clientAddress = document.getElementById('order-client-address').value.trim();
+            if(!itemNeeded || !clientName || !clientPhone) { alert("أكمل بيانات الطلب الأساسية"); return; }
+            localOrders.push({ id: Date.now(), itemNeeded, clientName, clientPhone, clientAddress, date: new Date().toLocaleDateString('ar-EG') });
+            saveToLocalStorage(); renderOrders(); closeOrderModal();
+        }
+
+        function renderOrders() {
+            let container = document.getElementById('orders-list-container');
+            if(!container) return;
+            container.innerHTML = localOrders.length === 0 ? '<p style="text-align:center; color:#94a3b8;">لا توجد طلبات مسجلة.</p>' : '';
+            localOrders.forEach((o, i) => {
+                container.innerHTML += `<div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:8px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
+                    <div><b>🛒 ${o.itemNeeded}</b><br><small style="color:#1b4982;">👤 ${o.clientName} (${o.clientPhone})</small></div>
+                    <button class="btn-danger" onclick="localOrders.splice(${i},1); saveToLocalStorage(); renderOrders();" style="padding:4px 8px; margin:0; font-size:11px;">حذف</button>
+                </div>`;
+            });
+        }
+
+        function openCatalogPreview() {
+            let content = document.getElementById('catalog-preview-content');
+            if(!content) return;
+            content.innerHTML = '';
+            if(localProducts.length === 0) { alert("أضف منتجات أولاً!"); return; }
+            
+            localProducts.forEach(p => {
+                let imgHtml = (p.images && p.images.length > 0) ? `<img src="${p.images[0].data}" style="width:100%; max-height:180px; object-fit:cover; border-radius:6px; margin-bottom:6px;">` : '';
+                content.innerHTML += `<div style="border:1px solid #cbd5e1; border-radius:8px; padding:10px; margin-bottom:10px; background:#f8fafc; text-align:right;">
+                    ${imgHtml}
+                    <div style="font-weight:bold; color:var(--primary-blue);">كود (#${p.serial}) : ${p.name}</div>
+                    <div style="color:green; font-weight:bold;">السعر: ${p.price} ج.م</div>
+                    <div style="font-size:12px; color:#475569;">${p.desc || ''}</div>
+                </div>`;
+            });
+            document.getElementById('catalog-modal').classList.remove('hidden');
+        }
+
+        function closeCatalogModal() { document.getElementById('catalog-modal').classList.add('hidden'); }
+
+        function shareCatalogTextOnly() {
+            let text = `📋 *عروض مكتب (${currentWaseetName}) الحالية*\n\n`;
+            localProducts.forEach(p => {
+                text += `🔹 *كود (#${p.serial})* : ${p.name}\n`;
+                text += `💰 السعر: ${p.price} ج.م\n`;
+                if(p.desc) text += `📝 ${p.desc}\n`;
+                text += `-------------------\n`;
+            });
+            text += `\nللاستعلام والمعاينة يرجى ذكر رقم الكود المطلوب في رسالة.`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        }
+    </script>
 </body>
 </html>
