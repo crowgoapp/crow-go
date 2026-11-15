@@ -216,9 +216,9 @@
                 <div class="subtitle">إدارة النظام، الوسطاء والاشتراكات</div>
             </div>
 
-            <div class="features-box" style="background:#ecfdf5; border:1px solid #a7f3d0; text-align:right;">
-                <h4 style="margin-top:0; color:#065f46;">🚀 وضع التجربة السريعة:</h4>
-                <button type="button" class="btn btn-success" onclick="loginAsDemoUser()" style="margin:0;">🚀 دخول سريع (مستخدم تجريبي)</button>
+            <div class="features-box" style="background:#f0fdf4; border:1px solid #bbf7d0; text-align:center; margin-bottom:12px;">
+                <h4 style="margin-top:0; color:#15803d;">🚀 الاختبار السريع:</h4>
+                <button type="button" class="btn btn-success" onclick="loginAsDemoUser()" style="margin:0;">دخول مباشر كمستخدم تجريبي (أحمد محمود)</button>
             </div>
 
             <div class="features-box" style="background:#fee2e2; border:1px solid #fecaca; text-align:right;">
@@ -374,11 +374,11 @@
         </div>
     </div>
 
-    <!-- نافذة الكتالوج مع دعم ألبوم الصور -->
+    <!-- نافذة الكتالوج المعروضة -->
     <div id="catalog-modal" class="modal-overlay hidden">
         <div class="modal-box" style="max-width:550px;">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:8px; margin-bottom:10px;">
-                <h3 style="margin:0; color:var(--primary-blue);">🦅 ألبوم صور الكتالوج المحدد</h3>
+                <h3 style="margin:0; color:var(--primary-blue);">🦅 ألبوم صور الكتالوج (صورتين لكل صفحة)</h3>
                 <button type="button" onclick="closeCatalogModal()" style="background:none; border:none; font-size:18px; cursor:pointer;">✖</button>
             </div>
             
@@ -388,7 +388,7 @@
 
             <div style="display:flex; flex-direction:column; gap:8px; margin-top:12px;">
                 <button type="button" class="btn btn-success" onclick="shareCatalogAlbumWhatsApp()" style="margin:0;">📲 مشاركة ألبوم الصور عبر واتساب</button>
-                <button type="button" class="btn btn-secondary" onclick="closeCatalogModal()" style="margin:0;">إغلاق</button>
+                <button type="button" class="btn btn-secondary" onclick="closeCatalogModal()" style="margin:0;">إلغاء</button>
             </div>
         </div>
     </div>
@@ -677,7 +677,7 @@
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
                         let w = img.width, h = img.height;
-                        let maxDim = 1400;
+                        let maxDim = 1200;
                         if (w > maxDim || h > maxDim) {
                             if (w > h) { h = Math.round(h * (maxDim / w)); w = maxDim; }
                             else { w = Math.round(w * (maxDim / h)); h = maxDim; }
@@ -685,7 +685,7 @@
                         canvas.width = w; canvas.height = h;
                         let ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, w, h);
-                        currentTempProductImages.push({ data: canvas.toDataURL('image/jpeg', 0.9), inCatalog: true });
+                        currentTempProductImages.push({ data: canvas.toDataURL('image/jpeg', 0.90), inCatalog: true });
                         renderTempImagesGallery();
                     };
                     img.src = e.target.result;
@@ -702,8 +702,8 @@
             if(!gallery) return;
             gallery.innerHTML = '';
             currentTempProductImages.forEach((imgObj, idx) => {
-                gallery.innerHTML += `<div style="position:relative; width:70px; height:70px; border:2px solid #10b981; border-radius:6px; overflow:hidden; background:#f1f5f9; display:flex; align-items:center; justify-content:center;">
-                    <img src="${imgObj.data}" style="max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain;">
+                gallery.innerHTML += `<div style="position:relative; width:70px; height:70px; border:2px solid #10b981; border-radius:6px; overflow:hidden;">
+                    <img src="${imgObj.data}" style="width:100%; height:100%; object-fit:cover;">
                     <button type="button" onclick="currentTempProductImages.splice(${idx},1); renderTempImagesGallery();" style="position:absolute; top:0; left:0; background:red; color:white; border:none; width:20px; height:20px; font-size:10px; cursor:pointer;">×</button>
                 </div>`;
             });
@@ -781,13 +781,12 @@
             localProducts.forEach((p, i) => {
                 let isSelected = p.selectedForCatalog !== false;
                 let cover = (p.images && p.images.length > 0) ? p.images[0].data : '';
-                let imgTag = cover ? `<img src="${cover}" style="width:45px; height:45px; object-fit:contain; background:#f8fafc; border-radius:6px;">` : '📦';
-                let imgsCount = (p.images && p.images.length > 0) ? ` (${p.images.length} صور)` : '';
+                let imgTag = cover ? `<img src="${cover}" style="width:45px; height:45px; object-fit:cover; border-radius:6px;">` : '📦';
                 container.innerHTML += `<div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:8px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; font-size:12px; gap:8px;">
                     <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleCatalogSelection(${i})" style="width:18px; height:18px; cursor:pointer;" title="تضمين في الكتالوج">
                     <div style="display:flex; align-items:center; gap:8px; flex:1;">
                         ${imgTag}
-                        <div><b>#${p.serial} - ${p.name}</b>${imgsCount} (${p.price} ج.م)<br><small style="color:#059669;">المالك: ${p.ownerName || 'غير مسجل'}</small></div>
+                        <div><b>#${p.serial} - ${p.name}</b> (${p.price} ج.م)<br><small style="color:#059669;">المالك: ${p.ownerName || 'غير مسجل'}</small></div>
                     </div>
                     <div style="display:flex; gap:4px;">
                         <button class="btn-info" onclick="openEditProductModal(${i})" style="padding:5px 8px; margin:0; font-size:11px;">تعديل</button>
@@ -830,8 +829,8 @@
             });
         }
 
-        // رسم بطاقة المنتج مع الحفاظ على أبعاد الصورة الأصلية دون قص أو تشويه
-        async function renderProductSlideCanvas(product, imageData, imgIndex, totalImages, waseetName) {
+        // محرك رسم الكتالوج الاحترافي (صورتين لكل صفحة بوستر مع الحفاظ التام على أبعاد الصور الأصلية)
+        async function renderFlyerCanvasTwoImages(product, imgData1, imgData2, waseetName) {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             canvas.width = 1080;
@@ -840,7 +839,7 @@
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, 1080, 1350);
 
-            // الهيدر العلوي
+            // هيدر الإعلان
             ctx.fillStyle = '#0d233a';
             ctx.fillRect(0, 0, 1080, 140);
 
@@ -852,63 +851,68 @@
             ctx.fillText(`كود #${product.serial}`, 940, 82);
 
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 32px sans-serif';
+            ctx.font = 'bold 34px sans-serif';
             ctx.textAlign = 'right';
-            ctx.fillText(`👤 ${waseetName}`, 800, 82);
+            ctx.fillText(`👤 ${waseetName}`, 40, 85);
 
-            if (totalImages > 1) {
-                ctx.fillStyle = '#cbd5e1';
-                ctx.font = 'bold 28px sans-serif';
-                ctx.textAlign = 'left';
-                ctx.fillText(`(${imgIndex + 1} / ${totalImages})`, 40, 82);
-            }
-
-            // منطقة عرض الصورة مع الحفاظ على الأبعاد الأصلية (Aspect Ratio)
-            const boxX = 40;
-            const boxY = 165;
-            const boxW = 1000;
-            const boxH = 740;
-
-            ctx.fillStyle = '#f8fafc';
-            ctx.fillRect(boxX, boxY, boxW, boxH);
-            ctx.strokeStyle = '#e2e8f0';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(boxX, boxY, boxW, boxH);
-
-            if (imageData) {
+            // دالة مساعدة لرسم الصورة داخل خانتها بدون قص وبأبعادها الطبيعية
+            async function drawContainedImage(dataUrl, x, y, boxW, boxH) {
+                if (!dataUrl) return;
                 await new Promise((resolve) => {
                     const img = new Image();
                     img.onload = () => {
-                        const scale = Math.min(boxW / img.width, boxH / img.height);
-                        const drawW = Math.round(img.width * scale);
-                        const drawH = Math.round(img.height * scale);
-                        const drawX = Math.round(boxX + (boxW - drawW) / 2);
-                        const drawY = Math.round(boxY + (boxH - drawH) / 2);
-                        ctx.drawImage(img, drawX, drawY, drawW, drawH);
+                        ctx.fillStyle = '#f1f5f9';
+                        ctx.fillRect(x, y, boxW, boxH);
+
+                        let imgW = img.width;
+                        let imgH = img.height;
+                        let ratio = Math.min((boxW - 20) / imgW, (boxH - 20) / imgH);
+                        let targetW = imgW * ratio;
+                        let targetH = imgH * ratio;
+                        let offsetX = x + (boxW - targetW) / 2;
+                        let offsetY = y + (boxH - targetH) / 2;
+
+                        ctx.drawImage(img, offsetX, offsetY, targetW, targetH);
                         resolve();
                     };
                     img.onerror = () => resolve();
-                    img.src = imageData;
+                    img.src = dataUrl;
                 });
             }
 
-            // بيانات المنتج
+            // رسم الصورتين جنباً إلى جنب في منتصف البوستر
+            let boxWidth = 480;
+            let boxHeight = 650;
+            let yPos = 160;
+
+            if (imgData1) {
+                await drawContainedImage(imgData1, 40, yPos, boxWidth, boxHeight);
+            }
+            if (imgData2) {
+                await drawContainedImage(imgData2, 560, yPos, boxWidth, boxHeight);
+            } else {
+                // لو صورة واحدة فقط متاحة للمنتج، نترك الخانة الثانية فارغة بشكل أنيق
+                ctx.fillStyle = '#f8fafc';
+                ctx.fillRect(560, yPos, boxWidth, boxHeight);
+            }
+
+            // تفاصيل المنتج والسعر
             ctx.fillStyle = '#0d233a';
             ctx.font = 'bold 42px sans-serif';
             ctx.textAlign = 'right';
-            ctx.fillText(product.name, 1040, 975);
+            ctx.fillText(product.name, 1040, 885);
 
             ctx.fillStyle = '#059669';
             ctx.font = 'bold 40px sans-serif';
-            ctx.fillText(`💰 السعر: ${product.price} ج.م`, 1040, 1045);
+            ctx.fillText(`💰 السعر: ${product.price} ج.م`, 1040, 955);
 
             if (product.desc) {
                 ctx.fillStyle = '#475569';
                 ctx.font = '30px sans-serif';
-                ctx.fillText(`📝 ${product.desc.substring(0, 80)}`, 1040, 1115);
+                ctx.fillText(`📝 ${product.desc.substring(0, 75)}`, 1040, 1025);
             }
 
-            // الفوتر السفلي
+            // فوتر الإعلان
             ctx.fillStyle = '#1b4982';
             ctx.fillRect(0, 1230, 1080, 120);
             ctx.fillStyle = '#ffffff';
@@ -927,33 +931,33 @@
             }
 
             let previewBox = document.getElementById('catalog-preview-content');
-            previewBox.innerHTML = `<p style="text-align:center; color:#1b4982; font-weight:bold;">⏳ جاري إعداد وتجهيز ألبوم الصور للكتالوج...</p>`;
+            previewBox.innerHTML = `<p style="text-align:center; color:#1b4982; font-weight:bold;">⏳ جاري تجهيز وعرض بوسترات الكتالوج (صورتين بكل صفحة)...</p>`;
             document.getElementById('catalog-modal').classList.remove('hidden');
 
             catalogGeneratedFiles = [];
             previewBox.innerHTML = '';
+            let pageCounter = 1;
 
             for (const p of selectedProducts) {
-                let imgs = (p.images && p.images.length > 0) ? p.images : [{ data: '' }];
-                let productGroupHtml = `<div style="margin-bottom:18px; border:1px solid #cbd5e1; border-radius:10px; padding:10px; background:#f8fafc;">
-                    <div style="font-weight:bold; color:#0d233a; margin-bottom:8px; text-align:right;">📦 كود #${p.serial} - ${p.name} (${imgs.length} صورة)</div>
-                    <div style="display:flex; flex-direction:column; gap:10px;">`;
+                let productImages = (p.images && p.images.length > 0) ? p.images.map(img => img.data) : [];
+                if (productImages.length === 0) productImages = [''];
 
-                for (let idx = 0; idx < imgs.length; idx++) {
-                    let dataUrl = await renderProductSlideCanvas(p, imgs[idx].data, idx, imgs.length, currentWaseetName);
+                // تقسيم صور المنتج إلى أزواج (صورتين في كل صفحة بوستر)
+                for (let i = 0; i < productImages.length; i += 2) {
+                    let img1 = productImages[i];
+                    let img2 = productImages[i + 1] || null;
+
+                    let dataUrl = await renderFlyerCanvasTwoImages(p, img1, img2, currentWaseetName);
                     let blob = await (await fetch(dataUrl)).blob();
-                    let fileName = `code_${p.serial}_img_${idx + 1}.jpg`;
-                    let file = new File([blob], fileName, { type: 'image/jpeg' });
+                    let file = new File([blob], `code_${p.serial}_page_${pageCounter}.jpg`, { type: 'image/jpeg' });
                     catalogGeneratedFiles.push(file);
 
-                    productGroupHtml += `<div style="border:1px solid #e2e8f0; border-radius:8px; overflow:hidden; background:#fff;">
-                        <img src="${dataUrl}" style="width:100%; height:auto; display:block;">
-                        <a href="${dataUrl}" download="${fileName}" style="display:block; text-align:center; background:#e2e8f0; color:#0d233a; padding:8px; font-size:12px; font-weight:bold; text-decoration:none;">⬇️ حفظ صورة (${idx + 1}/${imgs.length}) لكود #${p.serial}</a>
+                    previewBox.innerHTML += `<div style="margin-bottom:14px; border:1px solid #cbd5e1; border-radius:10px; overflow:hidden; background:#fff;">
+                        <img src="${dataUrl}" style="width:100%; display:block;">
+                        <a href="${dataUrl}" download="code_${p.serial}_page_${pageCounter}.jpg" style="display:block; text-align:center; background:#e2e8f0; color:#0d233a; padding:8px; font-size:13px; font-weight:bold; text-decoration:none;">⬇️ حفظ صفحة الكتالوج (${pageCounter}) في الاستوديو</a>
                     </div>`;
+                    pageCounter++;
                 }
-
-                productGroupHtml += `</div></div>`;
-                previewBox.innerHTML += productGroupHtml;
             }
         }
 
@@ -973,7 +977,7 @@
                     console.log("تم إلغاء المشاركة");
                 }
             } else {
-                alert("متصفحك لا يدعم مشاركة الألبوم دفعة واحدة، يمكنك الضغط على زر الحفظ أسفل كل صورة ثم مشاركتها كألبوم عبر واتساب.");
+                alert("متصفحك لا يدعم مشاركة الألبوم دفعة واحدة، قم بالضغط على زر (⬇️ حفظ صفحة الكتالوج) تحت كل بوستر، ثم شاركها كألبوم عبر واتساب بكل سهولة!");
             }
         }
     </script>
