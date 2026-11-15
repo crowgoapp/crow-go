@@ -378,7 +378,7 @@
     <div id="catalog-modal" class="modal-overlay hidden">
         <div class="modal-box" style="max-width:550px;">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:8px; margin-bottom:10px;">
-                <h3 style="margin:0; color:var(--primary-blue);">🦅 ألبوم صور الكتالوج (صورتين لكل صفحة)</h3>
+                <h3 style="margin:0; color:var(--primary-blue);">🦅 ألبوم صور الكتالوج الاحترافي</h3>
                 <button type="button" onclick="closeCatalogModal()" style="background:none; border:none; font-size:18px; cursor:pointer;">✖</button>
             </div>
             
@@ -829,8 +829,8 @@
             });
         }
 
-        // محرك رسم الكتالوج الاحترافي (صورتين لكل صفحة بوستر مع الحفاظ التام على أبعاد الصور الأصلية)
-        async function renderFlyerCanvasTwoImages(product, imgData1, imgData2, waseetName) {
+        // محرك رسم الكتالوج الاحترافي والمحدث (هيدر فسيح لاسم الوسيط وتليفونه، وسيريال المنتج بجانب اسمه)
+        async function renderFlyerCanvasTwoImages(product, imgData1, imgData2, waseetName, waseetPhone) {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             canvas.width = 1080;
@@ -839,23 +839,26 @@
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, 1080, 1350);
 
-            // هيدر الإعلان
+            // هيدر الإعلان (موسع ومنسق لمنع تداخل اسم الوسيط ورقم الهاتف)
             ctx.fillStyle = '#0d233a';
-            ctx.fillRect(0, 0, 1080, 140);
+            ctx.fillRect(0, 0, 1080, 150);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 32px sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText(`👤 الوسيط: ${waseetName}`, 40, 75);
+            ctx.font = '28px sans-serif';
+            ctx.fillStyle = '#93c5fd';
+            ctx.fillText(`📞 هاتف: ${waseetPhone}`, 40, 118);
 
             ctx.fillStyle = '#10b981';
-            ctx.fillRect(830, 35, 220, 70);
+            ctx.fillRect(780, 40, 260, 70);
             ctx.fillStyle = '#ffffff';
             ctx.font = 'bold 34px sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText(`كود #${product.serial}`, 940, 82);
+            ctx.fillText(`كود #${product.serial}`, 910, 87);
 
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 34px sans-serif';
-            ctx.textAlign = 'right';
-            ctx.fillText(`👤 ${waseetName}`, 40, 85);
-
-            // دالة مساعدة لرسم الصورة داخل خانتها بدون قص وبأبعادها الطبيعية
+            // دالة مساعدة لرسم الصور بأبعادها الطبيعية وبدون أي قص أو تشويه
             async function drawContainedImage(dataUrl, x, y, boxW, boxH) {
                 if (!dataUrl) return;
                 await new Promise((resolve) => {
@@ -882,8 +885,8 @@
 
             // رسم الصورتين جنباً إلى جنب في منتصف البوستر
             let boxWidth = 480;
-            let boxHeight = 650;
-            let yPos = 160;
+            let boxHeight = 630;
+            let yPos = 170;
 
             if (imgData1) {
                 await drawContainedImage(imgData1, 40, yPos, boxWidth, boxHeight);
@@ -891,16 +894,15 @@
             if (imgData2) {
                 await drawContainedImage(imgData2, 560, yPos, boxWidth, boxHeight);
             } else {
-                // لو صورة واحدة فقط متاحة للمنتج، نترك الخانة الثانية فارغة بشكل أنيق
                 ctx.fillStyle = '#f8fafc';
                 ctx.fillRect(560, yPos, boxWidth, boxHeight);
             }
 
-            // تفاصيل المنتج والسعر
+            // اسم المنتج وبجانبه السيريال، ثم السعر والوصف
             ctx.fillStyle = '#0d233a';
             ctx.font = 'bold 42px sans-serif';
             ctx.textAlign = 'right';
-            ctx.fillText(product.name, 1040, 885);
+            ctx.fillText(`${product.name} (#${product.serial})`, 1040, 885);
 
             ctx.fillStyle = '#059669';
             ctx.font = 'bold 40px sans-serif';
@@ -931,7 +933,7 @@
             }
 
             let previewBox = document.getElementById('catalog-preview-content');
-            previewBox.innerHTML = `<p style="text-align:center; color:#1b4982; font-weight:bold;">⏳ جاري تجهيز وعرض بوسترات الكتالوج (صورتين بكل صفحة)...</p>`;
+            previewBox.innerHTML = `<p style="text-align:center; color:#1b4982; font-weight:bold;">⏳ جاري تجهيز وعرض بوسترات الكتالوج المنمقة...</p>`;
             document.getElementById('catalog-modal').classList.remove('hidden');
 
             catalogGeneratedFiles = [];
@@ -942,12 +944,11 @@
                 let productImages = (p.images && p.images.length > 0) ? p.images.map(img => img.data) : [];
                 if (productImages.length === 0) productImages = [''];
 
-                // تقسيم صور المنتج إلى أزواج (صورتين في كل صفحة بوستر)
                 for (let i = 0; i < productImages.length; i += 2) {
                     let img1 = productImages[i];
                     let img2 = productImages[i + 1] || null;
 
-                    let dataUrl = await renderFlyerCanvasTwoImages(p, img1, img2, currentWaseetName);
+                    let dataUrl = await renderFlyerCanvasTwoImages(p, img1, img2, currentWaseetName, currentWaseetPhone);
                     let blob = await (await fetch(dataUrl)).blob();
                     let file = new File([blob], `code_${p.serial}_page_${pageCounter}.jpg`, { type: 'image/jpeg' });
                     catalogGeneratedFiles.push(file);
