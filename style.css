@@ -1,261 +1,67 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crow Go - المنصة الذكية للوسطاء</title>
-    
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0d233a">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+:root {
+    --primary-blue: #0d233a;
+    --secondary-blue: #1b4982;
+    --accent-green: #10b981;
+    --bg-color: #f8fafc;
+    --text-color: #1e293b;
+}
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+    direction: rtl;
+}
+.container {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 16px;
+    min-height: 100vh;
+    box-sizing: border-box;
+    background: #fff;
+}
+.header { text-align: center; margin-bottom: 20px; }
+.logo-text { font-size: 26px; font-weight: bold; color: var(--primary-blue); }
+.subtitle { font-size: 13px; color: #64748b; margin-top: 6px; }
+.features-box { background: #f1f5f9; border-radius: 10px; padding: 12px; font-size: 13px; margin-bottom: 16px; }
+.features-box ul { margin: 5px 0 0 0; padding-right: 20px; }
+.btn {
+    display: block; width: 100%; background: var(--primary-blue); color: white;
+    border: none; padding: 12px; border-radius: 10px; font-size: 15px; font-weight: bold;
+    cursor: pointer; margin-bottom: 10px; text-align: center; box-sizing: border-box;
+}
+.btn-secondary { background: #64748b; }
+.btn-warning { background: #f59e0b; color: white; }
+.input-group { margin-bottom: 12px; text-align: right; }
+.input-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px; color: var(--primary-blue); }
+.input-group input, .input-group select, .input-group textarea {
+    width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; box-sizing: border-box;
+}
+.hidden { display: none !important; }
+.text-center { text-align: center; }
+.link-btn { background: none; border: none; color: var(--secondary-blue); cursor: pointer; font-size: 13px; text-decoration: underline; }
 
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-    <div class="container">
-        <!-- 1. الصفحة الرئيسية -->
-        <div id="landing-screen">
-            <div class="header">
-                <div id="logo-display-container">
-                    <div class="logo-text" id="display-logo-text">🦅 Crow Go</div>
-                </div>
-                <div class="subtitle" id="display-subtitle">منظومة الإدارة الذكية للوسطاء الميدانيين</div>
-            </div>
-
-            <div class="features-box">
-                <b>✨ مميزات المنصة:</b>
-                <ul>
-                    <li>إدارة عروضك وطلباتك بخصوصية تامة على جهازك.</li>
-                    <li>إصدار مجلات عرض مصورة بضغطة زر.</li>
-                </ul>
-            </div>
-
-            <button class="btn" onclick="showScreen('login-screen')">تسجيل دخول (مستخدم حالي)</button>
-            <button class="btn btn-secondary" onclick="showScreen('register-screen')">حساب جديد (أسبوع مجاني)</button>
-            <button class="btn btn-success" onclick="loginAsDemoUser()">🚀 دخول سريع (مستخدم تجريبي)</button>
-            
-            <button id="install-pwa-btn" class="btn btn-info" onclick="installPWA()" style="display: none;">
-                📲 تثبيت المنصة كتطبيق على موبايلك
-            </button>
-
-            <div class="text-center" style="margin-top: 20px;">
-                <button onclick="openAdminDirect()" class="link-btn">⚙️ دخول السوبر أدمن</button>
-            </div>
-        </div>
-
-        <!-- 2. شاشة تسجيل الدخول -->
-        <div id="login-screen" class="hidden">
-            <div class="header"><h2>تسجيل الدخول</h2></div>
-            <div class="input-group"><label>رقم الهاتف المحمول</label><input type="tel" id="login-phone" placeholder="010XXXXXXXX" /></div>
-            <div class="input-group"><label>الرقم السري (PIN - 4 أرقام)</label><input type="password" id="login-pin" maxlength="4" placeholder="****" /></div>
-            <button class="btn" onclick="handleLogin()">دخول لوحة التحكم</button>
-            <div class="text-center"><button class="link-btn" onclick="showScreen('landing-screen')">← العودة للرئيسية</button></div>
-        </div>
-
-        <!-- 3. شاشة حساب جديد -->
-        <div id="register-screen" class="hidden">
-            <div class="header"><h2>حساب جديد</h2></div>
-            <div class="input-group"><label>الاسم الكامل</label><input type="text" id="reg-name" /></div>
-            <div class="input-group"><label>رقم الهاتف</label><input type="tel" id="reg-phone" /></div>
-            <div class="input-group"><label>الرقم السري (PIN)</label><input type="password" id="reg-pin" maxlength="4" /></div>
-            <div class="input-group"><label>المحافظة</label><input type="text" id="reg-gov" /></div>
-            <div class="input-group">
-                <label>المهنة</label>
-                <select id="reg-prof">
-                    <option value="عقارات">عقارات</option>
-                    <option value="سيارات">سيارات</option>
-                    <option value="دليفري">دليفري</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label>كود إحالة الزميل (اختياري)</label>
-                <input type="text" id="reg-ref-code" placeholder="مثال: CROW-1111" />
-            </div>
-            <button class="btn" onclick="handleRegister()">إنشاء الحساب</button>
-            <div class="text-center"><button class="link-btn" onclick="showScreen('landing-screen')">← العودة للرئيسية</button></div>
-        </div>
-
-        <!-- 4. لوحة تحكم السوبر أدمن -->
-        <div id="admin-dashboard" class="hidden">
-            <div class="header">
-                <h2>لوحة تحكم السوبر أدمن 👑</h2>
-                <div class="subtitle">إدارة النظام، الوسطاء والاشتراكات</div>
-            </div>
-
-            <div class="features-box" style="background:#fee2e2; border:1px solid #fecaca; text-align:right;">
-                <h4 style="margin-top:0; color:#991b1b;">🔐 أمان لوحة الأدمن:</h4>
-                <div class="input-group" style="margin-bottom:8px;">
-                    <label>كلمة المرور الجديدة للأدمن</label>
-                    <input type="password" id="admin-new-pass" placeholder="الباسورد الجديد">
-                </div>
-                <button type="button" class="btn btn-danger" onclick="changeAdminPassword()" style="margin:0; padding:8px;">تحديث كلمة المرور</button>
-            </div>
-
-            <div class="features-box" style="background:#e2e8f0; text-align:right;">
-                <h4 style="margin-top:0; color:var(--primary-blue);">🛠️ إعدادات الواجهة واللوجو:</h4>
-                <div class="input-group">
-                    <label>رفع لوجو جديد</label>
-                    <input type="file" id="admin-logo-file" accept="image/*" onchange="previewNewLogo(event)" />
-                </div>
-                <div class="input-group">
-                    <label>النص المكتوب (Subtitle)</label>
-                    <textarea id="admin-subtitle-input" rows="2">منظومة الإدارة الذكية للوسطاء الميدانيين</textarea>
-                </div>
-                <button type="button" class="btn" onclick="savePlatformSettings()">حفظ وتحديث الواجهة</button>
-            </div>
-
-            <h4 style="color:var(--primary-blue); margin-bottom:5px;">👥 قائمة الوسطاء المشتركين:</h4>
-            <div style="overflow-x: auto;">
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>الوسيط</th>
-                            <th>كود الإحالة</th>
-                            <th>الاشتراك</th>
-                            <th>تجديد شهر</th>
-                            <th>تجديد أسبوع</th>
-                            <th>تغيير PIN</th>
-                            <th>حذف</th>
-                            <th>دخول</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-waseets-tbody"></tbody>
-                </table>
-            </div>
-
-            <button type="button" class="btn btn-secondary" style="margin-top:20px;" onclick="showScreen('landing-screen')">خروج من لوحة الأدمن</button>
-        </div>
-
-        <!-- 5. لوحة تحكم الوسيط -->
-        <div id="waseet-dashboard" class="hidden">
-            <div class="header">
-                <div id="waseet-top-logo-container" style="margin-bottom: 8px; text-align: center;">
-                    <div class="logo-text" id="waseet-header-logo-text">🦅 Crow Go</div>
-                </div>
-                <div class="subtitle" id="waseet-welcome-text">مرحباً بك</div>
-            </div>
-
-            <div style="background:#e0f2fe; border:1px solid #bae6fd; border-radius:10px; padding:10px 14px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
-                <div>
-                    📅 <b>البداية:</b> <span id="sub-start-date">--/--/----</span><br>
-                    ⏳ <b>النهاية:</b> <span id="sub-end-date" style="color:#0369a1; font-weight:bold;">--/--/----</span>
-                </div>
-                <div style="text-align: left;">
-                    <span id="sub-status-badge" class="badge-green" style="font-size:11px; padding:4px 10px;">نشط</span>
-                </div>
-            </div>
-
-            <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:12px; margin-bottom:12px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
-                    <div>
-                        <span style="font-size:12px; color:#15803d; font-weight:bold;">🔗 كود الإحالة:</span>
-                        <div id="waseet-ref-code-display" style="font-size:15px; font-weight:bold; color:var(--primary-blue); font-family:monospace;">CROW-XXXX</div>
-                    </div>
-                    <button type="button" class="btn-success" onclick="shareWaseetInviteWhatsApp()" style="padding:7px 12px; font-size:11px; border-radius:8px; border:none; cursor:pointer; color:white; font-weight:bold; margin:0;">
-                        📤 مشاركة واتساب
-                    </button>
-                </div>
-                <div style="font-size:11px; color:#166534; border-top:1px dashed #bbf7d0; padding-top:6px; display:flex; justify-content:space-between;">
-                    <span>🎁 كل 5 اشتراكات بكودك = أسبوع مجاني!</span>
-                    <span>التقدم: <b id="referral-progress-count">0</b> / 5</span>
-                </div>
-            </div>
-
-            <div style="display: flex; gap: 6px; margin-bottom: 12px;">
-                <button type="button" class="btn" onclick="openNewProductModal()" style="flex: 1; margin:0; font-size:13px;">+ إضافة منتج</button>
-                <button type="button" class="btn btn-warning" onclick="openNewOrderModal()" style="flex: 1; margin:0; font-size:13px;">+ تسجيل طلب</button>
-            </div>
-
-            <div style="display: flex; border-bottom: 2px solid var(--secondary-blue); margin-bottom: 10px;">
-                <button type="button" onclick="switchWaseetTab('products')" id="tab-btn-products" style="flex:1; padding:8px; background:var(--secondary-blue); color:white; border:none; font-weight:bold; cursor:pointer;">المنتجات</button>
-                <button type="button" onclick="switchWaseetTab('orders')" id="tab-btn-orders" style="flex:1; padding:8px; background:#e2e8f0; color:var(--text-color); border:none; font-weight:bold; cursor:pointer;">الطلبات</button>
-            </div>
-
-            <div id="waseet-tab-products">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:#f1f5f9; padding:8px; border-radius:8px;">
-                    <span style="font-size:12px; color:var(--primary-blue); font-weight:bold;">☑️ حدد المنتجات للكتالوج:</span>
-                    <button type="button" class="btn-success" onclick="openCatalogPreview()" style="padding:6px 12px; font-size:12px; border-radius:6px; border:none; cursor:pointer; color:white; font-weight:bold;">📤 تصدير الكتالوج (صور)</button>
-                </div>
-                <div id="products-list-container" style="max-height: 300px; overflow-y: auto;"></div>
-            </div>
-
-            <div id="waseet-tab-orders" class="hidden">
-                <h4 style="color:var(--primary-blue); margin:0 0 8px 0;">🛒 طلبات الزبائن:</h4>
-                <div id="orders-list-container" style="max-height: 300px; overflow-y: auto;"></div>
-            </div>
-
-            <button type="button" class="btn btn-secondary" style="margin-top:15px;" onclick="showScreen('landing-screen')">تسجيل الخروج</button>
-        </div>
-    </div>
-
-    <!-- نافذة المنتج -->
-    <div id="product-modal" class="modal-overlay hidden">
-        <div class="modal-box">
-            <h3 id="prod-modal-title" style="margin-top:0; color:var(--primary-blue);">إضافة منتج جديد</h3>
-            <input type="hidden" id="edit-prod-index" value="-1">
-            
-            <div class="input-group" style="background:#f8fafc; padding:10px; border-radius:8px; border:1px dashed var(--secondary-blue);">
-                <label>📸 صور المنتج (<span id="prod-img-count-badge">0</span> صور)</label>
-                <input type="file" id="prod-img-file" accept="image/*" multiple style="display:none;" onchange="handleProductImagesUpload(event)">
-                <button type="button" class="btn btn-info" onclick="document.getElementById('prod-img-file').click()" style="margin-top:4px; padding:8px; font-size:13px;">➕ اختر أو صور من الموبايل</button>
-                <div id="prod-images-gallery" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;"></div>
-            </div>
-
-            <div class="input-group"><label>اسم المنتج *</label><input type="text" id="prod-name" placeholder="مثال: شقة تمليك"></div>
-            <div class="input-group"><label>السعر (ج.م) *</label><input type="number" id="prod-price" placeholder="500000"></div>
-            <div class="input-group"><label>الوصف</label><textarea id="prod-desc" rows="2" placeholder="المميزات والتفاصيل..."></textarea></div>
-
-            <div style="background:#f0fdf4; padding:10px; border-radius:8px; border:1px solid #bbf7d0; margin-bottom:12px;">
-                <div style="font-size:12px; font-weight:bold; color:#15803d; margin-bottom:6px;">🔒 بيانات صاحب السلعة (سري للوسيط):</div>
-                <div class="input-group" style="margin-bottom:8px;"><label>الاسم</label><input type="text" id="prod-owner-name"></div>
-                <div class="input-group" style="margin-bottom:8px;"><label>الهاتف</label><input type="tel" id="prod-owner-phone"></div>
-                <div class="input-group" style="margin-bottom:0;"><label>العنوان</label><input type="text" id="prod-owner-address"></div>
-            </div>
-
-            <div style="display:flex; gap:8px;">
-                <button type="button" class="btn" onclick="saveProductFromModal()" style="margin:0;">💾 حفظ المنتج</button>
-                <button type="button" class="btn btn-secondary" onclick="closeProductModal()" style="margin:0;">إلغاء</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- نافذة الطلب -->
-    <div id="order-modal" class="modal-overlay hidden">
-        <div class="modal-box">
-            <h3 style="margin-top:0; color:var(--primary-blue);">تسجيل طلب زبون</h3>
-            <input type="hidden" id="edit-order-index" value="-1">
-            <div class="input-group"><label>المطلوب *</label><textarea id="order-item" rows="2"></textarea></div>
-            <div class="input-group"><label>اسم الزبون *</label><input type="text" id="order-client-name"></div>
-            <div class="input-group"><label>هاتف الزبون *</label><input type="tel" id="order-client-phone"></div>
-            <div class="input-group"><label>العنوان</label><input type="text" id="order-client-address"></div>
-            <div style="display:flex; gap:8px;">
-                <button type="button" class="btn btn-warning" onclick="saveOrderFromModal()" style="margin:0;">💾 حفظ</button>
-                <button type="button" class="btn btn-secondary" onclick="closeOrderModal()" style="margin:0;">إلغاء</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- نافذة الكتالوج المصور -->
-    <div id="catalog-modal" class="modal-overlay hidden">
-        <div class="modal-box" style="max-width:550px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:8px; margin-bottom:10px;">
-                <h3 style="margin:0; color:var(--primary-blue);">🦅 معاينة بوسترات الكتالوج</h3>
-                <button type="button" onclick="closeCatalogModal()" style="background:none; border:none; font-size:18px; cursor:pointer;">✖</button>
-            </div>
-            
-            <div id="catalog-preview-content" style="max-height: 55vh; overflow-y: auto; padding:5px;"></div>
-
-            <div style="display:flex; flex-direction:column; gap:8px; margin-top:12px;">
-                <button type="button" class="btn btn-success" onclick="shareCatalogWithImages()" style="margin:0;">📲 مشاركة الصور المباشرة (واتساب)</button>
-                <button type="button" class="btn btn-secondary" onclick="closeCatalogModal()" style="margin:0;">إغلاق</button>
-            </div>
-        </div>
-    </div>
-
-    <script src="app.js"></script>
-    <script src="waseet.js"></script>
-    <script src="admin.js"></script>
-</body>
-</html>
+.toast-container {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 90%;
+    max-width: 400px;
+}
+.toast {
+    padding: 12px 16px;
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: opacity 0.3s ease;
+}
+.toast-success { background-color: var(--accent-green); }
+.toast-error { background-color: #ef4444; }
