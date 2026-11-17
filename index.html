@@ -829,7 +829,7 @@
             });
         }
 
-        // محرك رسم الكتالوج الاحترافي والمحدث (هيدر فسيح لاسم الوسيط وتليفونه، وسيريال المنتج بجانب اسمه)
+        // محرك رسم الكتالوج الاحترافي والمحدث (اسم ورقم الوسيط في المنتصف، كود المنتج في مكانه، وسيريال المنتج بجانب اسمه)
         async function renderFlyerCanvasTwoImages(product, imgData1, imgData2, waseetName, waseetPhone) {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
@@ -839,24 +839,26 @@
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, 1080, 1350);
 
-            // هيدر الإعلان (موسع ومنسق لمنع تداخل اسم الوسيط ورقم الهاتف)
+            // هيدر الإعلان (اسم ورقم الوسيط في المنتصف تماماً بشكل فسيح ومنظم)
             ctx.fillStyle = '#0d233a';
             ctx.fillRect(0, 0, 1080, 150);
 
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 32px sans-serif';
-            ctx.textAlign = 'right';
-            ctx.fillText(`👤 الوسيط: ${waseetName}`, 40, 75);
+            ctx.font = 'bold 36px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(`👤 الوسيط: ${waseetName}`, 540, 68);
+            
             ctx.font = '28px sans-serif';
             ctx.fillStyle = '#93c5fd';
-            ctx.fillText(`📞 هاتف: ${waseetPhone}`, 40, 118);
+            ctx.fillText(`📞 هاتف: ${waseetPhone}`, 540, 115);
 
+            // كود المنتج في الجانب الأيمن من الهيدر
             ctx.fillStyle = '#10b981';
-            ctx.fillRect(780, 40, 260, 70);
+            ctx.fillRect(40, 40, 200, 70);
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 34px sans-serif';
+            ctx.font = 'bold 32px sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText(`كود #${product.serial}`, 910, 87);
+            ctx.fillText(`كود #${product.serial}`, 140, 87);
 
             // دالة مساعدة لرسم الصور بأبعادها الطبيعية وبدون أي قص أو تشويه
             async function drawContainedImage(dataUrl, x, y, boxW, boxH) {
