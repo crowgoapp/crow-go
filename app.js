@@ -1,42 +1,93 @@
-let platformConfig = {
-    logoBase64: '',
-    subtitle: 'منظومة الإدارة الذكية للوسطاء الميدانيين (عقارات، سيارات، دليفري، وخدمات)',
-    whatsapp: '201000000000'
+// دوال المساعدة والأمان العامة (مدمجة هنا لتجنب زيادة ملفات)
+const Utils = {
+    escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    },
+
+    safeJSONParse(key, fallback = null) {
+        try {
+            const item = localStorage.getItem(key);
+            return item ? JSON.parse(item) : fallback;
+        } catch (error) {
+            console.error(`خطأ في قراءة المفتاح ${key}:`, error);
+            return fallback;
+        }
+    },
+
+    validateEgyptianPhone(phone) {
+        return /^01[0125][0-9]{8}$/.test(phone);
+    },
+
+    validatePin(pin) {
+        return /^[0-9]{4}$/.test(pin);
+    },
+
+    showToast(message, type = 'success') {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.innerText = message;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
 };
 
-function showScreen(screenId) {
-    document.getElementById('landing-screen').classList.add('hidden');
-    document.getElementById('login-screen').classList.add('hidden');
-    document.getElementById('register-screen').classList.add('hidden');
-    document.getElementById('admin-dashboard').classList.add('hidden');
-    document.getElementById('waseet-dashboard').classList.add('hidden');
-    document.getElementById(screenId).classList.remove('hidden');
-}
+const router = {
+    showScreen(screenId) {
+        ['landing-screen', 'login-screen', 'register-screen', 'admin-dashboard', 'waseet-dashboard'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('hidden');
+        });
+        const target = document.getElementById(screenId);
+        if (target) target.classList.remove('hidden');
+    },
 
+    openAdminLogin() {
+        const pass = prompt("أدخل كلمة مرور السوبر أدمن:");
+        if (pass === (localStorage.getItem('crow_admin_pass') || 'admin123')) {
+            this.showScreen('admin-dashboard');
+            if (typeof adminApp !== 'undefined') adminApp.renderDashboard();
+        } else if (pass !== null) {
+            Utils.showToast("كلمة المرور غير صحيحة!", "error");
+        }
+    }
+};
+
+// المصادقة والتسجيل
 function handleLogin() {
     const phone = document.getElementById('login-phone').value.trim();
     const pin = document.getElementById('login-pin').value.trim();
-    if(!phone || !pin) { alert("أدخل رقم الهاتف والـ PIN"); return; }
-    
-    let savedPin = localStorage.getItem('crow_waseet_pin_' + phone) || '1234';
-    if(pin !== savedPin) { alert("الرقم السري (PIN) غير صحيح!"); return; }
 
-    let savedName = localStorage.getItem('crow_waseet_name_' + phone) || `وسيط (${phone})`;
-    currentWaseetPhone = phone;
-    currentWaseetName = savedName;
-
-    showScreen('waseet-dashboard');
-    document.getElementById('waseet-welcome-text').innerText = `أهلاً بك يا ${savedName}`;
-    
-    let savedLogo = localStorage.getItem('crow_platform_logo');
-    let logoContainer = document.getElementById('waseet-top-logo-container');
-    if (savedLogo && logoContainer) {
-        logoContainer.innerHTML = `<img src="${savedLogo}" class="logo-img" alt="Logo">`;
+    if (!Utils.validateEgyptianPhone(phone)) {
+        Utils.showToast("رقم الهاتف غير صحيح (11 رقم مصري)", "error");
+        return;
+    }
+    if (!Utils.validatePin(pin)) {
+        Utils.showToast("الرقم السري يجب أن يكون 4 أرقام", "error");
+        return;
     }
 
-    updateWaseetReferralDisplay(phone);
-    updateWaseetSubscriptionUI(phone);
-    loadLocalData(phone);
+    let savedPin = localStorage.getItem('crow_waseet_pin_' + phone) || '1234';
+    if (pin !== savedPin) {
+        Utils.showToast("الرقم السري غير صحيح!", "error");
+        return;
+    }
+
+    let savedName = localStorage.getItem('crow_waseet_name_' + phone) || `وسيط (${phone})`;
+    Utils.showToast("تم تسجيل الدخول بنجاح", "success");
+    if (typeof waseetApp !== 'undefined') {
+        waseetApp.initWaseetSession(phone, savedName);
+    }
 }
 
 function handleRegister() {
@@ -44,110 +95,22 @@ function handleRegister() {
     const phone = document.getElementById('reg-phone').value.trim();
     const pin = document.getElementById('reg-pin').value.trim();
     const gov = document.getElementById('reg-gov').value.trim();
-    const prof = document.getElementById('reg-prof').value;
-    const refCodeInput = document.getElementById('reg-ref-code').value.trim();
 
-    if(!name || !phone || !pin || !gov || !prof) { alert("أكمل الحقول الإجبارية"); return; }
-    
-    localStorage.setItem('crow_waseet_name_' + phone, name);
+    if (!name) { Utils.showToast("أدخل الاسم الكامل", "error"); return; }
+    if (!Utils.validateEgyptianPhone(phone)) { Utils.showToast("رقم الهاتف المصري غير صحيح", "error"); return; }
+    if (!Utils.validatePin(pin)) { Utils.showToast("الرقم السري يجب أن يكون 4 أرقام", "error"); return; }
+    if (!gov) { Utils.showToast("أدخل المحافظة", "error"); return; }
+
+    localStorage.setItem('crow_waseet_name_' + phone, Utils.escapeHtml(name));
     localStorage.setItem('crow_waseet_pin_' + phone, pin);
-    
+
     let today = new Date().toISOString().split('T')[0];
     let weekLater = new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0];
     localStorage.setItem('crow_sub_start_' + phone, today);
     localStorage.setItem('crow_sub_end_' + phone, weekLater);
 
-    if(refCodeInput) {
-        let cleanRef = refCodeInput.toUpperCase().trim();
-        let waseetPhones = [];
-        for(let i=0; i<localStorage.length; i++) {
-            let key = localStorage.key(i);
-            if(key.startsWith('crow_waseet_name_')) {
-                waseetPhones.push(key.replace('crow_waseet_name_', ''));
-            }
-        }
-        
-        let targetPhone = waseetPhones.find(p => `CROW-${p.slice(-4)}` === cleanRef);
-        if(targetPhone) {
-            processAutomaticReferral(targetPhone);
-        }
-    }
-
-    currentWaseetPhone = phone;
-    currentWaseetName = name;
-
-    alert("تم إنشاء حسابك بنجاح ومنحك أسبوعاً تجريبياً مجانياً!");
-    showScreen('waseet-dashboard');
-    document.getElementById('waseet-welcome-text').innerText = `أهلاً بك يا ${name} (${prof} - ${gov})`;
-    
-    let savedLogo = localStorage.getItem('crow_platform_logo');
-    let logoContainer = document.getElementById('waseet-top-logo-container');
-    if (savedLogo && logoContainer) {
-        logoContainer.innerHTML = `<img src="${savedLogo}" class="logo-img" alt="Logo">`;
-    }
-
-    updateWaseetReferralDisplay(phone);
-    updateWaseetSubscriptionUI(phone);
-    loadLocalData(phone);
-}
-
-function processAutomaticReferral(ownerPhone) {
-    let refs = parseInt(localStorage.getItem('crow_refs_' + ownerPhone) || '0', 10) + 1;
-    
-    if (refs >= 5) {
-        refs = 0;
-        let currentEndStr = localStorage.getItem('crow_sub_end_' + ownerPhone) || new Date().toISOString().split('T')[0];
-        let endDate = new Date(currentEndStr);
-        if(endDate < new Date()) endDate = new Date();
-        endDate.setDate(endDate.getDate() + 7);
-        let newEndStr = endDate.toISOString().split('T')[0];
-        localStorage.setItem('crow_sub_end_' + ownerPhone, newEndStr);
-        localStorage.setItem('crow_reward_msg_' + ownerPhone, `🎉 تهانينا! أكملت 5 إحالات ناجحة وتم منحك أسبوع مجاني أوتوماتيكياً حتى ${newEndStr}!`);
-    }
-    
-    localStorage.setItem('crow_refs_' + ownerPhone, refs);
-}
-
-function loginAsDemoUser() {
-    let demoPhone = "01099998888";
-    let demoName = localStorage.getItem('crow_waseet_name_' + demoPhone) || "أحمد محمود - وسيط معتمد";
-    currentWaseetPhone = demoPhone;
-    currentWaseetName = demoName;
-
-    if(!localStorage.getItem('crow_sub_start_' + demoPhone)) {
-        let today = new Date().toISOString().split('T')[0];
-        let monthLater = new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0];
-        localStorage.setItem('crow_sub_start_' + demoPhone, today);
-        localStorage.setItem('crow_sub_end_' + demoPhone, monthLater);
-        localStorage.setItem('crow_waseet_pin_' + demoPhone, '1234');
-    }
-
-    showScreen('waseet-dashboard');
-    document.getElementById('waseet-welcome-text').innerText = `مرحباً بك يا ${demoName}`;
-    
-    let savedLogo = localStorage.getItem('crow_platform_logo');
-    let logoContainer = document.getElementById('waseet-top-logo-container');
-    if (savedLogo && logoContainer) {
-        logoContainer.innerHTML = `<img src="${savedLogo}" class="logo-img" alt="Logo">`;
-    }
-
-    updateWaseetReferralDisplay(demoPhone);
-    updateWaseetSubscriptionUI(demoPhone);
-    loadLocalData(demoPhone);
-}
-
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    let installBtn = document.getElementById('install-pwa-btn');
-    if (installBtn) installBtn.style.display = 'block';
-});
-
-async function installPWA() {
-    if (deferredPrompt) {
-        deferredPrompt.prompt();
-        await deferredPrompt.userChoice;
-        deferredPrompt = null;
+    Utils.showToast("تم إنشاء الحساب ومنحك أسبوعاً تجريبياً مجانياً!", "success");
+    if (typeof waseetApp !== 'undefined') {
+        waseetApp.initWaseetSession(phone, name);
     }
 }
