@@ -1,12 +1,10 @@
-// تهيئة اتصال Supabase باسم متغير آمن بدون تعارض
 const SUPABASE_URL = 'https://pcbdtilmhmpotfxjnndt.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_DSE9wzGDfODZSVViJNOmPA_C0CQSIxS';
 const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// دوال المساعدة والأمان
 const Utils = {
     escapeHtml(str) {
-        if (!str) return '';
+        if (str === null || str === undefined) return '';
         return String(str)
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
@@ -47,7 +45,6 @@ const router = {
     }
 };
 
-// تسجيل الدخول الحقيقي عبر Supabase Auth
 async function handleLogin() {
     const phone = document.getElementById('login-phone').value.trim();
     const pin = document.getElementById('login-pin').value.trim();
@@ -71,17 +68,17 @@ async function handleLogin() {
     
     Utils.showToast("تم تسجيل الدخول بنجاح", "success");
     if (typeof waseetApp !== 'undefined') {
-        waseetApp.initWaseetSession(data.user.id, profile ? profile.name : phone);
+        waseetApp.initWaseetSession(data.user.id, profile || { name: phone, phone: phone });
     }
 }
 
-// تسجيل حساب جديد وحفظه في Supabase
 async function handleRegister() {
     const name = document.getElementById('reg-name').value.trim();
     const phone = document.getElementById('reg-phone').value.trim();
     const pin = document.getElementById('reg-pin').value.trim();
     const gov = document.getElementById('reg-gov').value.trim();
     const prof = document.getElementById('reg-prof').value;
+    const refCodeInput = document.getElementById('reg-ref').value.trim().toUpperCase();
 
     if (!name) { Utils.showToast("أدخل الاسم الكامل", "error"); return; }
     if (!Utils.validateEgyptianPhone(phone)) { Utils.showToast("رقم الهاتف المصري غير صحيح", "error"); return; }
@@ -110,8 +107,26 @@ async function handleRegister() {
         return;
     }
 
+    // تسجيل الإحالة إن وجد كود صحيح
+    if (data.user && refCodeInput) {
+        const { data: referrer } = await sbClient
+            .from('profiles')
+            .select('id')
+            .eq('referral_code', refCodeInput)
+            .single();
+
+        if (referrer && referrer.id !== data.user.id) {
+            await sbClient.from('referrals').insert([{
+                referrer_id: referrer.id,
+                referred_id: data.user.id
+            }]);
+        }
+    }
+
+    const { data: newProfile } = await sbClient.from('profiles').select('*').eq('id', data.user.id).single();
+
     Utils.showToast("تم إنشاء الحساب ومنحك أسبوعاً تجريبياً مجانياً!", "success");
     if (data.user && typeof waseetApp !== 'undefined') {
-        waseetApp.initWaseetSession(data.user.id, name);
+        waseetApp.initWaseetSession(data.user.id, newProfile || { name: name, phone: phone });
     }
 }
