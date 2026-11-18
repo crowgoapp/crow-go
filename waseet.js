@@ -21,7 +21,7 @@ const waseetApp = {
 
         container.innerHTML = '<p style="text-align:center;">جاري تحميل المنتجات...</p>';
 
-        const { data, error } = await supabase
+        const { data, error } = await sbClient
             .from('products')
             .select('*, product_images(storage_path)')
             .eq('owner_id', this.currentUserId)
@@ -51,11 +51,10 @@ const waseetApp = {
             const safeName = Utils.escapeHtml(p.name);
             const safePrice = Utils.escapeHtml(p.price);
             
-            // جلب رابط الصورة من Supabase Storage إن وجدت
             let imgHtml = '';
             if (p.product_images && p.product_images.length > 0) {
                 const path = p.product_images[0].storage_path;
-                const { data: publicUrlData } = supabase.storage.from('product-images').getPublicUrl(path);
+                const { data: publicUrlData } = sbClient.storage.from('product-images').getPublicUrl(path);
                 if (publicUrlData) {
                     imgHtml = `<img src="${publicUrlData.publicUrl}" style="width:50px; height:50px; object-fit:cover; border-radius:6px; float:left;" />`;
                 }
@@ -90,8 +89,7 @@ const waseetApp = {
 
         Utils.showToast("جاري حفظ المنتج...", "success");
 
-        // 1. إضافة المنتج في جدول products
-        const { data: prodData, error: prodError } = await supabase
+        const { data: prodData, error: prodError } = await sbClient
             .from('products')
             .insert([{
                 owner_id: this.currentUserId,
@@ -107,20 +105,18 @@ const waseetApp = {
             return;
         }
 
-        // 2. رفع الصورة لو وجدت إلى Storage
         if (imageFile && prodData) {
             const fileExt = imageFile.name.split('.').pop();
             const fileName = `${this.currentUserId}_${Date.now()}.${fileExt}`;
-            const filePath = `${fileName}`;
 
-            const { error: uploadError } = await supabase.storage
+            const { error: uploadError } = await sbClient.storage
                 .from('product-images')
-                .upload(filePath, imageFile);
+                .upload(fileName, imageFile);
 
             if (!uploadError) {
-                await supabase.from('product_images').insert([{
+                await sbClient.from('product_images').insert([{
                     product_id: prodData.id,
-                    storage_path: filePath
+                    storage_path: fileName
                 }]);
             }
         }
