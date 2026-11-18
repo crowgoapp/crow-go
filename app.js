@@ -1,7 +1,7 @@
-// تهيئة اتصال Supabase بالمفاتيح الخاصة بك
+// تهيئة اتصال Supabase باسم متغير آمن بدون تعارض
 const SUPABASE_URL = 'https://pcbdtilmhmpotfxjnndt.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_DSE9wzGDfODZSVViJNOmPA_C0CQSIxS';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // دوال المساعدة والأمان
 const Utils = {
@@ -55,10 +55,9 @@ async function handleLogin() {
     if (!Utils.validateEgyptianPhone(phone)) { Utils.showToast("رقم الهاتف غير صحيح", "error"); return; }
     if (!Utils.validatePin(pin)) { Utils.showToast("الرقم السري يجب أن يكون 4 أرقام", "error"); return; }
 
-    // تحويل رقم الهاتف إلى إيميل افتراضي لنظام Supabase
     const email = `${phone}@crowgo.local`;
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await sbClient.auth.signInWithPassword({
         email: email,
         password: pin + '_crow_salt'
     });
@@ -68,8 +67,7 @@ async function handleLogin() {
         return;
     }
 
-    // جلب بيانات الملف الشخصي
-    const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
+    const { data: profile } = await sbClient.from('profiles').select('*').eq('id', data.user.id).single();
     
     Utils.showToast("تم تسجيل الدخول بنجاح", "success");
     if (typeof waseetApp !== 'undefined') {
@@ -77,7 +75,7 @@ async function handleLogin() {
     }
 }
 
-// تسجيل حساب جديد وحفظه في Supabase Auth + Profiles Trigger
+// تسجيل حساب جديد وحفظه في Supabase
 async function handleRegister() {
     const name = document.getElementById('reg-name').value.trim();
     const phone = document.getElementById('reg-phone').value.trim();
@@ -93,7 +91,7 @@ async function handleRegister() {
     const email = `${phone}@crowgo.local`;
     const password = pin + '_crow_salt';
 
-    const { data, error } = await supabase.auth.signUp({
+    const { data, error } = await sbClient.auth.signUp({
         email: email,
         password: password,
         options: {
