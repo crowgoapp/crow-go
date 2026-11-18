@@ -5,7 +5,7 @@ const adminApp = {
 
         container.innerHTML = '<p>جاري تحميل الوسطاء...</p>';
 
-        const { data: profiles, error } = await supabase
+        const { data: profiles, error } = await sbClient
             .from('profiles')
             .select('*')
             .order('created_at', { ascending: false });
