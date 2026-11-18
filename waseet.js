@@ -66,14 +66,14 @@ const waseetApp = {
             const safeOwner = Utils.escapeHtml(p.owner_name || 'غير مسجل');
             const safeOwnerPhone = Utils.escapeHtml(p.owner_phone || '');
 
-            // عرض مصغرات الصور المتعددة
+            // عرض مصغرات الصور المتعددة مع الرابط الصحيح للبوكت
             let thumbsHtml = '';
             if (p.product_images && p.product_images.length > 0) {
-                thumbsHtml = '<div style="display:flex; gap:4px; overflow-x:auto; margin:6px 0;">';
+                thumbsHtml = '<div style="display:flex; gap:6px; overflow-x:auto; margin:8px 0;">';
                 p.product_images.forEach(img => {
                     const { data: urlData } = sbClient.storage.from('product-images').getPublicUrl(img.storage_path);
-                    if (urlData) {
-                        thumbsHtml += `<img src="${urlData.publicUrl}" style="width:52px; height:52px; object-fit:cover; border-radius:6px; border:1px solid #cbd5e1;" />`;
+                    if (urlData && urlData.publicUrl) {
+                        thumbsHtml += `<img src="${urlData.publicUrl}" style="width:60px; height:60px; object-fit:cover; border-radius:6px; border:1px solid #cbd5e1;" />`;
                     }
                 });
                 thumbsHtml += '</div>';
@@ -160,7 +160,6 @@ const waseetApp = {
         let targetProductId = editId;
 
         if (editId) {
-            // تعديل عرض قائم
             const { error } = await sbClient.from('products').update({
                 name: name,
                 price: parseFloat(price),
@@ -171,8 +170,8 @@ const waseetApp = {
             }).eq('id', editId);
 
             if (error) { Utils.showToast("خطأ في التعديل", "error"); return; }
+            targetProductId = editId;
         } else {
-            // حساب السيريال التسلسلي ليبدأ من 1 ويزيد بمقدار 1
             const maxSerial = this.products.reduce((max, item) => Math.max(max, item.serial || 0), 0);
             const nextSerial = maxSerial + 1;
 
@@ -196,7 +195,7 @@ const waseetApp = {
             targetProductId = prodData.id;
         }
 
-        // رفع الصور المتعددة إن وجدت
+        // رفع الصور المتعددة بشكل صحيح لـ Storage
         if (imageFiles && imageFiles.length > 0 && targetProductId) {
             for (let i = 0; i < imageFiles.length; i++) {
                 const file = imageFiles[i];
@@ -250,7 +249,7 @@ const waseetApp = {
             let imgUrl = '';
             if (item.product_images && item.product_images.length > 0) {
                 const { data: urlData } = sbClient.storage.from('product-images').getPublicUrl(item.product_images[0].storage_path);
-                if (urlData) imgUrl = urlData.publicUrl;
+                if (urlData && urlData.publicUrl) imgUrl = urlData.publicUrl;
             }
 
             grid.innerHTML += `
@@ -389,7 +388,6 @@ const waseetApp = {
             <div style="font-size:13px; color:#475569;">ينتهي في: <b>${Utils.escapeHtml(this.profile.subscription_end)}</b></div>
         `;
 
-        // جلب سجل المدفوعات
         const { data: payments } = await sbClient.from('payments').select('*').eq('waseet_id', this.currentUserId).order('created_at', { ascending: false });
         const payContainer = document.getElementById('payments-history-container');
         if (payments && payments.length > 0) {
@@ -402,7 +400,6 @@ const waseetApp = {
             payContainer.innerHTML = '';
         }
 
-        // بيانات الإحالات
         document.getElementById('my-referral-code').value = this.profile.referral_code || '';
         const { count } = await sbClient.from('referrals').select('*', { count: 'exact', head: true }).eq('referrer_id', this.currentUserId);
         const refCount = count || 0;
