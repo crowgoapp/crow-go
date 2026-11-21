@@ -392,13 +392,14 @@ const waseetApp = {
                     }
 
                     grid.innerHTML += `
-                        <div class="poster-item">
-                            ${imgUrl ? `<img src="${imgUrl}" crossorigin="anonymous" />` : `<div class="poster-item-noimg">بدون صورة</div>`}
-                            <div class="poster-item-code">كود #${item.serial}</div>
-                            <div class="poster-item-name">${Utils.escapeHtml(item.name)}</div>
-                            <div class="poster-item-price">${Number(item.price || 0).toLocaleString('ar-EG')} ج.م</div>
-                        </div>
-                    `;
+          <div class="poster-item">
+            ${imgUrl ? `<img src="${imgUrl}" crossorigin="anonymous" />` : `<div class="poster-item-noimg">بدون صورة</div>`}
+            <div class="poster-item-code">كود #${item.serial}</div>
+            <div class="poster-item-name">${Utils.escapeHtml(item.name)}</div>
+            ${item.description ? `<div class="poster-item-desc">${Utils.escapeHtml(item.description)}</div>` : ''}
+            <div class="poster-item-price">${Number(item.price || 0).toLocaleString('ar-EG')} ج.م</div>
+          </div>
+        `;
                 }
 
                 const canvas = await html2canvas(wrapper, { useCORS: true, scale: 2 });
