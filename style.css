@@ -183,7 +183,7 @@ body {
 .poster-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #3182ce; padding-bottom: 12px; }
 .poster-logo-row { display: flex; align-items: center; gap: 8px; font-size: 24px; font-weight: bold; color: #fff; }
 .poster-logo-img { width: 32px; height: 32px; border-radius: 8px; }
-.poster-subtitle-text { font-size: 14px; color: #93c5fd; margin-top: 4px; }
+.poster-subtitle-text { display: none; }
 .poster-contact-box { text-align: left; background: var(--primary-blue); padding: 8px 14px; border-radius: 8px; border: 1px solid #3182ce; }
 .poster-contact-label { font-size: 12px; color: #cbd5e1; }
 .poster-contact-phone { font-size: 18px; font-weight: bold; color: #38bdf8; }
