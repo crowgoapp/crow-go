@@ -10,8 +10,8 @@ if (!window.supabase) {
     throw new Error('Supabase client library failed to load from CDN.');
 }
 
-const SUPABASE_URL = 'https://pcbdtilmhmpotfxjnndt.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_DSE9wzGDfODZSVViJNOmPA_C0CQSIxS';
+const SUPABASE_URL = 'https://qonffvfaxjtzfaozvsng.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_uFtEiZv2mHs6iOWRtggzwA_03xop1Sv';
 const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const Utils = {
