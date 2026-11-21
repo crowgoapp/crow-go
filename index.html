@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crow Go - المنصة الذكية للوسطاء</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="theme-color" content="#0d233a">
+    <!-- نسخ مثبتة + SRI عشان أي تحديث مفاجئ في المكتبة ميكسرش التطبيق من غير
+         ما حد يلمس الكود (M8) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.js"
+        integrity="sha384-A97u3Qnt9GZHURO9YJZRe7VQgGUeFzcv6I1oIGnUTxQrCxnpQMwR0/G8F2zt9abZ"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"
+        integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H"
+        crossorigin="anonymous"></script>
+</head>
+<body>
+
+    <div class="container">
+        <!-- الشاشة الرئيسية -->
+        <div id="landing-screen">
+            <div class="header">
+                <div class="logo-text">🦅 Crow Go</div>
+                <div class="subtitle">منظومة الإدارة الذكية للوسطاء الميدانيين</div>
+            </div>
+            <div class="features-box">
+                <b>✨ مميزات المنصة:</b>
+                <ul>
+                    <li>حفظ عروضك وبيانات الملاك بسرية تامة.</li>
+                    <li>توليد بوستر كتالوج مجمع جاهز للنشر بضغطة زر.</li>
+                    <li>متابعة طلبات الزبائن واشتراكاتك وإحالاتك.</li>
+                </ul>
+            </div>
+            <button class="btn" onclick="router.showScreen('login-screen')">تسجيل دخول (مستخدم حالي)</button>
+            <button class="btn btn-secondary" onclick="router.showScreen('register-screen')">حساب جديد (أسبوع مجاني)</button>
+            <div class="text-center admin-entry-row">
+                <button onclick="router.openAdminLogin()" class="link-btn">⚙️ دخول السوبر أدمن</button>
+            </div>
+        </div>
+
+        <!-- شاشة تسجيل الدخول -->
+        <div id="login-screen" class="hidden">
+            <div class="header"><h2>تسجيل الدخول</h2></div>
+            <div class="input-group"><label>رقم الهاتف المحمول</label><input type="tel" id="login-phone" placeholder="010XXXXXXXX" maxlength="11" /></div>
+            <div class="input-group"><label>الرقم السري (PIN - 6 أرقام)</label><input type="password" id="login-pin" maxlength="6" placeholder="******" /></div>
+            <button id="login-submit-btn" class="btn" onclick="handleLogin()">دخول لوحة التحكم</button>
+            <div class="text-center"><button class="link-btn" onclick="router.showScreen('landing-screen')">← العودة للرئيسية</button></div>
+        </div>
+
+        <!-- شاشة حساب جديد -->
+        <div id="register-screen" class="hidden">
+            <div class="header"><h2>حساب جديد</h2></div>
+            <div class="input-group"><label>الاسم الكامل</label><input type="text" id="reg-name" /></div>
+            <div class="input-group"><label>رقم الهاتف</label><input type="tel" id="reg-phone" maxlength="11" placeholder="010XXXXXXXX" /></div>
+            <div class="input-group"><label>الرقم السري (PIN - 6 أرقام)</label><input type="password" id="reg-pin" maxlength="6" placeholder="******" /></div>
+            <div class="input-group"><label>المحافظة</label><input type="text" id="reg-gov" /></div>
+            <div class="input-group">
+                <label>المهنة</label>
+                <select id="reg-prof">
+                    <option value="عقارات">عقارات</option>
+                    <option value="سيارات">سيارات</option>
+                    <option value="دليفري">دليفري</option>
+                    <option value="أخرى">أخرى</option>
+                </select>
+            </div>
+            <div class="input-group"><label>كود الإحالة (اختياري)</label><input type="text" id="reg-ref" placeholder="مثال: CROW-A1B2" /></div>
+            <button id="register-submit-btn" class="btn" onclick="handleRegister()">إنشاء الحساب</button>
+            <div class="text-center"><button class="link-btn" onclick="router.showScreen('landing-screen')">← العودة للرئيسية</button></div>
+        </div>
+
+        <!-- شاشة دخول السوبر أدمن: حساب Supabase حقيقي (إيميل وباسورد)، مش
+             كلمة مرور مكتوبة في الكود (يحل C1) -->
+        <div id="admin-login-screen" class="hidden">
+            <div class="header"><h2>دخول السوبر أدمن 👑</h2></div>
+            <div class="input-group"><label>الإيميل</label><input type="email" id="admin-login-email" autocomplete="username" /></div>
+            <div class="input-group"><label>كلمة المرور</label><input type="password" id="admin-login-pass" autocomplete="current-password" /></div>
+            <button id="admin-login-btn" class="btn" onclick="handleAdminLogin()">دخول</button>
+            <div class="text-center"><button class="link-btn" onclick="router.showScreen('landing-screen')">← العودة للرئيسية</button></div>
+        </div>
+
+        <!-- لوحة تحكم السوبر أدمن -->
+        <div id="admin-dashboard" class="hidden">
+            <div class="header">
+                <h2>لوحة تحكم السوبر أدمن 👑</h2>
+                <div class="subtitle">إدارة النظام والوسطاء</div>
+            </div>
+            <h4 class="admin-section-title">💳 مدفوعات قيد المراجعة</h4>
+            <div id="admin-payments-container"></div>
+            <h4 class="admin-section-title">👥 الوسطاء</h4>
+            <div id="admin-waseets-container"></div>
+            <button type="button" class="btn btn-secondary admin-logout-btn" onclick="logout()">تسجيل الخروج</button>
+        </div>
+
+        <!-- لوحة تحكم الوسيط المتكاملة -->
+        <div id="waseet-dashboard" class="hidden">
+            <div class="header waseet-header">
+                <div class="logo-text">🦅 Crow Go</div>
+                <div class="subtitle" id="waseet-welcome-text">مرحباً بك</div>
+            </div>
+
+            <!-- شريط التنقل بين أقسام الوسيط -->
+            <div class="tabs-bar">
+                <button type="button" class="tab-btn active" id="tab-btn-products" onclick="waseetApp.switchTab('products')">📦 العروض</button>
+                <button type="button" class="tab-btn" id="tab-btn-orders" onclick="waseetApp.switchTab('orders')">📝 الطلبات</button>
+                <button type="button" class="tab-btn" id="tab-btn-sub" onclick="waseetApp.switchTab('sub')">💳 الاشتراك</button>
+            </div>
+
+            <!-- تبويب 1: العروض والكتالوج -->
+            <div id="waseet-tab-products">
+                <div id="sub-expired-banner" class="sub-banner hidden"></div>
+                <div class="products-actions-row">
+                    <button type="button" id="add-product-btn" class="btn products-action-btn" onclick="waseetApp.openNewProductModal()">+ إضافة عرض</button>
+                    <button type="button" id="generate-poster-btn" class="btn btn-warning products-action-btn" onclick="Utils.withBusy(this, () => waseetApp.generateCatalogPoster())">🖼️ إصدار بوستر الكتالوج</button>
+                </div>
+                <div class="products-hint">✅ حدد المنتجات التي تريد ظهورها في البوستر المجمع:</div>
+                <div id="products-list-container"></div>
+            </div>
+
+            <!-- تبويب 2: طلبات الزبائن -->
+            <div id="waseet-tab-orders" class="hidden">
+                <button type="button" id="add-order-btn" class="btn order-add-btn" onclick="waseetApp.openNewOrderModal()">+ تسجيل طلب زبون جديد</button>
+                <div id="orders-list-container"></div>
+            </div>
+
+            <!-- تبويب 3: الاشتراك والإحالات -->
+            <div id="waseet-tab-sub" class="hidden">
+                <div id="subscription-info-box" class="subscription-info-box"></div>
+
+                <div class="renewal-box">
+                    <h4 class="renewal-title">💳 طلب تجديد الاشتراك</h4>
+                    <p class="transfer-info-hint">حوّل قيمة الاشتراك إلى رقم إنستاباي/فودافون كاش الخاص بالإدارة ثم سجّل بيانات التحويل هنا.</p>
+                    <div class="input-group"><label>المبلغ المحول (ج.م)</label><input type="number" id="pay-amount" placeholder="100" /></div>
+                    <div class="input-group">
+                        <label>طريقة الدفع</label>
+                        <select id="pay-method">
+                            <option value="إنستا باي (InstaPay)">إنستا باي (InstaPay)</option>
+                            <option value="فودافون كاش">فودافون كاش</option>
+                            <option value="محفظة إلكترونية أخرى">محفظة إلكترونية أخرى</option>
+                        </select>
+                    </div>
+                    <div class="input-group"><label>رقم العملية / ملاحظات التحويل</label><input type="text" id="pay-notes" placeholder="رقم هاتف التحويل أو المرجع" /></div>
+                    <button type="button" class="btn" onclick="Utils.withBusy(this, () => waseetApp.submitPaymentRequest())">إرسال تأكيد التحويل</button>
+                    <div id="payments-history-container" class="payments-history-container"></div>
+                </div>
+
+                <div class="referral-box">
+                    <h4 class="referral-title">🎁 نظام الإحالات (أسبوع مجاني لكل 5 وسطاء)</h4>
+                    <p class="referral-hint">شارك كود الإحالة الخاص بك مع زملائك الوسطاء:</p>
+                    <div class="referral-code-row">
+                        <input type="text" id="my-referral-code" readonly class="referral-code-input" />
+                        <button type="button" class="btn referral-copy-btn" onclick="waseetApp.copyReferralCode()">نسخ</button>
+                    </div>
+                    <button type="button" class="btn btn-secondary referral-whatsapp-btn" onclick="waseetApp.shareReferralOnWhatsApp()">📤 مشاركة على واتساب</button>
+                    <div id="referrals-count-text" class="referrals-count-text"></div>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-secondary waseet-logout-btn" onclick="logout()">تسجيل الخروج</button>
+        </div>
+    </div>
+
+    <!-- نافذة إضافة / تعديل عرض (منتج) -->
+    <div id="product-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h3 id="prod-modal-title" class="modal-title">إضافة عرض جديد</h3>
+            <input type="hidden" id="prod-edit-id" />
+            <div class="input-group"><label>اسم العرض / المنتج *</label><input type="text" id="prod-name" placeholder="مثال: شقة 120م سوبر لوكس" /></div>
+            <div class="input-group"><label>السعر (ج.م) *</label><input type="number" id="prod-price" placeholder="500000" /></div>
+            <div class="input-group"><label>وصف مختصر (اختياري)</label><input type="text" id="prod-desc" placeholder="الدور الثالث - قريبة من الخدمات" /></div>
+            <div class="input-group"><label>صور العرض (حد أقصى 6 صور)</label><input type="file" id="prod-images" accept="image/*" multiple /></div>
+
+            <div class="owner-data-box">
+                <b class="owner-data-title">🔒 بيانات المالك / المورد (سرية لك فقط ولا تظهر بالبوستر):</b>
+                <div class="input-group owner-data-first-field"><label>اسم المالك</label><input type="text" id="prod-owner-name" /></div>
+                <div class="input-group"><label>هاتف المالك</label><input type="tel" id="prod-owner-phone" maxlength="11" /></div>
+                <div class="input-group owner-data-last-field"><label>عنوان المالك / مكان السلعة</label><input type="text" id="prod-owner-address" /></div>
+            </div>
+
+            <button type="button" class="btn" onclick="Utils.withBusy(this, () => waseetApp.saveProduct())">حفظ العرض</button>
+            <button type="button" class="btn btn-secondary" onclick="waseetApp.closeProductModal()">إلغاء</button>
+        </div>
+    </div>
+
+    <!-- نافذة تسجيل طلب زبون -->
+    <div id="order-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h3 class="modal-title">تسجيل طلب زبون جديد</h3>
+            <div class="input-group"><label>الطلب / السلعة المطلوبة *</label><input type="text" id="ord-item" placeholder="مثال: مطلوب شقة إيجار أو سيارة" /></div>
+            <div class="input-group"><label>اسم الزبون *</label><input type="text" id="ord-client-name" /></div>
+            <div class="input-group"><label>هاتف الزبون *</label><input type="tel" id="ord-client-phone" maxlength="11" /></div>
+            <div class="input-group"><label>عنوان / منطقة الزبون</label><input type="text" id="ord-client-address" /></div>
+            <button type="button" class="btn" onclick="Utils.withBusy(this, () => waseetApp.saveNewOrder())">حفظ الطلب</button>
+            <button type="button" class="btn btn-secondary" onclick="waseetApp.closeNewOrderModal()">إلغاء</button>
+        </div>
+    </div>
+
+    <!-- نافذة عرض وتحميل بوستر الكتالوج الجاهز (مقسّم لصفحات، كل صورة بزرار
+         مشاركة ولينك تحميل مستقل - يحل H6) -->
+    <div id="poster-preview-modal" class="modal-overlay hidden">
+        <div class="modal-box poster-preview-box">
+            <h3 class="poster-preview-title">🖼️ بوستر الكتالوج جاهز!</h3>
+            <p class="poster-preview-hint">شارك مباشرة على واتساب، أو حمّل الصورة يدوياً:</p>
+            <div id="poster-pages-container"></div>
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('poster-preview-modal').classList.add('hidden')">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- نافذة تأكيد مخصصة بدل confirm() الافتراضية (L4) -->
+    <div id="confirm-dialog-overlay" class="modal-overlay hidden">
+        <div class="modal-box confirm-dialog-box">
+            <p id="confirm-dialog-message" class="confirm-dialog-message"></p>
+            <div class="confirm-dialog-actions">
+                <button type="button" id="confirm-dialog-yes" class="btn btn-danger">تأكيد</button>
+                <button type="button" id="confirm-dialog-no" class="btn btn-secondary">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- قالب تصميم البوستر المخفي الذي يتم تحويله لصورة -->
+    <div id="poster-canvas-wrapper">
+        <div class="poster-header">
+            <div>
+                <div class="poster-logo-row"><img src="icon-192.png" class="poster-logo-img" /> Crow Go</div>
+                <div id="poster-subtitle" class="poster-subtitle-text">عروض مميزة متاحة الآن</div>
+            </div>
+            <div class="poster-contact-box">
+                <div class="poster-contact-label">للتواصل والاستفسار:</div>
+                <div id="poster-waseet-phone" class="poster-contact-phone"></div>
+            </div>
+        </div>
+        <div id="poster-items-grid" class="poster-grid"></div>
+        <div class="poster-footer">
+            اطلب بالكود الموضح أعلى كل عرض • مدعوم بواسطة منصة Crow Go
+        </div>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="app.js"></script>
+    <script src="waseet.js"></script>
+    <script src="admin.js"></script>
+    <script>
+        // تسجيل Service Worker بسيط عشان التطبيق يفتح (بشاشة "مفيش اتصال")
+        // حتى من غير نت بدل صفحة بيضا (يحل جزء من M7)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js').catch(err => console.error('SW registration failed', err));
+            });
+        }
+    </script>
+</body>
+</html>
