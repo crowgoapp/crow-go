@@ -370,7 +370,19 @@ const waseetApp = {
         }
 
         document.getElementById('poster-waseet-phone').innerText = this.profile.phone || '';
+const userName =
+            this.profile?.name?.trim() ||
+            this.profile?.full_name?.trim() ||
+            this.profile?.username?.trim() ||
+            this.profile?.display_name?.trim() ||
+            (this.profile?.email ? this.profile.email.split('@')[0] : '') ||
+            this.profile?.phone ||
+            '';
 
+        const titleEl = document.getElementById('poster-exhibition-title');
+        if (titleEl) {
+            titleEl.innerText = userName ? `معرض ${userName}` : 'معرضي';
+        }
         const wrapper = document.getElementById('poster-canvas-wrapper');
         const subtitleEl = document.getElementById('poster-subtitle');
         const grid = document.getElementById('poster-items-grid');
