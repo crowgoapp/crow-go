@@ -333,21 +333,15 @@ const adminApp = {
     },
    
     async loadAdminWhatsappSetting() {
-        const adminId = '910e51e9-7870-4d26-9f7e-5ae67a32a524';
         const input = document.getElementById('admin-whatsapp-input');
         if (!input) return;
 
-        const { data, error } = await sbClient
-            .from('profiles')
-            .select('whatsapp_phone, phone')
-            .eq('id', adminId)
-            .single();
-
-        if (!error && data) {
-            input.value = data.whatsapp_phone || data.phone || '';
+        const { data, error } = await sbClient.rpc('get_admin_whatsapp');
+        if (!error && typeof data === 'string') {
+            input.value = data;
         }
     },
-
+    
     async saveAdminWhatsappSetting() {
         const adminId = '910e51e9-7870-4d26-9f7e-5ae67a32a524';
         const input = document.getElementById('admin-whatsapp-input');
