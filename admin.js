@@ -326,5 +326,50 @@ const adminApp = {
             Utils.showToast('فشل تغيير الـ PIN — تأكد إن الـ Edge Function منشورة (راجع supabase/functions/admin-reset-pin)', 'error');
             console.error(e);
         }
+    },
+   
+    async loadAdminWhatsappSetting() {
+        const adminId = '910e51e9-7870-4d26-9f7e-5ae67a32a524';
+        const input = document.getElementById('admin-whatsapp-input');
+        if (!input) return;
+
+        const { data, error } = await sbClient
+            .from('profiles')
+            .select('whatsapp_phone, phone')
+            .eq('id', adminId)
+            .single();
+
+        if (!error && data) {
+            input.value = data.whatsapp_phone || data.phone || '';
+        }
+    },
+
+    async saveAdminWhatsappSetting() {
+        const adminId = '910e51e9-7870-4d26-9f7e-5ae67a32a524';
+        const input = document.getElementById('admin-whatsapp-input');
+        if (!input) return;
+
+        let clean = (input.value || '').replace(/\D/g, '');
+        if (clean.startsWith('01')) {
+            clean = '20' + clean.slice(1);
+        }
+
+        if (!clean || clean.length < 10) {
+            Utils.showToast('أدخل رقم واتساب صحيح', 'error');
+            return;
+        }
+
+        const { error } = await sbClient
+            .from('profiles')
+            .update({ whatsapp_phone: clean })
+            .eq('id', adminId);
+
+        if (error) {
+            Utils.showToast('فشل حفظ رقم الواتساب: ' + Utils.translateError(error), 'error');
+            return;
+        }
+
+        input.value = clean;
+        Utils.showToast('تم حفظ رقم واتساب الأدمن بنجاح', 'success');
     }
 };
