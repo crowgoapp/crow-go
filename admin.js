@@ -372,17 +372,11 @@ const adminApp = {
     }
 };
 async function openAdminWhatsApp() {
-    const adminId = '910e51e9-7870-4d26-9f7e-5ae67a32a524';
     try {
-        const { data, error } = await sbClient
-            .from('profiles')
-            .select('whatsapp_phone, phone')
-            .eq('id', adminId)
-            .single();
-
+        const { data, error } = await sbClient.rpc('get_admin_whatsapp');
         if (error) throw error;
 
-        let rawPhone = (data && (data.whatsapp_phone || data.phone)) || '';
+        let rawPhone = typeof data === 'string' ? data : '';
         let clean = rawPhone.replace(/\D/g, '');
         if (clean.startsWith('01')) {
             clean = '20' + clean.slice(1);
@@ -396,7 +390,7 @@ async function openAdminWhatsApp() {
         const msg = encodeURIComponent('مرحباً بإدارة المنصة، أحتاج مساعدة.');
         window.open(`https://wa.me/${clean}?text=${msg}`, '_blank');
     } catch (e) {
-        console.error(e);
+        console.error('openAdminWhatsApp error:', e);
         Utils.showToast('تعذّر فتح واتساب حالياً', 'error');
     }
 }
