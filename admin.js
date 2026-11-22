@@ -4,7 +4,11 @@ const adminApp = {
     selectedProfession: '',
 
     async renderDashboard() {
-        await Promise.all([this.renderWaseets(), this.renderPendingPayments()]);
+       await Promise.all([
+            this.renderWaseets(),
+            this.renderPendingPayments(),
+            this.loadAdminWhatsappSetting()
+        ]);
     },
 
     async renderWaseets() {
