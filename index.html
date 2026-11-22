@@ -93,6 +93,26 @@
             <h4 class="admin-section-title">👥 الوسطاء</h4>
             <div id="admin-waseets-container"></div>
             <button type="button" class="btn btn-secondary admin-logout-btn" onclick="logout()">تسجيل الخروج</button>
+<div class="admin-settings-box" style="margin-top:16px;padding:12px;border-radius:10px;border:1px solid #ddd;">
+  <label for="admin-whatsapp-input" style="display:block;font-weight:bold;margin-bottom:6px;">
+    رقم واتساب الإدارة للتواصل:
+  </label>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <input
+      type="tel"
+      id="admin-whatsapp-input"
+      placeholder="مثال: 2010xxxxxxxx أو 010xxxxxxxx"
+      style="flex:1;min-width:180px;padding:8px;border-radius:8px;border:1px solid #ccc;"
+    />
+    <button
+      type="button"
+      class="btn-small btn-confirm"
+      onclick="adminApp.saveAdminWhatsappSetting()"
+    >
+      💾 حفظ الرقم
+    </button>
+  </div>
+</div>
         </div>
 
         <!-- لوحة تحكم الوسيط المتكاملة -->
