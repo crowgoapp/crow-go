@@ -299,3 +299,47 @@ document.addEventListener('DOMContentLoaded', async () => {
         router.showScreen('landing-screen');
     }
 });
+
+(function initPwaInstallButton() {
+    let deferredPrompt = null;
+    const installBtn = document.getElementById('pwa-install-btn');
+    if (!installBtn) return;
+
+    const isStandalone =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true;
+
+    if (isStandalone) {
+        installBtn.classList.add('hidden');
+        return;
+    }
+
+    const isIos = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+    if (isIos) {
+        installBtn.classList.remove('hidden');
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installBtn.classList.remove('hidden');
+    });
+
+    installBtn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            deferredPrompt = null;
+            if (outcome === 'accepted') {
+                installBtn.classList.add('hidden');
+            }
+        } else if (isIos) {
+            alert('لتثبيت التطبيق على آيفون: اضغط على أيقونة المشاركة (Share) في المتصفح ثم اختر "إضافة إلى الشاشة الرئيسية".');
+        }
+    });
+
+    window.addEventListener('appinstalled', () => {
+        deferredPrompt = null;
+        installBtn.classList.add('hidden');
+    });
+})();
