@@ -431,9 +431,11 @@ await Promise.all(
               })
     )
 );
-                const canvas = await html2canvas(wrapper, { useCORS: true, scale: 1.5 });
-                const blob = await new Promise((r) => canvas.toBlob(r, 'image/jpeg', 0.88));
-                this.posterPages.push(blob);
+
+const canvas = await html2canvas(wrapper, { useCORS: true, scale: 1.5 });
+const blob = await new Promise((r) => canvas.toBlob(r, 'image/jpeg', 0.88));
+this.posterPages.push(blob);
+
 if (pdfDoc && canvas) {
     const imgData = canvas.toDataURL('image/jpeg', 0.9);
     const pageWidth = pdfDoc.internal.pageSize.getWidth();
@@ -449,6 +451,8 @@ if (pdfDoc && canvas) {
     }
     pdfDoc.addImage(imgData, 'JPEG', offsetX, offsetY, finalWidth, finalHeight);
 }
+            } // <-- قوس إغلاق حلقة for (pageIndex)
+
             if (pdfDoc) {
                 this.posterPdfBlob = pdfDoc.output('blob');
             }
@@ -461,8 +465,7 @@ if (pdfDoc && canvas) {
         }
     },
 
-    renderPosterPreview() {
-        const container = document.getElementById('poster-pages-container');
+    renderPosterPreview() {        const container = document.getElementById('poster-pages-container');
         container.innerHTML = '';
 
         if (this.posterPdfBlob) {
