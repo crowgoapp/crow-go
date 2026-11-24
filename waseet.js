@@ -358,19 +358,13 @@ const waseetApp = {
             Utils.showToast('حدد منتجاً واحداً على الأقل لوضعه في البوستر', 'error');
             return;
         }
+Utils.showToast('جاري تجهيز كتالوج PDF...', 'success');
 
-        Utils.showToast('جاري تصميم بوستر الكتالوج...', 'success');
-
-        // تقسيم البوستر لصفحات بحد أقصى 8 عروض لكل صورة — ده بيحل مخاطر حجم
-        // الـ Canvas في Safari على الآيفون (حد أقصى حوالي 16.7 مليون بكسل) اللي
-        // كانت بتخلي الصورة تطلع فاضية أو التطبيق يقفل (H6).
-        const pages = [];
-        for (let i = 0; i < selectedItems.length; i += this.MAX_ITEMS_PER_POSTER_PAGE) {
-            pages.push(selectedItems.slice(i, i + this.MAX_ITEMS_PER_POSTER_PAGE));
-        }
+        // منتج واحد في كل صفحة لضمان وضوح عالٍ وسهولة التصفح والتكبير
+        const pages = selectedItems.map((item) => [item]);
 
         document.getElementById('poster-waseet-phone').innerText = this.profile.phone || '';
-const userName =
+        const userName =
             this.profile?.name?.trim() ||
             this.profile?.full_name?.trim() ||
             this.profile?.username?.trim() ||
@@ -383,62 +377,100 @@ const userName =
         if (titleEl) {
             titleEl.innerText = userName ? `معرض ${userName}` : 'معرضي';
         }
+
         const wrapper = document.getElementById('poster-canvas-wrapper');
         const subtitleEl = document.getElementById('poster-subtitle');
         const grid = document.getElementById('poster-items-grid');
         this.posterPages = [];
+        this.posterPdfBlob = null;
+
+        const { jsPDF } = window.jspdf || {};
+        const pdfDoc = jsPDF ? new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }) : null;
 
         try {
             for (let pageIndex = 0; pageIndex < pages.length; pageIndex++) {
                 const pageItems = pages[pageIndex];
+                const item = pageItems[0];
+
                 subtitleEl.innerText = pages.length > 1
-                    ? `عروض ${this.profile.profession || 'مميزة'} - ${this.profile.governorate || ''} (${pageIndex + 1}/${pages.length})`
-                    : `عروض ${this.profile.profession || 'مميزة'} - ${this.profile.governorate || ''}`;
+                    ? `عرض ${this.profile.profession || 'مميز'} - ${this.profile.governorate || ''} (${pageIndex + 1}/${pages.length})`
+                    : `عرض ${this.profile.profession || 'مميز'} - ${this.profile.governorate || ''}`;
 
-                grid.innerHTML = '';
-                for (const item of pageItems) {
-             let imagesHtml = '';
-        if (item.product_images && item.product_images.length > 0) {
-          imagesHtml = item.product_images
-            .map((imgObj) => {
-              const { data: urlData } = sbClient.storage
-                .from('product-images')
-                .getPublicUrl(imgObj.storage_path);
-              return urlData && urlData.publicUrl
-                ? `<img src="${urlData.publicUrl}" crossorigin="anonymous" />`
-                : '';
-            })
-            .filter(Boolean)
-            .join('');
-        }
-
-        grid.innerHTML += `
-          <div class="poster-item">
-            ${imagesHtml ? `<div class="poster-item-images">${imagesHtml}</div>` : `<div class="poster-item-noimg">بدون صورة</div>`}
-            <div class="poster-item-code">كود #${item.serial}</div>
-            <div class="poster-item-name">${Utils.escapeHtml(item.name)}</div>
-            ${item.description ? `<div class="poster-item-desc">${Utils.escapeHtml(item.description)}</div>` : ''}
-            <div class="poster-item-price">${Number(item.price || 0).toLocaleString('ar-EG')} ج.م</div>
-          </div>
-        `; 
+                let imagesHtml = '';
+                if (item.product_images && item.product_images.length > 0) {
+                    imagesHtml = item.product_images
+                        .map((imgObj) => {
+                            const { data: urlData } = sbClient.storage
+                                .from('product-images')
+                                .getPublicUrl(imgObj.storage_path);
+                            return urlData && urlData.publicUrl
+                                ? `<img src="${urlData.publicUrl}" crossorigin="anonymous" />`
+                                : '';
+                        })
+                        .filter(Boolean)
+                        .join('');
                 }
 
-                const canvas = await html2canvas(wrapper, { useCORS: true, scale: 2 });
-                const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+                grid.innerHTML = `
+                    <div class="poster-item poster-item-single">
+                        ${imagesHtml ? `<div class="poster-item-images">${imagesHtml}</div>` : `<div class="poster-item-noimg">بدون صورة</div>`}
+                        <div class="poster-item-code">كود #${item.serial}</div>
+                        <div class="poster-item-name">${Utils.escapeHtml(item.name)}</div>
+                        ${item.description ? `<div class="poster-item-desc">${Utils.escapeHtml(item.description)}</div>` : ''}
+                        <div class="poster-item-price">${Number(item.price || 0).toLocaleString('ar-EG')} ج.م</div>
+                    </div>
+                `;
+
+                const canvas = await html2canvas(wrapper, { useCORS: true, scale: 1.5 });
+                const blob = await new Promise((r) => canvas.toBlob(r, 'image/jpeg', 0.88));
                 this.posterPages.push(blob);
+
+                if (pdfDoc && canvas) {
+                    const imgData = canvas.toDataURL('image/jpeg', 0.88);
+                    const pageWidth = pdfDoc.internal.pageSize.getWidth();
+                    const pageHeight = pdfDoc.internal.pageSize.getHeight();
+                    const margin = 8;
+                    const usableWidth = pageWidth - margin * 2;
+                    const imgHeight = (canvas.height * usableWidth) / canvas.width;
+                    const finalHeight = Math.min(imgHeight, pageHeight - margin * 2);
+
+                    if (pageIndex > 0) {
+                        pdfDoc.addPage();
+                    }
+                    pdfDoc.addImage(imgData, 'JPEG', margin, margin, usableWidth, finalHeight);
+                }
+            }
+
+            if (pdfDoc) {
+                this.posterPdfBlob = pdfDoc.output('blob');
             }
 
             this.renderPosterPreview();
             document.getElementById('poster-preview-modal').classList.remove('hidden');
         } catch (e) {
             console.error(e);
-            Utils.showToast('تعذّر توليد صورة البوستر. جرّب تقلل عدد العروض المحددة أو صور أصغر، وحاول تاني.', 'error');
+            Utils.showToast('تعذّر توليد الكتالوج. جرّب تقليل عدد العروض المحددة أو صور أصغر، وحاول تاني.', 'error');
         }
     },
 
     renderPosterPreview() {
         const container = document.getElementById('poster-pages-container');
         container.innerHTML = '';
+
+        if (this.posterPdfBlob) {
+            const pdfUrl = URL.createObjectURL(this.posterPdfBlob);
+            const pdfBox = document.createElement('div');
+            pdfBox.className = 'poster-preview-page';
+            pdfBox.innerHTML = `
+                <div class="poster-pdf-summary">ملف PDF جاهز (${this.posterPages.length} صفحة — منتج واحد في كل صفحة)</div>
+                <div class="poster-preview-actions">
+                    <button type="button" class="btn" onclick="waseetApp.sharePosterPdf()">📤 مشاركة PDF على واتساب</button>
+                    <a href="${pdfUrl}" download="CrowGo-Catalog.pdf" class="btn btn-secondary poster-download-link">⬇️ تحميل PDF</a>
+                </div>
+            `;
+            container.appendChild(pdfBox);
+        }
+
         this.posterPages.forEach((blob, idx) => {
             const url = URL.createObjectURL(blob);
             const pageDiv = document.createElement('div');
@@ -446,24 +478,40 @@ const userName =
             pageDiv.innerHTML = `
                 <img src="${url}" class="poster-preview-img" />
                 <div class="poster-preview-actions">
-                    <button type="button" class="btn" onclick="waseetApp.sharePosterPage(${idx})">📤 مشاركة على واتساب</button>
-                    <a href="${url}" download="CrowGo-Catalog-${idx + 1}.png" class="btn btn-secondary poster-download-link">⬇️ تحميل</a>
+                    <button type="button" class="btn" onclick="waseetApp.sharePosterPage(${idx})">📤 مشاركة صفحة ${idx + 1}</button>
+                    <a href="${url}" download="CrowGo-Catalog-Page-${idx + 1}.jpg" class="btn btn-secondary poster-download-link">⬇️ تحميل</a>
                 </div>
             `;
             container.appendChild(pageDiv);
         });
     },
 
-    // مشاركة مباشرة بـ Web Share API (أفضل من <a download> اللي مابيشتغلش
-    // كويس على iOS أو جوه متصفح واتساب/فيسبوك الداخلي) مع بديل تحميل — H6
-    async sharePosterPage(pageIndex) {
-        const blob = this.posterPages[pageIndex];
-        if (!blob) return;
-        const file = new File([blob], `CrowGo-Catalog-${pageIndex + 1}.png`, { type: 'image/png' });
+    async sharePosterPdf() {
+        if (!this.posterPdfBlob) return;
+        const file = new File([this.posterPdfBlob], 'CrowGo-Catalog.pdf', { type: 'application/pdf' });
 
         try {
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 await navigator.share({ files: [file], title: 'كتالوج عروضي' });
+            } else {
+                Utils.showToast('المشاركة المباشرة مش مدعومة في هذا المتصفح، استخدم زرار تحميل PDF', 'error');
+            }
+        } catch (e) {
+            if (e && e.name !== 'AbortError') {
+                console.error(e);
+                Utils.showToast('تعذّرت المشاركة، جرّب تحميل PDF بدل منها', 'error');
+            }
+        }
+    },
+
+    async sharePosterPage(pageIndex) {
+        const blob = this.posterPages[pageIndex];
+        if (!blob) return;
+        const file = new File([blob], `CrowGo-Catalog-Page-${pageIndex + 1}.jpg`, { type: 'image/jpeg' });
+
+        try {
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({ files: [file], title: `كتالوج عروضي - صفحة ${pageIndex + 1}` });
             } else {
                 Utils.showToast('المشاركة المباشرة مش مدعومة في هذا المتصفح، استخدم زرار التحميل', 'error');
             }
@@ -474,7 +522,6 @@ const userName =
             }
         }
     },
-
     // ================= 3. إدارة طلبات الزبائن =================
     async loadOrders() {
         const container = document.getElementById('orders-list-container');
