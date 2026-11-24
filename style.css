@@ -183,10 +183,11 @@ body {
     left: -9999px;
     top: 0;
     width: 595px;
-    min-height: 842px;
+    height: 842px;
+    overflow: hidden;
     background: var(--primary-blue);
     color: #f1f5f9;
-    padding: 20px 22px;
+    padding: 18px 20px;
     font-family: sans-serif;
     direction: rtl;
     box-sizing: border-box;
@@ -237,34 +238,41 @@ body {
     color: #38bdf8;
 }
 .poster-grid {
-    display: grid;
+  display: grid;
     grid-template-columns: 1fr;
-    gap: 14px;
-    margin: 14px 0;
+    gap: 10px;
+    margin: 10px 0;
     flex: 1;
+    min-height: 0;
+    overflow: hidden;
 }
 .poster-item {
     background: #0f2b46;
     border: 1px solid #3182ce;
     border-radius: 10px;
-    padding: 14px;
+    padding: 12px;
     text-align: center;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-between;
+    height: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 .poster-item-images {
-    display: grid;
+   display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
     align-items: center;
     justify-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
+    max-height: 360px;
+    overflow: hidden;
 }
 .poster-item img,
 .poster-item-images img {
-    max-width: 100%;
-    max-height: 210px;
+   max-width: 100%;
+    max-height: 170px;
     width: auto;
     height: auto;
     object-fit: contain;
