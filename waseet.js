@@ -420,7 +420,17 @@ Utils.showToast('جاري تجهيز كتالوج PDF...', 'success');
                         <div class="poster-item-price">${Number(item.price || 0).toLocaleString('ar-EG')} ج.م</div>
                     </div>
                 `;
-
+const imgs = Array.from(wrapper.querySelectorAll('img'));
+await Promise.all(
+    imgs.map((img) =>
+        img.complete
+            ? Promise.resolve()
+            : new Promise((res) => {
+                  img.onload = res;
+                  img.onerror = res;
+              })
+    )
+);
                 const canvas = await html2canvas(wrapper, { useCORS: true, scale: 1.5 });
                 const blob = await new Promise((r) => canvas.toBlob(r, 'image/jpeg', 0.88));
                 this.posterPages.push(blob);
