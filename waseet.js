@@ -442,9 +442,20 @@ Utils.showToast('جاري تجهيز صفحات المجلة...', 'success');
         }
     },
 
-    renderPosterPreview() {
+renderPosterPreview() {
         const container = document.getElementById('poster-pages-container');
         container.innerHTML = '';
+
+        if (this.posterPages.length > 1) {
+            const shareAllBox = document.createElement('div');
+            shareAllBox.className = 'poster-preview-page';
+            shareAllBox.innerHTML = `
+                <div class="poster-preview-actions">
+                    <button type="button" class="btn" onclick="waseetApp.shareAllPosterPages()">📤 مشاركة كل الصفحات معاً (${this.posterPages.length})</button>
+                </div>
+            `;
+            container.appendChild(shareAllBox);
+        }
 
         this.posterPages.forEach((blob, idx) => {
             const url = URL.createObjectURL(blob);
@@ -461,6 +472,29 @@ Utils.showToast('جاري تجهيز صفحات المجلة...', 'success');
         });
     },
 
+    async shareAllPosterPages() {
+        if (!this.posterPages || this.posterPages.length === 0) return;
+
+        const files = this.posterPages.map(
+            (blob, idx) => new File([blob], `CrowGo-Magazine-Page-${idx + 1}.jpg`, { type: 'image/jpeg' })
+        );
+
+        try {
+            if (navigator.canShare && navigator.canShare({ files })) {
+                await navigator.share({
+                    files,
+                    title: 'مجلة عروضي'
+                });
+            } else {
+                Utils.showToast('مشاركة كل الصور دفعة واحدة مش مدعومة هنا، استخدم مشاركة كل صفحة أو التحميل', 'error');
+            }
+        } catch (e) {
+            if (e && e.name !== 'AbortError') {
+                console.error(e);
+                Utils.showToast('تعذّرت مشاركة الكل دفعة واحدة، جرّب مشاركة الصفحات واحدة واحدة', 'error');
+            }
+        }
+    },
     async sharePosterPage(pageIndex) {
         const blob = this.posterPages[pageIndex];
         if (!blob) return;
