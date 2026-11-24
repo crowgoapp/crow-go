@@ -387,10 +387,10 @@ Utils.showToast('جاري تجهيز صفحات المجلة...', 'success');
             for (let pageIndex = 0; pageIndex < pages.length; pageIndex++) {
                 const pageItems = pages[pageIndex];
                 const item = pageItems[0];
-
-                subtitleEl.innerText = pages.length > 1
-                    ? `عرض ${this.profile.profession || 'مميز'} - ${this.profile.governorate || ''} (${pageIndex + 1}/${pages.length})`
-                    : `عرض ${this.profile.profession || 'مميز'} - ${this.profile.governorate || ''}`;
+if (subtitleEl) {
+                    subtitleEl.innerText = '';
+                    subtitleEl.style.display = 'none';
+                }
 
                 let imagesHtml = '';
                 if (item.product_images && item.product_images.length > 0) {
