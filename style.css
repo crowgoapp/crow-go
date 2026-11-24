@@ -238,7 +238,7 @@ body {
     color: #38bdf8;
 }
 .poster-grid {
-  display: grid;
+    display: grid;
     grid-template-columns: 1fr;
     gap: 10px;
     margin: 10px 0;
@@ -260,7 +260,7 @@ body {
     overflow: hidden;
 }
 .poster-item-images {
-   display: grid;
+    display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
     align-items: center;
@@ -271,7 +271,7 @@ body {
 }
 .poster-item img,
 .poster-item-images img {
-   max-width: 100%;
+    max-width: 100%;
     max-height: 170px;
     width: auto;
     height: auto;
@@ -282,7 +282,7 @@ body {
 .poster-item-desc {
     font-size: 13px;
     color: #cbd5e1;
-    margin: 6px 0 10px;
+    margin: 4px 0 8px;
     line-height: 1.5;
 }
 .poster-item-noimg {
@@ -292,7 +292,7 @@ body {
     justify-content: center;
     background: #1e293b;
     border-radius: 8px;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     color: #94a3b8;
 }
 .poster-item-code {
@@ -304,7 +304,7 @@ body {
     font-size: 18px;
     font-weight: bold;
     color: #fff;
-    margin: 6px 0;
+    margin: 4px 0;
 }
 .poster-item-price {
     font-size: 16px;
