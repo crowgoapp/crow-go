@@ -434,23 +434,21 @@ await Promise.all(
                 const canvas = await html2canvas(wrapper, { useCORS: true, scale: 1.5 });
                 const blob = await new Promise((r) => canvas.toBlob(r, 'image/jpeg', 0.88));
                 this.posterPages.push(blob);
+if (pdfDoc && canvas) {
+    const imgData = canvas.toDataURL('image/jpeg', 0.9);
+    const pageWidth = pdfDoc.internal.pageSize.getWidth();
+    const pageHeight = pdfDoc.internal.pageSize.getHeight();
+    const ratio = Math.min(pageWidth / canvas.width, pageHeight / canvas.height);
+    const finalWidth = canvas.width * ratio;
+    const finalHeight = canvas.height * ratio;
+    const offsetX = (pageWidth - finalWidth) / 2;
+    const offsetY = (pageHeight - finalHeight) / 2;
 
-                if (pdfDoc && canvas) {
-                    const imgData = canvas.toDataURL('image/jpeg', 0.88);
-                    const pageWidth = pdfDoc.internal.pageSize.getWidth();
-                    const pageHeight = pdfDoc.internal.pageSize.getHeight();
-                    const margin = 8;
-                    const usableWidth = pageWidth - margin * 2;
-                    const imgHeight = (canvas.height * usableWidth) / canvas.width;
-                    const finalHeight = Math.min(imgHeight, pageHeight - margin * 2);
-
-                    if (pageIndex > 0) {
-                        pdfDoc.addPage();
-                    }
-                    pdfDoc.addImage(imgData, 'JPEG', margin, margin, usableWidth, finalHeight);
-                }
-            }
-
+    if (pageIndex > 0) {
+        pdfDoc.addPage();
+    }
+    pdfDoc.addImage(imgData, 'JPEG', offsetX, offsetY, finalWidth, finalHeight);
+}
             if (pdfDoc) {
                 this.posterPdfBlob = pdfDoc.output('blob');
             }
