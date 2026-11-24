@@ -358,9 +358,9 @@ const waseetApp = {
             Utils.showToast('حدد منتجاً واحداً على الأقل لوضعه في البوستر', 'error');
             return;
         }
-Utils.showToast('جاري تجهيز كتالوج PDF...', 'success');
+Utils.showToast('جاري تجهيز صفحات المجلة...', 'success');
 
-        // منتج واحد في كل صفحة لضمان وضوح عالٍ وسهولة التصفح والتكبير
+        // منتج واحد في كل صفحة ليكون عرض المجلة واضحاً ومنظماً
         const pages = selectedItems.map((item) => [item]);
 
         document.getElementById('poster-waseet-phone').innerText = this.profile.phone || '';
@@ -382,10 +382,6 @@ Utils.showToast('جاري تجهيز كتالوج PDF...', 'success');
         const subtitleEl = document.getElementById('poster-subtitle');
         const grid = document.getElementById('poster-items-grid');
         this.posterPages = [];
-        this.posterPdfBlob = null;
-
-        const { jsPDF } = window.jspdf || {};
-        const pdfDoc = jsPDF ? new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }) : null;
 
         try {
             for (let pageIndex = 0; pageIndex < pages.length; pageIndex++) {
@@ -420,67 +416,35 @@ Utils.showToast('جاري تجهيز كتالوج PDF...', 'success');
                         <div class="poster-item-price">${Number(item.price || 0).toLocaleString('ar-EG')} ج.م</div>
                     </div>
                 `;
-const imgs = Array.from(wrapper.querySelectorAll('img'));
-await Promise.all(
-    imgs.map((img) =>
-        img.complete
-            ? Promise.resolve()
-            : new Promise((res) => {
-                  img.onload = res;
-                  img.onerror = res;
-              })
-    )
-);
 
-const canvas = await html2canvas(wrapper, { useCORS: true, scale: 1.5 });
-const blob = await new Promise((r) => canvas.toBlob(r, 'image/jpeg', 0.88));
-this.posterPages.push(blob);
+                const imgs = Array.from(wrapper.querySelectorAll('img'));
+                await Promise.all(
+                    imgs.map((img) =>
+                        img.complete
+                            ? Promise.resolve()
+                            : new Promise((res) => {
+                                  img.onload = res;
+                                  img.onerror = res;
+                              })
+                    )
+                );
 
-if (pdfDoc && canvas) {
-    const imgData = canvas.toDataURL('image/jpeg', 0.9);
-    const pageWidth = pdfDoc.internal.pageSize.getWidth();
-    const pageHeight = pdfDoc.internal.pageSize.getHeight();
-    const ratio = Math.min(pageWidth / canvas.width, pageHeight / canvas.height);
-    const finalWidth = canvas.width * ratio;
-    const finalHeight = canvas.height * ratio;
-    const offsetX = (pageWidth - finalWidth) / 2;
-    const offsetY = (pageHeight - finalHeight) / 2;
-
-    if (pageIndex > 0) {
-        pdfDoc.addPage();
-    }
-    pdfDoc.addImage(imgData, 'JPEG', offsetX, offsetY, finalWidth, finalHeight);
-}
-            } // <-- قوس إغلاق حلقة for (pageIndex)
-
-            if (pdfDoc) {
-                this.posterPdfBlob = pdfDoc.output('blob');
+                const canvas = await html2canvas(wrapper, { useCORS: true, scale: 1.5 });
+                const blob = await new Promise((r) => canvas.toBlob(r, 'image/jpeg', 0.9));
+                this.posterPages.push(blob);
             }
 
             this.renderPosterPreview();
             document.getElementById('poster-preview-modal').classList.remove('hidden');
         } catch (e) {
             console.error(e);
-            Utils.showToast('تعذّر توليد الكتالوج. جرّب تقليل عدد العروض المحددة أو صور أصغر، وحاول تاني.', 'error');
+            Utils.showToast('تعذّر توليد صفحات المجلة. جرّب تقليل عدد العروض المحددة، وحاول تاني.', 'error');
         }
     },
 
-    renderPosterPreview() {        const container = document.getElementById('poster-pages-container');
+    renderPosterPreview() {
+        const container = document.getElementById('poster-pages-container');
         container.innerHTML = '';
-
-        if (this.posterPdfBlob) {
-            const pdfUrl = URL.createObjectURL(this.posterPdfBlob);
-            const pdfBox = document.createElement('div');
-            pdfBox.className = 'poster-preview-page';
-            pdfBox.innerHTML = `
-                <div class="poster-pdf-summary">ملف PDF جاهز (${this.posterPages.length} صفحة — منتج واحد في كل صفحة)</div>
-                <div class="poster-preview-actions">
-                    <button type="button" class="btn" onclick="waseetApp.sharePosterPdf()">📤 مشاركة PDF على واتساب</button>
-                    <a href="${pdfUrl}" download="CrowGo-Catalog.pdf" class="btn btn-secondary poster-download-link">⬇️ تحميل PDF</a>
-                </div>
-            `;
-            container.appendChild(pdfBox);
-        }
 
         this.posterPages.forEach((blob, idx) => {
             const url = URL.createObjectURL(blob);
@@ -490,13 +454,31 @@ if (pdfDoc && canvas) {
                 <img src="${url}" class="poster-preview-img" />
                 <div class="poster-preview-actions">
                     <button type="button" class="btn" onclick="waseetApp.sharePosterPage(${idx})">📤 مشاركة صفحة ${idx + 1}</button>
-                    <a href="${url}" download="CrowGo-Catalog-Page-${idx + 1}.jpg" class="btn btn-secondary poster-download-link">⬇️ تحميل</a>
+                    <a href="${url}" download="CrowGo-Magazine-Page-${idx + 1}.jpg" class="btn btn-secondary poster-download-link">⬇️ تحميل</a>
                 </div>
             `;
             container.appendChild(pageDiv);
         });
     },
 
+    async sharePosterPage(pageIndex) {
+        const blob = this.posterPages[pageIndex];
+        if (!blob) return;
+        const file = new File([blob], `CrowGo-Magazine-Page-${pageIndex + 1}.jpg`, { type: 'image/jpeg' });
+
+        try {
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({ files: [file], title: `مجلة عروضي - صفحة ${pageIndex + 1}` });
+            } else {
+                Utils.showToast('المشاركة المباشرة مش مدعومة في هذا المتصفح، استخدم زرار التحميل', 'error');
+            }
+        } catch (e) {
+            if (e && e.name !== 'AbortError') {
+                console.error(e);
+                Utils.showToast('تعذّرت المشاركة، جرّب التحميل بدل منها', 'error');
+            }
+        }
+    },
     async sharePosterPdf() {
         if (!this.posterPdfBlob) return;
         const file = new File([this.posterPdfBlob], 'CrowGo-Catalog.pdf', { type: 'application/pdf' });
