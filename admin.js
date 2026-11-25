@@ -239,45 +239,51 @@ const adminApp = {
         }
     },
 
-    async impersonateWaseet(waseetId) {
-        try {
-            let targetProfile = this.profiles.find(p => String(p.id) === String(waseetId));
-            if (!targetProfile) {
-                const { data, error } = await sbClient
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', waseetId)
-                    .single();
-                if (error) throw error;
-                targetProfile = data;
-            }
-
-            if (!targetProfile) {
-                Utils.showToast('لم يتم العثور على بيانات الحساب', 'error');
-                return;
-            }
-
-            sessionStorage.setItem('crowgo_impersonating_from_admin', '1');
-            this.ensureReturnToAdminButton();
-
-            if (typeof waseetApp !== 'undefined' && typeof waseetApp.initWaseetSession === 'function') {
-                await waseetApp.initWaseetSession(targetProfile.id, targetProfile);
-                Utils.showToast(`تم الدخول إلى حساب: ${targetProfile.name || 'الوسيط'}`, 'success');
-            } else {
-                Utils.showToast('واجهة الوسيط غير متاحة حالياً', 'error');
-            }
-        } catch (e) {
-            console.error(e);
-            Utils.showToast('تعذّر الدخول على الحساب: ' + Utils.translateError(e), 'error');
+   async impersonateWaseet(waseetId) {
+    try {
+        const { data: isAdmin, error: adminErr } = await sbClient.rpc('is_admin');
+        if (adminErr || !isAdmin) {
+            Utils.showToast('هذه الميزة متاحة للأدمن فقط', 'error');
+            return;
         }
-    },
 
-    ensureReturnToAdminButton() {
-        if (document.getElementById('return-to-admin-floating-btn')) return;
-        const btn = document.createElement('button');
+        let targetProfile = this.profiles.find(p => String(p.id) === String(waseetId));
+        if (!targetProfile) {
+            const { data, error } = await sbClient
+                .from('profiles')
+                .select('*')
+                .eq('id', waseetId)
+                .single();
+            if (error) throw error;
+            targetProfile = data;
+        }
+
+        if (!targetProfile) {
+            Utils.showToast('لم يتم العثور على بيانات الحساب', 'error');
+            return;
+        }
+
+        sessionStorage.setItem('crowgo_impersonating_from_admin', '1');
+        this.ensureReturnToAdminButton(targetProfile.name || 'الوسيط');
+
+        if (typeof waseetApp !== 'undefined' && typeof waseetApp.initWaseetSession === 'function') {
+            await waseetApp.initWaseetSession(targetProfile.id, targetProfile);
+            Utils.showToast(`معاينة حساب الوسيط: ${targetProfile.name || 'الوسيط'}`, 'success');
+        } else {
+            Utils.showToast('واجهة الوسيط غير متاحة حالياً', 'error');
+        }
+    } catch (e) {
+        console.error(e);
+        Utils.showToast('تعذّر معاينة الحساب: ' + Utils.translateError(e), 'error');
+    }
+},
+
+ensureReturnToAdminButton(waseetName = '') {
+    let btn = document.getElementById('return-to-admin-floating-btn');
+    if (!btn) {
+        btn = document.createElement('button');
         btn.id = 'return-to-admin-floating-btn';
         btn.type = 'button';
-        btn.innerText = '↩️ رجوع للأدمن';
         btn.style.cssText = 'position:fixed;bottom:16px;left:16px;z-index:9999;padding:10px 14px;border-radius:10px;border:none;background:#0f2b46;color:#fff;font-weight:bold;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.25);';
         btn.onclick = async () => {
             sessionStorage.removeItem('crowgo_impersonating_from_admin');
@@ -288,8 +294,9 @@ const adminApp = {
             await this.renderDashboard();
         };
         document.body.appendChild(btn);
-    },
-
+    }
+    btn.innerText = waseetName ? `↩️ رجوع للأدمن (معاينة: ${waseetName})` : '↩️ رجوع للأدمن';
+}
     async renderPendingPayments() {
         const container = document.getElementById('admin-payments-container');
         if (!container) return;
