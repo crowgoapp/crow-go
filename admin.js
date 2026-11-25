@@ -4,7 +4,7 @@ const adminApp = {
     selectedProfession: '',
 
     async renderDashboard() {
-       await Promise.all([
+        await Promise.all([
             this.renderWaseets(),
             this.renderPendingPayments(),
             this.loadAdminWhatsappSetting()
@@ -57,22 +57,35 @@ const adminApp = {
 
         const filterHtml = `
             <div class="admin-filters-bar" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
-                <select id="admin-filter-gov" onchange="adminApp.onFilterChange()" style="flex:1;min-width:140px;padding:8px;border-radius:8px;">
+                <select id="admin-filter-gov" style="flex:1;min-width:140px;padding:8px;border-radius:8px;">
                     <option value="">كل المحافظات</option>
                     ${govOptions}
                 </select>
-                <select id="admin-filter-prof" onchange="adminApp.onFilterChange()" style="flex:1;min-width:140px;padding:8px;border-radius:8px;">
+                <select id="admin-filter-prof" style="flex:1;min-width:140px;padding:8px;border-radius:8px;">
                     <option value="">كل المهن</option>
                     ${profOptions}
                 </select>
                 ${(this.selectedGovernorate || this.selectedProfession)
-                    ? `<button type="button" class="btn-small" onclick="adminApp.resetFilters()">إعادة ضبط</button>`
+                    ? `<button type="button" class="btn-small" data-action="reset-filters">إعادة ضبط</button>`
                     : ''}
             </div>
             <div id="admin-filtered-waseets-list"></div>
         `;
 
         container.innerHTML = filterHtml;
+
+        const govSelect = document.getElementById('admin-filter-gov');
+        const profSelect = document.getElementById('admin-filter-prof');
+        if (govSelect) govSelect.addEventListener('change', () => this.onFilterChange());
+        if (profSelect) profSelect.addEventListener('change', () => this.onFilterChange());
+
+        container.onclick = (e) => {
+            const resetBtn = e.target.closest('[data-action="reset-filters"]');
+            if (resetBtn) {
+                this.resetFilters();
+            }
+        };
+
         this.renderFilteredWaseetsList();
     },
 
@@ -107,11 +120,11 @@ const adminApp = {
 
         let html = '<ul class="admin-list">';
         filtered.forEach(w => {
+            const safeId = Utils.escapeHtml(String(w.id || ''));
             const safeName = Utils.escapeHtml(w.name || '');
             const safePhone = Utils.escapeHtml(w.phone || '');
             const safeGov = Utils.escapeHtml(w.governorate || '');
             const safeProf = Utils.escapeHtml(w.profession || '');
-            const escapedNameForJs = safeName.replace(/'/g, "\\'");
 
             const isDisabled = w.is_active === false || w.account_status === 'cancelled';
             const subEnd = w.subscription_end
@@ -123,16 +136,42 @@ const adminApp = {
                 <small>الهاتف: ${safePhone} | المحافظة: ${safeGov}</small><br>
                 <small class="text-success">الاشتراك حتى: ${subEnd}</small>
                 <div class="admin-list-actions" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">
-                    <button type="button" class="btn-small" onclick="adminApp.openResetPin('${w.id}', '${escapedNameForJs}')">إعادة تعيين PIN</button>
-                    <button type="button" class="btn-small" onclick="adminApp.extendSubscription('${w.id}', 7, 'أسبوع مجاني')">+ أسبوع مجاني</button>
-                    <button type="button" class="btn-small" onclick="adminApp.extendSubscription('${w.id}', 30, 'شهر')">+ شهر</button>
-                    <button type="button" class="btn-small" onclick="adminApp.impersonateWaseet('${w.id}')">دخول كصاحب الحساب</button>
-                    <button type="button" class="btn-small btn-reject" onclick="adminApp.cancelAccount('${w.id}', '${escapedNameForJs}')">إلغاء الحساب</button>
+                    <button type="button" class="btn-small" data-action="reset-pin" data-id="${safeId}">إعادة تعيين PIN</button>
+                    <button type="button" class="btn-small" data-action="extend-sub" data-id="${safeId}" data-days="7" data-label="أسبوع مجاني">+ أسبوع مجاني</button>
+                    <button type="button" class="btn-small" data-action="extend-sub" data-id="${safeId}" data-days="30" data-label="شهر">+ شهر</button>
+                    <button type="button" class="btn-small" data-action="impersonate" data-id="${safeId}">دخول كصاحب الحساب</button>
+                    <button type="button" class="btn-small btn-reject" data-action="cancel-account" data-id="${safeId}">إلغاء الحساب</button>
                 </div>
             </li>`;
         });
         html += '</ul>';
         listContainer.innerHTML = html;
+
+        listContainer.onclick = async (e) => {
+            const btn = e.target.closest('button[data-action]');
+            if (!btn) return;
+
+            const action = btn.dataset.action;
+            const waseetId = btn.dataset.id;
+            if (!waseetId) return;
+
+            const profile = this.profiles.find(p => String(p.id) === String(waseetId));
+            const waseetName = profile && profile.name ? profile.name : 'الوسيط';
+
+            if (action === 'reset-pin') {
+                await this.openResetPin(waseetId, waseetName);
+            } else if (action === 'extend-sub') {
+                const days = Number(btn.dataset.days || 0);
+                const label = btn.dataset.label || `${days} يوم`;
+                if (days > 0) {
+                    await this.extendSubscription(waseetId, days, label);
+                }
+            } else if (action === 'impersonate') {
+                await this.impersonateWaseet(waseetId);
+            } else if (action === 'cancel-account') {
+                await this.cancelAccount(waseetId, waseetName);
+            }
+        };
     },
 
     async extendSubscription(waseetId, daysToAdd, labelText) {
@@ -167,7 +206,10 @@ const adminApp = {
     },
 
     async cancelAccount(waseetId, waseetName) {
-        const ok = await Utils.confirmDialog(`هل أنت متأكد من إلغاء حساب "${waseetName}"؟`);
+        const profile = this.profiles.find(p => String(p.id) === String(waseetId));
+        const safeName = waseetName || (profile && profile.name ? profile.name : 'الوسيط');
+
+        const ok = await Utils.confirmDialog(`هل أنت متأكد من إلغاء حساب "${safeName}"؟`);
         if (!ok) return;
 
         try {
@@ -177,7 +219,6 @@ const adminApp = {
                 .eq('id', waseetId);
 
             if (deleteError) {
-                // لو الحذف المباشر مرفوض بسبب ارتباطات أو سياسات RLS، ننهي الاشتراك فوراً
                 const { error: fallbackError } = await sbClient
                     .from('profiles')
                     .update({ subscription_end: new Date().toISOString() })
@@ -249,7 +290,6 @@ const adminApp = {
         document.body.appendChild(btn);
     },
 
-    // لوحة "مدفوعات قيد المراجعة" بزرار تأكيد/رفض (يحل جزء من C2/H2)
     async renderPendingPayments() {
         const container = document.getElementById('admin-payments-container');
         if (!container) return;
@@ -275,6 +315,7 @@ const adminApp = {
 
         let html = '';
         payments.forEach(p => {
+            const safePaymentId = Utils.escapeHtml(String(p.id || ''));
             const waseetName = Utils.escapeHtml(p.profiles ? p.profiles.name : p.waseet_id);
             const waseetPhone = Utils.escapeHtml(p.profiles ? p.profiles.phone : '');
             const amount = Number(p.amount || 0).toLocaleString('ar-EG');
@@ -283,12 +324,26 @@ const adminApp = {
                 <div class="admin-payment-amount">${amount} ج.م — ${Utils.escapeHtml(p.method)}</div>
                 ${p.notes ? `<div class="admin-payment-notes">${Utils.escapeHtml(p.notes)}</div>` : ''}
                 <div class="admin-list-actions">
-                    <button type="button" class="btn-small btn-confirm" onclick="adminApp.confirmPayment(${p.id})">✅ تأكيد (30 يوم)</button>
-                    <button type="button" class="btn-small btn-reject" onclick="adminApp.rejectPayment(${p.id})">❌ رفض</button>
+                    <button type="button" class="btn-small btn-confirm" data-payment-action="confirm" data-payment-id="${safePaymentId}">✅ تأكيد (30 يوم)</button>
+                    <button type="button" class="btn-small btn-reject" data-payment-action="reject" data-payment-id="${safePaymentId}">❌ رفض</button>
                 </div>
             </div>`;
         });
         container.innerHTML = html;
+
+        container.onclick = async (e) => {
+            const btn = e.target.closest('button[data-payment-action]');
+            if (!btn) return;
+
+            const paymentId = btn.dataset.paymentId;
+            if (!paymentId) return;
+
+            if (btn.dataset.paymentAction === 'confirm') {
+                await this.confirmPayment(paymentId);
+            } else if (btn.dataset.paymentAction === 'reject') {
+                await this.rejectPayment(paymentId);
+            }
+        };
     },
 
     async confirmPayment(paymentId) {
@@ -309,9 +364,6 @@ const adminApp = {
         await this.renderDashboard();
     },
 
-    // يستدعي Edge Function (supabase/functions/admin-reset-pin) اللي بتستخدم
-    // service role على السيرفر — مش موجودة هنا مفتاح، ولازم تتنشر على مشروع
-    // Supabase بتاعك أولاً (يحل جزء من C5: مفيش طريقة لاسترجاع الـ PIN حالياً).
     async openResetPin(waseetId, waseetName) {
         const newPin = prompt(`أدخل رقم PIN جديد (6 أرقام) لـ ${waseetName}:`);
         if (!newPin) return;
@@ -331,7 +383,7 @@ const adminApp = {
             console.error(e);
         }
     },
-   
+
     async loadAdminWhatsappSetting() {
         const input = document.getElementById('admin-whatsapp-input');
         if (!input) return;
@@ -341,7 +393,7 @@ const adminApp = {
             input.value = data;
         }
     },
-    
+
     async saveAdminWhatsappSetting() {
         const adminId = '910e51e9-7870-4d26-9f7e-5ae67a32a524';
         const input = document.getElementById('admin-whatsapp-input');
@@ -371,6 +423,7 @@ const adminApp = {
         Utils.showToast('تم حفظ رقم واتساب الأدمن بنجاح', 'success');
     }
 };
+
 async function openAdminWhatsApp() {
     try {
         const { data, error } = await sbClient.rpc('get_admin_whatsapp');
