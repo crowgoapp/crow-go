@@ -37,6 +37,7 @@ const Utils = {
     validateEgyptianPhone(phone) {
         return /^01[0125][0-9]{8}$/.test(Utils.normalizeDigits(phone));
     },
+
     validatePin(pin) {
         return /^[0-9]{6}$/.test(Utils.normalizeDigits(pin));
     },
@@ -181,6 +182,7 @@ async function logout() {
     }
     router.showScreen('landing-screen');
 }
+
 async function handleLogin() {
     const btn = document.getElementById('login-submit-btn');
     await Utils.withBusy(btn, async () => {
@@ -248,6 +250,9 @@ async function handleRegister() {
             return;
         }
 
+        // تسجيل الإحالة بيتم من خلال دالة في القاعدة (apply_referral) مش insert
+        // مباشر من المتصفح، عشان محدش يقدر يزوّر إحالات لنفسه (يحل H3/C4).
+        // محتاج جلسة فعلية، فلو "تأكيد الإيميل" شغال في Supabase مفيش session هنا.
         if (data.session && refCodeInput) {
             const { error: refError } = await sbClient.rpc('apply_referral', { p_code: refCodeInput });
             if (refError) {
@@ -264,39 +269,6 @@ async function handleRegister() {
         if (data.session && data.user && typeof waseetApp !== 'undefined') {
             await waseetApp.initWaseetSession(data.user.id, newProfile || { name: name, phone: phone });
         } else {
-            Utils.showToast('جرّب تسجّل الدخول الآن برقمك والـ PIN', 'success');
-            router.showScreen('login-screen');
-        }
-    });
-}
-        if (error) {
-            Utils.showToast('خطأ في التسجيل: ' + Utils.translateError(error), 'error');
-            return;
-        }
-
-        // تسجيل الإحالة بيتم من خلال دالة في القاعدة (apply_referral) مش insert
-        // مباشر من المتصفح، عشان محدش يقدر يزوّر إحالات لنفسه (يحل H3/C4).
-        // محتاج جلسة فعلية، فلو "تأكيد الإيميل" شغال في Supabase مفيش session هنا.
-        if (data.session && refCodeInput) {
-            try {
-                await sbClient.rpc('apply_referral', { p_code: refCodeInput });
-            } catch (e) {
-                console.error('referral application failed', e);
-            }
-        }
-
-        const { data: newProfile } = data.user
-            ? await sbClient.from('profiles').select('*').eq('id', data.user.id).single()
-            : { data: null };
-
-        Utils.showToast('تم إنشاء الحساب ومنحك أسبوعاً تجريبياً مجانياً!', 'success');
-        if (data.session && data.user && typeof waseetApp !== 'undefined') {
-            await waseetApp.initWaseetSession(data.user.id, newProfile || { name: name, phone: phone });
-        } else {
-            // "تأكيد الإيميل" شغال في إعدادات Supabase ومفيش جلسة فورية.
-            // الحل السريع الموصى به في التقرير: إيقاف Confirm Email من لوحة
-            // Supabase (Authentication > Providers > Email) طالما بنعتمد على
-            // موبايل+PIN بدل إيميل حقيقي.
             Utils.showToast('جرّب تسجّل الدخول الآن برقمك والـ PIN', 'success');
             router.showScreen('login-screen');
         }
