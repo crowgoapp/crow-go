@@ -340,7 +340,6 @@ const waseetApp = {
                         .from('product_images')
                         .insert([{
                             product_id: targetProductId,
-                            owner_id: this.currentUserId,
                             storage_path: fileName,
                             sort_order: i
                         }]);
@@ -366,8 +365,7 @@ const waseetApp = {
             const { error } = await sbClient
                 .from('product_images')
                 .delete()
-                .eq('id', imageId)
-                .eq('owner_id', this.currentUserId);
+                .eq('id', imageId);
 
             if (error) throw error;
             await this.loadProducts();
