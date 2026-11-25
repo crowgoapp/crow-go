@@ -118,8 +118,7 @@ const adminApp = {
             return;
         }
 
-        let html = '<ul class="admin-list">';
-        filtered.forEach(w => {
+        const html = '<ul class="admin-list">' + filtered.map(w => {
             const safeId = Utils.escapeHtml(String(w.id || ''));
             const safeName = Utils.escapeHtml(w.name || '');
             const safePhone = Utils.escapeHtml(w.phone || '');
@@ -128,10 +127,10 @@ const adminApp = {
 
             const isDisabled = w.is_active === false || w.account_status === 'cancelled';
             const subEnd = w.subscription_end
-                ? new Date(w.subscription_end).toLocaleDateString('ar-EG')
+                ? Utils.escapeHtml(new Date(w.subscription_end).toLocaleDateString('ar-EG'))
                 : 'غير محدد';
 
-            html += `<li class="admin-list-item">
+            return `<li class="admin-list-item">
                 <b>${safeName}</b> (${safeProf}) ${isDisabled ? '<span class="text-error">[ملغي]</span>' : ''}<br>
                 <small>الهاتف: ${safePhone} | المحافظة: ${safeGov}</small><br>
                 <small class="text-success">الاشتراك حتى: ${subEnd}</small>
@@ -143,8 +142,8 @@ const adminApp = {
                     <button type="button" class="btn-small btn-reject" data-action="cancel-account" data-id="${safeId}">إلغاء الحساب</button>
                 </div>
             </li>`;
-        });
-        html += '</ul>';
+        }).join('') + '</ul>';
+
         listContainer.innerHTML = html;
 
         listContainer.onclick = async (e) => {
@@ -239,64 +238,65 @@ const adminApp = {
         }
     },
 
-   async impersonateWaseet(waseetId) {
-    try {
-        const { data: isAdmin, error: adminErr } = await sbClient.rpc('is_admin');
-        if (adminErr || !isAdmin) {
-            Utils.showToast('هذه الميزة متاحة للأدمن فقط', 'error');
-            return;
-        }
-
-        let targetProfile = this.profiles.find(p => String(p.id) === String(waseetId));
-        if (!targetProfile) {
-            const { data, error } = await sbClient
-                .from('profiles')
-                .select('*')
-                .eq('id', waseetId)
-                .single();
-            if (error) throw error;
-            targetProfile = data;
-        }
-
-        if (!targetProfile) {
-            Utils.showToast('لم يتم العثور على بيانات الحساب', 'error');
-            return;
-        }
-
-        sessionStorage.setItem('crowgo_impersonating_from_admin', '1');
-        this.ensureReturnToAdminButton(targetProfile.name || 'الوسيط');
-
-        if (typeof waseetApp !== 'undefined' && typeof waseetApp.initWaseetSession === 'function') {
-            await waseetApp.initWaseetSession(targetProfile.id, targetProfile);
-            Utils.showToast(`معاينة حساب الوسيط: ${targetProfile.name || 'الوسيط'}`, 'success');
-        } else {
-            Utils.showToast('واجهة الوسيط غير متاحة حالياً', 'error');
-        }
-    } catch (e) {
-        console.error(e);
-        Utils.showToast('تعذّر معاينة الحساب: ' + Utils.translateError(e), 'error');
-    }
-},
-
-ensureReturnToAdminButton(waseetName = '') {
-    let btn = document.getElementById('return-to-admin-floating-btn');
-    if (!btn) {
-        btn = document.createElement('button');
-        btn.id = 'return-to-admin-floating-btn';
-        btn.type = 'button';
-        btn.style.cssText = 'position:fixed;bottom:16px;left:16px;z-index:9999;padding:10px 14px;border-radius:10px;border:none;background:#0f2b46;color:#fff;font-weight:bold;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.25);';
-        btn.onclick = async () => {
-            sessionStorage.removeItem('crowgo_impersonating_from_admin');
-            btn.remove();
-            if (typeof router !== 'undefined' && typeof router.showScreen === 'function') {
-                router.showScreen('admin-dashboard');
+    async impersonateWaseet(waseetId) {
+        try {
+            const { data: isAdmin, error: adminErr } = await sbClient.rpc('is_admin');
+            if (adminErr || !isAdmin) {
+                Utils.showToast('هذه الميزة متاحة للأدمن فقط', 'error');
+                return;
             }
-            await this.renderDashboard();
-        };
-        document.body.appendChild(btn);
-    }
-    btn.innerText = waseetName ? `↩️ رجوع للأدمن (معاينة: ${waseetName})` : '↩️ رجوع للأدمن';
-}
+
+            let targetProfile = this.profiles.find(p => String(p.id) === String(waseetId));
+            if (!targetProfile) {
+                const { data, error } = await sbClient
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', waseetId)
+                    .single();
+                if (error) throw error;
+                targetProfile = data;
+            }
+
+            if (!targetProfile) {
+                Utils.showToast('لم يتم العثور على بيانات الحساب', 'error');
+                return;
+            }
+
+            sessionStorage.setItem('crowgo_impersonating_from_admin', '1');
+            this.ensureReturnToAdminButton(targetProfile.name || 'الوسيط');
+
+            if (typeof waseetApp !== 'undefined' && typeof waseetApp.initWaseetSession === 'function') {
+                await waseetApp.initWaseetSession(targetProfile.id, targetProfile);
+                Utils.showToast(`معاينة حساب الوسيط: ${targetProfile.name || 'الوسيط'}`, 'success');
+            } else {
+                Utils.showToast('واجهة الوسيط غير متاحة حالياً', 'error');
+            }
+        } catch (e) {
+            console.error(e);
+            Utils.showToast('تعذّر معاينة الحساب: ' + Utils.translateError(e), 'error');
+        }
+    },
+
+    ensureReturnToAdminButton(waseetName = '') {
+        let btn = document.getElementById('return-to-admin-floating-btn');
+        if (!btn) {
+            btn = document.createElement('button');
+            btn.id = 'return-to-admin-floating-btn';
+            btn.type = 'button';
+            btn.style.cssText = 'position:fixed;bottom:16px;left:16px;z-index:9999;padding:10px 14px;border-radius:10px;border:none;background:#0f2b46;color:#fff;font-weight:bold;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.25);';
+            btn.onclick = async () => {
+                sessionStorage.removeItem('crowgo_impersonating_from_admin');
+                btn.remove();
+                if (typeof router !== 'undefined' && typeof router.showScreen === 'function') {
+                    router.showScreen('admin-dashboard');
+                }
+                await this.renderDashboard();
+            };
+            document.body.appendChild(btn);
+        }
+        btn.innerText = waseetName ? `↩️ رجوع للأدمن (معاينة: ${waseetName})` : '↩️ رجوع للأدمن';
+    },
+
     async renderPendingPayments() {
         const container = document.getElementById('admin-payments-container');
         if (!container) return;
@@ -320,22 +320,22 @@ ensureReturnToAdminButton(waseetName = '') {
             return;
         }
 
-        let html = '';
-        payments.forEach(p => {
+        const html = payments.map(p => {
             const safePaymentId = Utils.escapeHtml(String(p.id || ''));
             const waseetName = Utils.escapeHtml(p.profiles ? p.profiles.name : p.waseet_id);
             const waseetPhone = Utils.escapeHtml(p.profiles ? p.profiles.phone : '');
             const amount = Number(p.amount || 0).toLocaleString('ar-EG');
-            html += `<div class="admin-payment-card">
+            return `<div class="admin-payment-card">
                 <div><b>${waseetName}</b> — ${waseetPhone}</div>
-                <div class="admin-payment-amount">${amount} ج.م — ${Utils.escapeHtml(p.method)}</div>
+                <div class="admin-payment-amount">${amount} ج.م — ${Utils.escapeHtml(p.method || '')}</div>
                 ${p.notes ? `<div class="admin-payment-notes">${Utils.escapeHtml(p.notes)}</div>` : ''}
                 <div class="admin-list-actions">
                     <button type="button" class="btn-small btn-confirm" data-payment-action="confirm" data-payment-id="${safePaymentId}">✅ تأكيد (30 يوم)</button>
                     <button type="button" class="btn-small btn-reject" data-payment-action="reject" data-payment-id="${safePaymentId}">❌ رفض</button>
                 </div>
             </div>`;
-        });
+        }).join('');
+
         container.innerHTML = html;
 
         container.onclick = async (e) => {
@@ -356,19 +356,35 @@ ensureReturnToAdminButton(waseetName = '') {
     async confirmPayment(paymentId) {
         const ok = await Utils.confirmDialog('تأكيد هذه الدفعة ومد الاشتراك 30 يوم؟');
         if (!ok) return;
-        const { error } = await sbClient.rpc('confirm_payment', { p_id: paymentId, p_days: 30 });
-        if (error) { Utils.showToast(Utils.translateError(error), 'error'); return; }
-        Utils.showToast('تم تأكيد الدفعة ومد الاشتراك', 'success');
-        await this.renderDashboard();
+        try {
+            const { error } = await sbClient.rpc('confirm_payment', { p_id: paymentId, p_days: 30 });
+            if (error) {
+                Utils.showToast(Utils.translateError(error), 'error');
+                return;
+            }
+            Utils.showToast('تم تأكيد الدفعة ومد الاشتراك', 'success');
+            await this.renderDashboard();
+        } catch (e) {
+            console.error(e);
+            Utils.showToast('تعذّر تأكيد الدفعة', 'error');
+        }
     },
 
     async rejectPayment(paymentId) {
         const ok = await Utils.confirmDialog('رفض طلب التجديد ده؟');
         if (!ok) return;
-        const { error } = await sbClient.rpc('reject_payment', { p_id: paymentId });
-        if (error) { Utils.showToast(Utils.translateError(error), 'error'); return; }
-        Utils.showToast('تم رفض الطلب', 'success');
-        await this.renderDashboard();
+        try {
+            const { error } = await sbClient.rpc('reject_payment', { p_id: paymentId });
+            if (error) {
+                Utils.showToast(Utils.translateError(error), 'error');
+                return;
+            }
+            Utils.showToast('تم رفض الطلب', 'success');
+            await this.renderDashboard();
+        } catch (e) {
+            console.error(e);
+            Utils.showToast('تعذّر رفض الطلب', 'error');
+        }
     },
 
     async openResetPin(waseetId, waseetName) {
@@ -402,7 +418,6 @@ ensureReturnToAdminButton(waseetName = '') {
     },
 
     async saveAdminWhatsappSetting() {
-        const adminId = '910e51e9-7870-4d26-9f7e-5ae67a32a524';
         const input = document.getElementById('admin-whatsapp-input');
         if (!input) return;
 
@@ -416,18 +431,28 @@ ensureReturnToAdminButton(waseetName = '') {
             return;
         }
 
-        const { error } = await sbClient
-            .from('profiles')
-            .update({ whatsapp_phone: clean })
-            .eq('id', adminId);
+        try {
+            const { data: userData, error: userErr } = await sbClient.auth.getUser();
+            const targetId = (!userErr && userData?.user?.id)
+                ? userData.user.id
+                : '910e51e9-7870-4d26-9f7e-5ae67a32a524';
 
-        if (error) {
-            Utils.showToast('فشل حفظ رقم الواتساب: ' + Utils.translateError(error), 'error');
-            return;
+            const { error } = await sbClient
+                .from('profiles')
+                .update({ whatsapp_phone: clean })
+                .eq('id', targetId);
+
+            if (error) {
+                Utils.showToast('فشل حفظ رقم الواتساب: ' + Utils.translateError(error), 'error');
+                return;
+            }
+
+            input.value = clean;
+            Utils.showToast('تم حفظ رقم واتساب الأدمن بنجاح', 'success');
+        } catch (e) {
+            console.error(e);
+            Utils.showToast('تعذّر حفظ رقم الواتساب', 'error');
         }
-
-        input.value = clean;
-        Utils.showToast('تم حفظ رقم واتساب الأدمن بنجاح', 'success');
     }
 };
 
@@ -448,7 +473,7 @@ async function openAdminWhatsApp() {
         }
 
         const msg = encodeURIComponent('مرحباً بإدارة المنصة، أحتاج مساعدة.');
-        window.open(`https://wa.me/${clean}?text=${msg}`, '_blank');
+        window.open(`https://wa.me/${clean}?text=${msg}`, '_blank', 'noopener,noreferrer');
     } catch (e) {
         console.error('openAdminWhatsApp error:', e);
         Utils.showToast('تعذّر فتح واتساب حالياً', 'error');
