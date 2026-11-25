@@ -169,6 +169,10 @@ async function handleAdminLogin() {
 
 async function logout() {
     await sbClient.auth.signOut();
+    sessionStorage.removeItem('crowgo_impersonating_from_admin');
+    const adminBtn = document.getElementById('return-to-admin-floating-btn');
+    if (adminBtn) adminBtn.remove();
+
     if (typeof waseetApp !== 'undefined') {
         waseetApp.currentUserId = '';
         waseetApp.profile = null;
@@ -177,7 +181,6 @@ async function logout() {
     }
     router.showScreen('landing-screen');
 }
-
 async function handleLogin() {
     const btn = document.getElementById('login-submit-btn');
     await Utils.withBusy(btn, async () => {
@@ -236,13 +239,36 @@ async function handleRegister() {
                     name: name,
                     governorate: gov,
                     profession: prof
-                    // ملحوظة: أي حقل هنا (user_metadata) المستخدم يقدر يغيره بنفسه،
-                    // فمينفعش يتبنى عليه أي قرار صلاحيات. الدور/الأدمن بيتحددوا من
-                    // جدول admins في القاعدة فقط (is_admin() في migration 0001).
                 }
             }
         });
 
+        if (error) {
+            Utils.showToast('خطأ في التسجيل: ' + Utils.translateError(error), 'error');
+            return;
+        }
+
+        if (data.session && refCodeInput) {
+            const { error: refError } = await sbClient.rpc('apply_referral', { p_code: refCodeInput });
+            if (refError) {
+                console.error('referral application failed', refError);
+                Utils.showToast('تم إنشاء الحساب، لكن كود الإحالة لم يُطبّق: ' + Utils.translateError(refError), 'error');
+            }
+        }
+
+        const { data: newProfile } = data.user
+            ? await sbClient.from('profiles').select('*').eq('id', data.user.id).single()
+            : { data: null };
+
+        Utils.showToast('تم إنشاء الحساب ومنحك أسبوعاً تجريبياً مجانياً!', 'success');
+        if (data.session && data.user && typeof waseetApp !== 'undefined') {
+            await waseetApp.initWaseetSession(data.user.id, newProfile || { name: name, phone: phone });
+        } else {
+            Utils.showToast('جرّب تسجّل الدخول الآن برقمك والـ PIN', 'success');
+            router.showScreen('login-screen');
+        }
+    });
+}
         if (error) {
             Utils.showToast('خطأ في التسجيل: ' + Utils.translateError(error), 'error');
             return;
