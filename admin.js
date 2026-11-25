@@ -204,25 +204,17 @@ const adminApp = {
         if (!ok) return;
 
         try {
-            const { error: deleteError } = await sbClient
-                .from('profiles')
-                .delete()
-                .eq('id', waseetId);
+            const { data: result, error } = await sbClient.rpc('admin_cancel_account', {
+                p_waseet_id: waseetId
+            });
 
-            if (deleteError) {
-                const { error: fallbackError } = await sbClient
-                    .from('profiles')
-                    .update({ subscription_end: new Date().toISOString() })
-                    .eq('id', waseetId);
+            if (error) throw error;
 
-                if (fallbackError) throw deleteError;
-
-                Utils.showToast('تم إيقاف/إنهاء اشتراك الحساب (تحقق من صلاحيات الحذف في Supabase لو أردت حذفه نهائياً)', 'success');
-                await this.renderWaseets();
-                return;
+            if (result === 'deleted') {
+                Utils.showToast('تم إلغاء وحذف الحساب بنجاح', 'success');
+            } else {
+                Utils.showToast('تم إيقاف/إنهاء اشتراك الحساب بنجاح', 'success');
             }
-
-            Utils.showToast('تم إلغاء وحذف الحساب بنجاح', 'success');
             await this.renderWaseets();
         } catch (e) {
             console.error(e);
