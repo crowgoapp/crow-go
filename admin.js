@@ -181,18 +181,10 @@ const adminApp = {
         if (!ok) return;
 
         try {
-            const now = new Date();
-            const currentEnd = profile && profile.subscription_end ? new Date(profile.subscription_end) : null;
-            const baseDate = (currentEnd && !isNaN(currentEnd.getTime()) && currentEnd > now)
-                ? currentEnd
-                : now;
-
-            const newEndDate = new Date(baseDate.getTime() + daysToAdd * 24 * 60 * 60 * 1000).toISOString();
-
-            const { error } = await sbClient
-                .from('profiles')
-                .update({ subscription_end: newEndDate })
-                .eq('id', waseetId);
+            const { error } = await sbClient.rpc('admin_extend_subscription', {
+                p_waseet_id: waseetId,
+                p_days: Number(daysToAdd)
+            });
 
             if (error) throw error;
 
