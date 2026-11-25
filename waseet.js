@@ -4,6 +4,7 @@ const waseetApp = {
     products: [],
     orders: [],
     posterPages: [],
+    posterObjectUrls: [],
     MAX_IMAGES_PER_PRODUCT: 6,
     MAX_ITEMS_PER_POSTER_PAGE: 8,
 
@@ -14,23 +15,24 @@ const waseetApp = {
 
         const welcomeEl = document.getElementById('waseet-welcome-text');
         if (welcomeEl) {
-            // innerText بيتعامل مع النص كنص خام من غير تنفيذ HTML، فاستخدام
-            // escapeHtml معاه كان بيعمل تعقيم مزدوج (ظهور &amp; بدل &) — L1
-            welcomeEl.innerText = `أهلاً بك يا ${this.profile.name || ''}`;
+            welcomeEl.innerText = `أهلاً بك يا ${this.profile?.name || ''}`;
         }
 
         this.switchTab('products');
-        // ملحوظة: switchTab('products') بينادي loadProducts() بالفعل، فمفيش
-        // داعي لنداء تاني هنا (كان بيحمّل العروض مرتين - M9).
     },
 
     switchTab(tabName) {
         ['products', 'orders', 'sub'].forEach(t => {
-            document.getElementById(`waseet-tab-${t}`).classList.add('hidden');
-            document.getElementById(`tab-btn-${t}`).classList.remove('active');
+            const tabEl = document.getElementById(`waseet-tab-${t}`);
+            const btnEl = document.getElementById(`tab-btn-${t}`);
+            if (tabEl) tabEl.classList.add('hidden');
+            if (btnEl) btnEl.classList.remove('active');
         });
-        document.getElementById(`waseet-tab-${tabName}`).classList.remove('hidden');
-        document.getElementById(`tab-btn-${tabName}`).classList.add('active');
+
+        const activeTab = document.getElementById(`waseet-tab-${tabName}`);
+        const activeBtn = document.getElementById(`tab-btn-${tabName}`);
+        if (activeTab) activeTab.classList.remove('hidden');
+        if (activeBtn) activeBtn.classList.add('active');
 
         if (tabName === 'products') this.loadProducts();
         if (tabName === 'orders') this.loadOrders();
@@ -48,8 +50,6 @@ const waseetApp = {
         return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
     },
 
-    // يقفل أزرار الإضافة/البوستر لو الاشتراك منتهي، وبيحذر قبل الانتهاء بـ3 أيام
-    // (يحل H1 على مستوى الواجهة — المنع الحقيقي في القاعدة عن طريق has_active_sub())
     updateSubscriptionGateUI() {
         const banner = document.getElementById('sub-expired-banner');
         const addBtn = document.getElementById('add-product-btn');
@@ -60,7 +60,9 @@ const waseetApp = {
         const active = this.isSubscriptionActive();
         const daysLeft = this.daysUntilExpiry();
 
-        [addBtn, posterBtn, addOrderBtn].forEach(btn => { if (btn) btn.disabled = !active; });
+        [addBtn, posterBtn, addOrderBtn].forEach(btn => {
+            if (btn) btn.disabled = !active;
+        });
 
         if (!active) {
             banner.classList.remove('hidden');
@@ -78,6 +80,7 @@ const waseetApp = {
     // ================= 1. إدارة المنتجات وتعدد الصور =================
     async loadProducts() {
         const container = document.getElementById('products-list-container');
+        if (!container) return;
         container.innerHTML = '<p class="text-center">جاري تحميل العروض...</p>';
 
         try {
@@ -94,49 +97,62 @@ const waseetApp = {
             this.updateSubscriptionGateUI();
         } catch (e) {
             console.error(e);
-            container.innerHTML = `<p class="text-center text-error">${Utils.translateError(e)}</p>`;
+            container.innerHTML = `<p class="text-center text-error">${Utils.escapeHtml(Utils.translateError(e))}</p>`;
         }
     },
 
     renderProducts() {
         const container = document.getElementById('products-list-container');
+        if (!container) return;
+
         if (this.products.length === 0) {
             container.innerHTML = '<p class="text-center text-muted">لا توجد عروض مسجلة بعد. اضغط "+ إضافة عرض" للبدء.</p>';
             return;
         }
 
-        container.innerHTML = '';
-        this.products.forEach((p) => {
+        container.innerHTML = this.products.map((p) => {
             const safeName = Utils.escapeHtml(p.name);
+            const safeSerial = Utils.escapeHtml(p.serial ?? '');
             const safePrice = Number(p.price || 0).toLocaleString('ar-EG');
             const safeDesc = Utils.escapeHtml(p.description || '');
             const safeOwner = Utils.escapeHtml(p.owner_name || 'غير مسجل');
             const safeOwnerPhone = Utils.escapeHtml(p.owner_phone || '');
-
-            let thumbsHtml = '';
-            if (p.product_images && p.product_images.length > 0) {
-                thumbsHtml = '<div class="thumb-row">';
-                p.product_images.forEach(img => {
-                    const { data: urlData } = sbClient.storage.from('product-images').getPublicUrl(img.storage_path);
-                    if (urlData && urlData.publicUrl) {
-                        thumbsHtml += `<div class="thumb-wrap">
-                            <img src="${urlData.publicUrl}" class="thumb-img" />
-                            <button type="button" class="thumb-delete" title="حذف الصورة"
-                                onclick="waseetApp.deleteProductImage(${img.id}, '${img.storage_path.replace(/'/g, "\\'")}', ${p.id}, this)">✕</button>
-                        </div>`;
-                    }
-                });
-                thumbsHtml += '</div>';
-            }
-
             const checkedAttr = p.selected_for_catalog ? 'checked' : '';
 
-            container.innerHTML += `
-                <div class="product-card">
+            let thumbsHtml = '';
+            if (Array.isArray(p.product_images) && p.product_images.length > 0) {
+                const imgsMarkup = p.product_images.map((img) => {
+                    const { data: urlData } = sbClient.storage
+                        .from('product-images')
+                        .getPublicUrl(img.storage_path);
+                    if (!urlData || !urlData.publicUrl) return '';
+                    return `
+                        <div class="thumb-wrap">
+                            <img src="${Utils.escapeHtml(urlData.publicUrl)}" alt="${safeName}" class="thumb-img" loading="lazy" />
+                            <button type="button"
+                                class="thumb-delete"
+                                title="حذف الصورة"
+                                data-action="delete-img"
+                                data-img-id="${Utils.escapeHtml(img.id)}"
+                                data-storage-path="${Utils.escapeHtml(img.storage_path)}">✕</button>
+                        </div>`;
+                }).join('');
+
+                if (imgsMarkup) {
+                    thumbsHtml = `<div class="thumb-row">${imgsMarkup}</div>`;
+                }
+            }
+
+            return `
+                <div class="product-card" data-product-id="${Utils.escapeHtml(p.id)}">
                     <div class="product-card-head">
                         <label class="product-select-label">
-                            <input type="checkbox" ${checkedAttr} onchange="waseetApp.toggleCatalogSelect(${p.id}, this.checked)" class="product-select-checkbox" />
-                            <span>كود #${p.serial} - ${safeName}</span>
+                            <input type="checkbox"
+                                ${checkedAttr}
+                                data-action="toggle-catalog"
+                                data-product-id="${Utils.escapeHtml(p.id)}"
+                                class="product-select-checkbox" />
+                            <span>كود #${safeSerial} - ${safeName}</span>
                         </label>
                         <span class="product-price-badge">${safePrice} ج.م</span>
                     </div>
@@ -146,18 +162,51 @@ const waseetApp = {
                         🔒 المالك: <b>${safeOwner}</b> ${safeOwnerPhone ? `(${safeOwnerPhone})` : ''}
                     </div>
                     <div class="product-actions-row">
-                        <button type="button" onclick="waseetApp.openEditProductModal(${p.id})" class="btn-card-action btn-edit">✏️ تعديل</button>
-                        <button type="button" onclick="Utils.withBusy(this, () => waseetApp.deleteProduct(${p.id}))" class="btn-card-action btn-delete">🗑️ حذف</button>
+                        <button type="button" data-action="edit-product" data-product-id="${Utils.escapeHtml(p.id)}" class="btn-card-action btn-edit">✏️ تعديل</button>
+                        <button type="button" data-action="delete-product" data-product-id="${Utils.escapeHtml(p.id)}" class="btn-card-action btn-delete">🗑️ حذف</button>
                     </div>
                 </div>`;
+        }).join('');
+
+        this.bindProductsEvents(container);
+    },
+
+    bindProductsEvents(container) {
+        if (container.dataset.bound === '1') return;
+        container.dataset.bound = '1';
+
+        container.addEventListener('change', async (e) => {
+            const target = e.target;
+            if (target && target.dataset.action === 'toggle-catalog') {
+                await this.toggleCatalogSelect(target.dataset.productId, target.checked);
+            }
+        });
+
+        container.addEventListener('click', async (e) => {
+            const btn = e.target.closest('button[data-action]');
+            if (!btn) return;
+
+            const action = btn.dataset.action;
+            if (action === 'edit-product') {
+                this.openEditProductModal(btn.dataset.productId);
+            } else if (action === 'delete-product') {
+                await Utils.withBusy(btn, () => this.deleteProduct(btn.dataset.productId));
+            } else if (action === 'delete-img') {
+                await this.deleteProductImage(btn.dataset.imgId, btn.dataset.storagePath, btn);
+            }
         });
     },
 
     async toggleCatalogSelect(productId, isSelected) {
         try {
-            const { error } = await sbClient.from('products').update({ selected_for_catalog: isSelected }).eq('id', productId);
+            const { error } = await sbClient
+                .from('products')
+                .update({ selected_for_catalog: isSelected })
+                .eq('id', productId)
+                .eq('owner_id', this.currentUserId);
+
             if (error) throw error;
-            const prod = this.products.find(x => x.id === productId);
+            const prod = this.products.find(x => String(x.id) === String(productId));
             if (prod) prod.selected_for_catalog = isSelected;
         } catch (e) {
             console.error(e);
@@ -183,12 +232,12 @@ const waseetApp = {
     },
 
     openEditProductModal(productId) {
-        const p = this.products.find(x => x.id === productId);
+        const p = this.products.find(x => String(x.id) === String(productId));
         if (!p) return;
-        document.getElementById('prod-modal-title').innerText = `تعديل العرض #${p.serial}`;
+        document.getElementById('prod-modal-title').innerText = `تعديل العرض #${p.serial ?? ''}`;
         document.getElementById('prod-edit-id').value = p.id;
-        document.getElementById('prod-name').value = p.name;
-        document.getElementById('prod-price').value = p.price;
+        document.getElementById('prod-name').value = p.name || '';
+        document.getElementById('prod-price').value = p.price ?? '';
         document.getElementById('prod-desc').value = p.description || '';
         document.getElementById('prod-owner-name').value = p.owner_name || '';
         document.getElementById('prod-owner-phone').value = p.owner_phone || '';
@@ -201,8 +250,6 @@ const waseetApp = {
         document.getElementById('product-modal').classList.add('hidden');
     },
 
-    // تضغط الصورة لعرض 1280 بكسل وتحولها WebP قبل الرفع (تنزل من 3-8 ميجا
-    // لحوالي 150-300 كيلو) — يحل M3
     async compressImage(file, maxW = 1280, quality = 0.8) {
         const bmp = await createImageBitmap(file);
         const scale = Math.min(1, maxW / bmp.width);
@@ -213,18 +260,18 @@ const waseetApp = {
         return await new Promise(r => c.toBlob(r, 'image/webp', quality));
     },
 
-    async saveProduct() {
+    async saveProduct(btn = null) {
         const editId = document.getElementById('prod-edit-id').value;
         const name = document.getElementById('prod-name').value.trim();
-        const price = document.getElementById('prod-price').value.trim();
+        const priceRaw = Utils.normalizeDigits(document.getElementById('prod-price').value.trim());
         const desc = document.getElementById('prod-desc').value.trim();
         const ownerName = document.getElementById('prod-owner-name').value.trim();
         const ownerPhone = Utils.normalizeDigits(document.getElementById('prod-owner-phone').value.trim());
         const ownerAddress = document.getElementById('prod-owner-address').value.trim();
         const imageFiles = document.getElementById('prod-images').files;
 
-        if (!name || !price) {
-            Utils.showToast('أدخل اسم العرض والسعر', 'error');
+        if (!name || !priceRaw || isNaN(parseFloat(priceRaw))) {
+            Utils.showToast('أدخل اسم العرض والسعر بشكل صحيح', 'error');
             return;
         }
         if (ownerPhone && !Utils.validateEgyptianPhone(ownerPhone)) {
@@ -236,30 +283,31 @@ const waseetApp = {
             return;
         }
 
-        try {
+        await Utils.withBusy(btn, async () => {
             let targetProductId = editId;
 
             if (editId) {
-                const { error } = await sbClient.from('products').update({
-                    name: name,
-                    price: parseFloat(price),
-                    description: desc,
-                    owner_name: ownerName,
-                    owner_phone: ownerPhone,
-                    owner_address: ownerAddress
-                }).eq('id', editId);
+                const { error } = await sbClient
+                    .from('products')
+                    .update({
+                        name: name,
+                        price: parseFloat(priceRaw),
+                        description: desc,
+                        owner_name: ownerName,
+                        owner_phone: ownerPhone,
+                        owner_address: ownerAddress
+                    })
+                    .eq('id', editId)
+                    .eq('owner_id', this.currentUserId);
 
                 if (error) throw error;
-                targetProductId = editId;
             } else {
-                // الكود التسلسلي بقى بيتولد في القاعدة (trigger في migration
-                // 0001) بدل حسابه في المتصفح، عشان ميتكررش لو فاتح جهازين (M4).
                 const { data: prodData, error: prodError } = await sbClient
                     .from('products')
                     .insert([{
                         owner_id: this.currentUserId,
                         name: name,
-                        price: parseFloat(price),
+                        price: parseFloat(priceRaw),
                         description: desc,
                         owner_name: ownerName,
                         owner_phone: ownerPhone,
@@ -288,11 +336,14 @@ const waseetApp = {
                         continue;
                     }
 
-                    const { error: imgInsertError } = await sbClient.from('product_images').insert([{
-                        product_id: targetProductId,
-                        storage_path: fileName,
-                        sort_order: i
-                    }]);
+                    const { error: imgInsertError } = await sbClient
+                        .from('product_images')
+                        .insert([{
+                            product_id: targetProductId,
+                            owner_id: this.currentUserId,
+                            storage_path: fileName,
+                            sort_order: i
+                        }]);
                     if (imgInsertError) console.error('image row insert failed', imgInsertError);
                 }
             }
@@ -300,53 +351,68 @@ const waseetApp = {
             Utils.showToast('تم حفظ العرض بنجاح!', 'success');
             this.closeProductModal();
             await this.loadProducts();
-        } catch (e) {
-            console.error(e);
-            Utils.showToast('خطأ في الحفظ: ' + Utils.translateError(e), 'error');
-        }
+        });
     },
 
-    // حذف صورة منفردة (كان مفيش أصلاً - M2)
-    async deleteProductImage(imageId, storagePath, productId, btn) {
+    async deleteProductImage(imageId, storagePath, btn) {
         const ok = await Utils.confirmDialog('حذف هذه الصورة؟');
         if (!ok) return;
         await Utils.withBusy(btn, async () => {
-            const { error: storageError } = await sbClient.storage.from('product-images').remove([storagePath]);
-            if (storageError) console.error('storage remove failed', storageError);
+            if (storagePath) {
+                const { error: storageError } = await sbClient.storage.from('product-images').remove([storagePath]);
+                if (storageError) console.error('storage remove failed', storageError);
+            }
 
-            const { error } = await sbClient.from('product_images').delete().eq('id', imageId);
+            const { error } = await sbClient
+                .from('product_images')
+                .delete()
+                .eq('id', imageId)
+                .eq('owner_id', this.currentUserId);
+
             if (error) throw error;
-
             await this.loadProducts();
         });
     },
 
-    // حذف العرض كان بيمسح السطر بس وبيسيب ملفات الصور في الـ Storage لأبد
-    // (M2) — دلوقتي بنمسح الصور من Storage الأول.
     async deleteProduct(productId) {
         const ok = await Utils.confirmDialog('هل أنت متأكد من حذف هذا العرض نهائياً؟');
         if (!ok) return;
 
-        try {
-            const product = this.products.find(x => x.id === productId);
-            const paths = (product && product.product_images || []).map(img => img.storage_path);
-            if (paths.length > 0) {
-                const { error: storageError } = await sbClient.storage.from('product-images').remove(paths);
-                if (storageError) console.error('storage cleanup failed', storageError);
-            }
+        const product = this.products.find(x => String(x.id) === String(productId));
+        const paths = ((product && product.product_images) || [])
+            .map(img => img.storage_path)
+            .filter(Boolean);
 
-            const { error } = await sbClient.from('products').delete().eq('id', productId);
-            if (error) throw error;
-
-            Utils.showToast('تم حذف العرض', 'success');
-            await this.loadProducts();
-        } catch (e) {
-            console.error(e);
-            Utils.showToast('فشل الحذف: ' + Utils.translateError(e), 'error');
+        if (paths.length > 0) {
+            const { error: storageError } = await sbClient.storage.from('product-images').remove(paths);
+            if (storageError) console.error('storage cleanup failed', storageError);
         }
+
+        const { error } = await sbClient
+            .from('products')
+            .delete()
+            .eq('id', productId)
+            .eq('owner_id', this.currentUserId);
+
+        if (error) throw error;
+        Utils.showToast('تم حذف العرض', 'success');
+        await this.loadProducts();
     },
 
     // ================= 2. توليد بوستر الكتالوج المجمع كصورة =================
+    clearPosterUrls() {
+        if (Array.isArray(this.posterObjectUrls)) {
+            this.posterObjectUrls.forEach(url => URL.revokeObjectURL(url));
+        }
+        this.posterObjectUrls = [];
+    },
+
+    closePosterPreviewModal() {
+        this.clearPosterUrls();
+        const modal = document.getElementById('poster-preview-modal');
+        if (modal) modal.classList.add('hidden');
+    },
+
     async generateCatalogPoster() {
         if (!this.isSubscriptionActive()) {
             Utils.showToast('اشتراكك منتهي، جدّده الأول من تبويب الاشتراك', 'error');
@@ -358,12 +424,12 @@ const waseetApp = {
             Utils.showToast('حدد منتجاً واحداً على الأقل لوضعه في البوستر', 'error');
             return;
         }
-Utils.showToast('جاري تجهيز صفحات المجلة...', 'success');
 
-        // منتج واحد في كل صفحة ليكون عرض المجلة واضحاً ومنظماً
-        const pages = selectedItems.map((item) => [item]);
+        Utils.showToast('جاري تجهيز صفحات المجلة...', 'success');
 
-        document.getElementById('poster-waseet-phone').innerText = this.profile.phone || '';
+        const phoneEl = document.getElementById('poster-waseet-phone');
+        if (phoneEl) phoneEl.innerText = this.profile?.phone || '';
+
         const userName =
             this.profile?.name?.trim() ||
             this.profile?.full_name?.trim() ||
@@ -384,10 +450,9 @@ Utils.showToast('جاري تجهيز صفحات المجلة...', 'success');
         this.posterPages = [];
 
         try {
-            for (let pageIndex = 0; pageIndex < pages.length; pageIndex++) {
-                const pageItems = pages[pageIndex];
-                const item = pageItems[0];
-if (subtitleEl) {
+            for (let pageIndex = 0; pageIndex < selectedItems.length; pageIndex++) {
+                const item = selectedItems[pageIndex];
+                if (subtitleEl) {
                     subtitleEl.innerText = '';
                     subtitleEl.style.display = 'none';
                 }
@@ -400,7 +465,7 @@ if (subtitleEl) {
                                 .from('product-images')
                                 .getPublicUrl(imgObj.storage_path);
                             return urlData && urlData.publicUrl
-                                ? `<img src="${urlData.publicUrl}" crossorigin="anonymous" />`
+                                ? `<img src="${Utils.escapeHtml(urlData.publicUrl)}" crossorigin="anonymous" />`
                                 : '';
                         })
                         .filter(Boolean)
@@ -410,7 +475,7 @@ if (subtitleEl) {
                 grid.innerHTML = `
                     <div class="poster-item poster-item-single">
                         ${imagesHtml ? `<div class="poster-item-images">${imagesHtml}</div>` : `<div class="poster-item-noimg">بدون صورة</div>`}
-                        <div class="poster-item-code">كود #${item.serial}</div>
+                        <div class="poster-item-code">كود #${Utils.escapeHtml(item.serial ?? '')}</div>
                         <div class="poster-item-name">${Utils.escapeHtml(item.name)}</div>
                         ${item.description ? `<div class="poster-item-desc">${Utils.escapeHtml(item.description)}</div>` : ''}
                         <div class="poster-item-price">${Number(item.price || 0).toLocaleString('ar-EG')} ج.م</div>
@@ -431,7 +496,7 @@ if (subtitleEl) {
 
                 const canvas = await html2canvas(wrapper, { useCORS: true, scale: 1.5 });
                 const blob = await new Promise((r) => canvas.toBlob(r, 'image/jpeg', 0.9));
-                this.posterPages.push(blob);
+                if (blob) this.posterPages.push(blob);
             }
 
             this.renderPosterPreview();
@@ -442,8 +507,11 @@ if (subtitleEl) {
         }
     },
 
-renderPosterPreview() {
+    renderPosterPreview() {
         const container = document.getElementById('poster-pages-container');
+        if (!container) return;
+
+        this.clearPosterUrls();
         container.innerHTML = '';
 
         if (this.posterPages.length > 1) {
@@ -451,7 +519,7 @@ renderPosterPreview() {
             shareAllBox.className = 'poster-preview-page';
             shareAllBox.innerHTML = `
                 <div class="poster-preview-actions">
-                    <button type="button" class="btn" onclick="waseetApp.shareAllPosterPages()">📤 مشاركة كل الصفحات معاً (${this.posterPages.length})</button>
+                    <button type="button" class="btn" data-action="share-all">📤 مشاركة كل الصفحات معاً (${this.posterPages.length})</button>
                 </div>
             `;
             container.appendChild(shareAllBox);
@@ -459,17 +527,32 @@ renderPosterPreview() {
 
         this.posterPages.forEach((blob, idx) => {
             const url = URL.createObjectURL(blob);
+            this.posterObjectUrls.push(url);
+
             const pageDiv = document.createElement('div');
             pageDiv.className = 'poster-preview-page';
             pageDiv.innerHTML = `
-                <img src="${url}" class="poster-preview-img" />
+                <img src="${Utils.escapeHtml(url)}" alt="صفحة ${idx + 1}" class="poster-preview-img" />
                 <div class="poster-preview-actions">
-                    <button type="button" class="btn" onclick="waseetApp.sharePosterPage(${idx})">📤 مشاركة صفحة ${idx + 1}</button>
-                    <a href="${url}" download="CrowGo-Magazine-Page-${idx + 1}.jpg" class="btn btn-secondary poster-download-link">⬇️ تحميل</a>
+                    <button type="button" class="btn" data-action="share-page" data-page-index="${idx}">📤 مشاركة صفحة ${idx + 1}</button>
+                    <a href="${Utils.escapeHtml(url)}" download="CrowGo-Magazine-Page-${idx + 1}.jpg" class="btn btn-secondary poster-download-link">⬇️ تحميل</a>
                 </div>
             `;
             container.appendChild(pageDiv);
         });
+
+        if (container.dataset.bound !== '1') {
+            container.dataset.bound = '1';
+            container.addEventListener('click', async (e) => {
+                const btn = e.target.closest('button[data-action]');
+                if (!btn) return;
+                if (btn.dataset.action === 'share-all') {
+                    await this.shareAllPosterPages();
+                } else if (btn.dataset.action === 'share-page') {
+                    await this.sharePosterPage(Number(btn.dataset.pageIndex));
+                }
+            });
+        }
     },
 
     async shareAllPosterPages() {
@@ -495,6 +578,7 @@ renderPosterPreview() {
             }
         }
     },
+
     async sharePosterPage(pageIndex) {
         const blob = this.posterPages[pageIndex];
         if (!blob) return;
@@ -513,45 +597,11 @@ renderPosterPreview() {
             }
         }
     },
-    async sharePosterPdf() {
-        if (!this.posterPdfBlob) return;
-        const file = new File([this.posterPdfBlob], 'CrowGo-Catalog.pdf', { type: 'application/pdf' });
 
-        try {
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                await navigator.share({ files: [file], title: 'كتالوج عروضي' });
-            } else {
-                Utils.showToast('المشاركة المباشرة مش مدعومة في هذا المتصفح، استخدم زرار تحميل PDF', 'error');
-            }
-        } catch (e) {
-            if (e && e.name !== 'AbortError') {
-                console.error(e);
-                Utils.showToast('تعذّرت المشاركة، جرّب تحميل PDF بدل منها', 'error');
-            }
-        }
-    },
-
-    async sharePosterPage(pageIndex) {
-        const blob = this.posterPages[pageIndex];
-        if (!blob) return;
-        const file = new File([blob], `CrowGo-Catalog-Page-${pageIndex + 1}.jpg`, { type: 'image/jpeg' });
-
-        try {
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                await navigator.share({ files: [file], title: `كتالوج عروضي - صفحة ${pageIndex + 1}` });
-            } else {
-                Utils.showToast('المشاركة المباشرة مش مدعومة في هذا المتصفح، استخدم زرار التحميل', 'error');
-            }
-        } catch (e) {
-            if (e && e.name !== 'AbortError') {
-                console.error(e);
-                Utils.showToast('تعذّرت المشاركة، جرّب التحميل بدل منها', 'error');
-            }
-        }
-    },
     // ================= 3. إدارة طلبات الزبائن =================
     async loadOrders() {
         const container = document.getElementById('orders-list-container');
+        if (!container) return;
         container.innerHTML = '<p class="text-center">جاري تحميل الطلبات...</p>';
 
         try {
@@ -566,12 +616,14 @@ renderPosterPreview() {
             this.renderOrders();
         } catch (e) {
             console.error(e);
-            container.innerHTML = `<p class="text-error">${Utils.translateError(e)}</p>`;
+            container.innerHTML = `<p class="text-error">${Utils.escapeHtml(Utils.translateError(e))}</p>`;
         }
     },
 
     renderOrders() {
         const container = document.getElementById('orders-list-container');
+        if (!container) return;
+
         if (this.orders.length === 0) {
             container.innerHTML = '<p class="text-center text-muted">لا توجد طلبات مسجلة حالياً.</p>';
             return;
@@ -583,23 +635,43 @@ renderPosterPreview() {
             'done': '<span class="badge badge-done">مكتمل</span>'
         };
 
-        container.innerHTML = '';
-        this.orders.forEach(o => {
-            container.innerHTML += `
-                <div class="order-card">
-                    <div class="order-card-head">
-                        <b>${Utils.escapeHtml(o.item_needed)}</b>
-                        ${statusLabels[o.status] || ''}
-                    </div>
-                    <div class="order-client-line">👤 ${Utils.escapeHtml(o.client_name)} — 📞 ${Utils.escapeHtml(o.client_phone)}</div>
-                    ${o.client_address ? `<div class="order-address-line">📍 ${Utils.escapeHtml(o.client_address)}</div>` : ''}
-                    <div class="order-actions-row">
-                        <button type="button" onclick="waseetApp.updateOrderStatus(${o.id}, 'contacted')" class="btn-order-action btn-order-contacted">تم التواصل</button>
-                        <button type="button" onclick="waseetApp.updateOrderStatus(${o.id}, 'done')" class="btn-order-action btn-order-done">مكتمل</button>
-                        <button type="button" onclick="Utils.withBusy(this, () => waseetApp.deleteOrder(${o.id}))" class="btn-order-action btn-order-delete">🗑️</button>
-                    </div>
+        container.innerHTML = this.orders.map(o => `
+            <div class="order-card" data-order-id="${Utils.escapeHtml(o.id)}">
+                <div class="order-card-head">
+                    <b>${Utils.escapeHtml(o.item_needed)}</b>
+                    ${statusLabels[o.status] || ''}
                 </div>
-            `;
+                <div class="order-client-line">👤 ${Utils.escapeHtml(o.client_name)} — 📞 ${Utils.escapeHtml(o.client_phone)}</div>
+                ${o.client_address ? `<div class="order-address-line">📍 ${Utils.escapeHtml(o.client_address)}</div>` : ''}
+                <div class="order-actions-row">
+                    <button type="button" data-action="status-contacted" data-order-id="${Utils.escapeHtml(o.id)}" class="btn-order-action btn-order-contacted">تم التواصل</button>
+                    <button type="button" data-action="status-done" data-order-id="${Utils.escapeHtml(o.id)}" class="btn-order-action btn-order-done">مكتمل</button>
+                    <button type="button" data-action="delete-order" data-order-id="${Utils.escapeHtml(o.id)}" class="btn-order-action btn-order-delete">🗑️</button>
+                </div>
+            </div>
+        `).join('');
+
+        this.bindOrdersEvents(container);
+    },
+
+    bindOrdersEvents(container) {
+        if (container.dataset.bound === '1') return;
+        container.dataset.bound = '1';
+
+        container.addEventListener('click', async (e) => {
+            const btn = e.target.closest('button[data-action]');
+            if (!btn) return;
+
+            const orderId = btn.dataset.orderId;
+            const action = btn.dataset.action;
+
+            if (action === 'status-contacted') {
+                await this.updateOrderStatus(orderId, 'contacted');
+            } else if (action === 'status-done') {
+                await this.updateOrderStatus(orderId, 'done');
+            } else if (action === 'delete-order') {
+                await Utils.withBusy(btn, () => this.deleteOrder(orderId));
+            }
         });
     },
 
@@ -619,7 +691,7 @@ renderPosterPreview() {
         document.getElementById('order-modal').classList.add('hidden');
     },
 
-    async saveNewOrder() {
+    async saveNewOrder(btn = null) {
         const item = document.getElementById('ord-item').value.trim();
         const clientName = document.getElementById('ord-client-name').value.trim();
         const clientPhone = Utils.normalizeDigits(document.getElementById('ord-client-phone').value.trim());
@@ -634,7 +706,7 @@ renderPosterPreview() {
             return;
         }
 
-        try {
+        await Utils.withBusy(btn, async () => {
             const { error } = await sbClient.from('orders').insert([{
                 owner_id: this.currentUserId,
                 item_needed: item,
@@ -648,15 +720,17 @@ renderPosterPreview() {
             Utils.showToast('تم تسجيل طلب الزبون', 'success');
             this.closeNewOrderModal();
             await this.loadOrders();
-        } catch (e) {
-            console.error(e);
-            Utils.showToast('فشل حفظ الطلب: ' + Utils.translateError(e), 'error');
-        }
+        });
     },
 
     async updateOrderStatus(orderId, newStatus) {
         try {
-            const { error } = await sbClient.from('orders').update({ status: newStatus }).eq('id', orderId);
+            const { error } = await sbClient
+                .from('orders')
+                .update({ status: newStatus })
+                .eq('id', orderId)
+                .eq('owner_id', this.currentUserId);
+
             if (error) throw error;
             Utils.showToast('تم تحديث حالة الطلب', 'success');
             await this.loadOrders();
@@ -669,59 +743,78 @@ renderPosterPreview() {
     async deleteOrder(orderId) {
         const ok = await Utils.confirmDialog('حذف هذا الطلب؟');
         if (!ok) return;
-        try {
-            const { error } = await sbClient.from('orders').delete().eq('id', orderId);
-            if (error) throw error;
-            await this.loadOrders();
-        } catch (e) {
-            console.error(e);
-            Utils.showToast(Utils.translateError(e), 'error');
-        }
+
+        const { error } = await sbClient
+            .from('orders')
+            .delete()
+            .eq('id', orderId)
+            .eq('owner_id', this.currentUserId);
+
+        if (error) throw error;
+        await this.loadOrders();
     },
 
     // ================= 4. الاشتراك وطلبات التجديد والإحالات =================
     async loadSubscriptionAndReferrals() {
         try {
-            const { data: freshProfile, error: profileError } = await sbClient.from('profiles').select('*').eq('id', this.currentUserId).single();
+            const { data: freshProfile, error: profileError } = await sbClient
+                .from('profiles')
+                .select('*')
+                .eq('id', this.currentUserId)
+                .single();
+
             if (profileError) throw profileError;
             if (freshProfile) this.profile = freshProfile;
 
             this.updateSubscriptionGateUI();
 
             const subBox = document.getElementById('subscription-info-box');
-            const hasEnd = !!this.profile.subscription_end;
+            const hasEnd = !!this.profile?.subscription_end;
             const isExpired = hasEnd ? new Date(this.profile.subscription_end) <= new Date() : true;
             const endLabel = hasEnd
                 ? new Date(this.profile.subscription_end).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })
                 : 'غير محدد';
 
-            subBox.innerHTML = `
-                <div class="sub-status-line">حالة الاشتراك الحالي: ${isExpired ? '<span class="text-error">منتهي ⛔</span>' : '<span class="text-success">نشط ✅</span>'}</div>
-                <div class="sub-end-line">ينتهي في: <b>${endLabel}</b></div>
-            `;
+            if (subBox) {
+                subBox.innerHTML = `
+                    <div class="sub-status-line">حالة الاشتراك الحالي: ${isExpired ? '<span class="text-error">منتهي ⛔</span>' : '<span class="text-success">نشط ✅</span>'}</div>
+                    <div class="sub-end-line">ينتهي في: <b>${Utils.escapeHtml(endLabel)}</b></div>
+                `;
+            }
 
-            const { data: payments, error: payError } = await sbClient.from('payments').select('*').eq('waseet_id', this.currentUserId).order('created_at', { ascending: false });
+            const { data: payments, error: payError } = await sbClient
+                .from('payments')
+                .select('*')
+                .eq('waseet_id', this.currentUserId)
+                .order('created_at', { ascending: false });
+
             if (payError) throw payError;
 
             const payContainer = document.getElementById('payments-history-container');
-            if (payments && payments.length > 0) {
-                payContainer.innerHTML = '<div class="payments-history-title">طلبات التجديد السابقة:</div>';
-                payments.forEach(pay => {
-                    const st = pay.status === 'confirmed' ? 'مؤكد ✅' : (pay.status === 'rejected' ? 'مرفوض ❌' : 'قيد المراجعة ⏳');
-                    const amount = Number(pay.amount || 0).toLocaleString('ar-EG');
-                    payContainer.innerHTML += `<div class="payment-history-row">${amount} ج.م (${Utils.escapeHtml(pay.method)}) — <b>${st}</b></div>`;
-                });
-            } else {
-                payContainer.innerHTML = '';
+            if (payContainer) {
+                if (payments && payments.length > 0) {
+                    const rowsHtml = payments.map(pay => {
+                        const st = pay.status === 'confirmed' ? 'مؤكد ✅' : (pay.status === 'rejected' ? 'مرفوض ❌' : 'قيد المراجعة ⏳');
+                        const amount = Number(pay.amount || 0).toLocaleString('ar-EG');
+                        return `<div class="payment-history-row">${Utils.escapeHtml(amount)} ج.م (${Utils.escapeHtml(pay.method)}) — <b>${st}</b></div>`;
+                    }).join('');
+                    payContainer.innerHTML = `<div class="payments-history-title">طلبات التجديد السابقة:</div>${rowsHtml}`;
+                } else {
+                    payContainer.innerHTML = '';
+                }
             }
 
-            document.getElementById('my-referral-code').value = this.profile.referral_code || '';
-            const { count, error: countError } = await sbClient.from('referrals').select('*', { count: 'exact', head: true }).eq('referrer_id', this.currentUserId);
+            const refCodeInput = document.getElementById('my-referral-code');
+            if (refCodeInput) refCodeInput.value = this.profile?.referral_code || '';
+
+            const { count, error: countError } = await sbClient
+                .from('referrals')
+                .select('*', { count: 'exact', head: true })
+                .eq('referrer_id', this.currentUserId);
+
             if (countError) throw countError;
 
             const refCount = count || 0;
-            // كان بيقول "متبقي 5" حتى لو الوسيط وصل بالظبط لـ5 أو 10 إحالات بدل
-            // ما يهنّئه — H3c
             let refText;
             if (refCount > 0 && refCount % 5 === 0) {
                 refText = `🎉 مبروك! عدد إحالاتك ${refCount} وكسبت أسبوع مجاني إضافي.`;
@@ -729,24 +822,30 @@ renderPosterPreview() {
                 const remainder = 5 - (refCount % 5);
                 refText = `عدد إحالاتك الناجحة: ${refCount} (متبقي ${remainder} للحصول على أسبوع مجاني إضافي)`;
             }
-            document.getElementById('referrals-count-text').innerText = refText;
+
+            const refCountEl = document.getElementById('referrals-count-text');
+            if (refCountEl) refCountEl.innerText = refText;
         } catch (e) {
             console.error(e);
             Utils.showToast(Utils.translateError(e), 'error');
         }
     },
 
-    async submitPaymentRequest() {
-        const amount = document.getElementById('pay-amount').value.trim();
+    async submitPaymentRequest(btn = null) {
+        const amountRaw = Utils.normalizeDigits(document.getElementById('pay-amount').value.trim());
         const method = document.getElementById('pay-method').value;
         const notes = document.getElementById('pay-notes').value.trim();
 
-        if (!amount) { Utils.showToast('أدخل المبلغ المحول', 'error'); return; }
+        const numericAmount = parseFloat(amountRaw);
+        if (!amountRaw || isNaN(numericAmount) || numericAmount <= 0) {
+            Utils.showToast('أدخل المبلغ المحول بشكل صحيح', 'error');
+            return;
+        }
 
-        try {
+        await Utils.withBusy(btn, async () => {
             const { error } = await sbClient.from('payments').insert([{
                 waseet_id: this.currentUserId,
-                amount: parseFloat(amount),
+                amount: numericAmount,
                 method: method,
                 notes: notes,
                 status: 'pending'
@@ -757,14 +856,12 @@ renderPosterPreview() {
             document.getElementById('pay-amount').value = '';
             document.getElementById('pay-notes').value = '';
             await this.loadSubscriptionAndReferrals();
-        } catch (e) {
-            console.error(e);
-            Utils.showToast('فشل إرسال الطلب: ' + Utils.translateError(e), 'error');
-        }
+        });
     },
 
     async copyReferralCode() {
         const codeInput = document.getElementById('my-referral-code');
+        if (!codeInput) return;
         codeInput.select();
         try {
             await navigator.clipboard.writeText(codeInput.value);
@@ -776,9 +873,9 @@ renderPosterPreview() {
     },
 
     shareReferralOnWhatsApp() {
-        const code = document.getElementById('my-referral-code').value;
+        const code = document.getElementById('my-referral-code')?.value;
         if (!code) return;
         const text = encodeURIComponent(`انضم لمنصة Crow Go للوسطاء واستخدم كود الإحالة بتاعي: ${code}`);
-        window.open(`https://wa.me/?text=${text}`, '_blank');
+        window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer');
     }
 };
