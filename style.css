@@ -262,17 +262,36 @@ body {
 .poster-item-images {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    gap: 8px;
     align-items: center;
     justify-items: center;
     margin-bottom: 8px;
-    max-height: 360px;
+    max-height: 440px;
+    width: 100%;
     overflow: hidden;
+}
+.poster-item-images.poster-images-1 {
+    grid-template-columns: 1fr;
+}
+.poster-item-images.poster-images-1 img {
+    max-height: 340px;
+}
+.poster-item-images.poster-images-2x2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+.poster-item-images.poster-images-2x2 img {
+    max-height: 205px;
+}
+.poster-item-images.poster-images-3x2 {
+    grid-template-columns: repeat(3, 1fr);
+}
+.poster-item-images.poster-images-3x2 img {
+    max-height: 195px;
 }
 .poster-item img,
 .poster-item-images img {
     max-width: 100%;
-    max-height: 170px;
+    max-height: 200px;
     width: auto;
     height: auto;
     object-fit: contain;
