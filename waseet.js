@@ -86,13 +86,18 @@ const waseetApp = {
         try {
             const { data, error } = await sbClient
                 .from('products')
-                .select('*, product_images(id, storage_path)')
+                .select('*, product_images(id, storage_path, sort_order)')
                 .eq('owner_id', this.currentUserId)
                 .order('serial', { ascending: true });
 
             if (error) throw error;
 
-            this.products = data || [];
+            this.products = (data || []).map(p => ({
+                ...p,
+                product_images: Array.isArray(p.product_images)
+                    ? [...p.product_images].sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999))
+                    : []
+            }));
             this.renderProducts();
             this.updateSubscriptionGateUI();
         } catch (e) {
@@ -321,7 +326,12 @@ const waseetApp = {
                 targetProductId = prodData.id;
             }
 
+            let failedUploads = 0;
             if (imageFiles && imageFiles.length > 0 && targetProductId) {
+                const existingCount = editId
+                    ? ((this.products.find(x => String(x.id) === String(editId))?.product_images?.length) || 0)
+                    : 0;
+
                 for (let i = 0; i < imageFiles.length; i++) {
                     const file = imageFiles[i];
                     const compressed = await this.compressImage(file).catch(() => file);
@@ -333,6 +343,7 @@ const waseetApp = {
 
                     if (uploadError) {
                         console.error('upload failed', uploadError);
+                        failedUploads++;
                         continue;
                     }
 
@@ -341,13 +352,20 @@ const waseetApp = {
                         .insert([{
                             product_id: targetProductId,
                             storage_path: fileName,
-                            sort_order: i
+                            sort_order: existingCount + i
                         }]);
-                    if (imgInsertError) console.error('image row insert failed', imgInsertError);
+                    if (imgInsertError) {
+                        console.error('image row insert failed', imgInsertError);
+                        failedUploads++;
+                    }
                 }
             }
 
-            Utils.showToast('تم حفظ العرض بنجاح!', 'success');
+            if (failedUploads > 0) {
+                Utils.showToast(`تم حفظ العرض، لكن تعذّر رفع ${failedUploads} صورة`, 'error');
+            } else {
+                Utils.showToast('تم حفظ العرض بنجاح!', 'success');
+            }
             this.closeProductModal();
             await this.loadProducts();
         });
@@ -458,8 +476,12 @@ const waseetApp = {
                 }
 
                 let imagesHtml = '';
+                let validImageCount = 0;
                 if (item.product_images && item.product_images.length > 0) {
-                    imagesHtml = item.product_images
+                    const sortedImages = [...item.product_images].sort(
+                        (a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999)
+                    );
+                    const imgTags = sortedImages
                         .map((imgObj) => {
                             const { data: urlData } = sbClient.storage
                                 .from('product-images')
@@ -468,13 +490,18 @@ const waseetApp = {
                                 ? `<img src="${Utils.escapeHtml(urlData.publicUrl)}" crossorigin="anonymous" />`
                                 : '';
                         })
-                        .filter(Boolean)
-                        .join('');
+                        .filter(Boolean);
+                    validImageCount = imgTags.length;
+                    imagesHtml = imgTags.join('');
                 }
+
+                const imgCountClass = validImageCount === 1
+                    ? 'poster-images-1'
+                    : (validImageCount <= 4 ? 'poster-images-2x2' : 'poster-images-3x2');
 
                 grid.innerHTML = `
                     <div class="poster-item poster-item-single">
-                        ${imagesHtml ? `<div class="poster-item-images">${imagesHtml}</div>` : `<div class="poster-item-noimg">بدون صورة</div>`}
+                        ${imagesHtml ? `<div class="poster-item-images ${imgCountClass}">${imagesHtml}</div>` : `<div class="poster-item-noimg">بدون صورة</div>`}
                         <div class="poster-item-code">كود #${Utils.escapeHtml(item.serial ?? '')}</div>
                         <div class="poster-item-name">${Utils.escapeHtml(item.name)}</div>
                         ${item.description ? `<div class="poster-item-desc">${Utils.escapeHtml(item.description)}</div>` : ''}
